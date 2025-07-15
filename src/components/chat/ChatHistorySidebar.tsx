@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { MessageSquare, Plus, Trash2, Clock, Calendar, Tag, Stethoscope, Heart, Brain, Eye, Bone, Activity } from 'lucide-react';
+import { MessageSquare, Plus, Trash2, Clock, Calendar, Tag, Stethoscope, Heart, Brain, Eye, Bone, Activity, User, Settings, Moon, Sun } from 'lucide-react';
 import {
   Sidebar,
   SidebarContent,
@@ -11,10 +11,13 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarFooter,
   useSidebar,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useTheme } from 'next-themes';
 
 export interface ChatHistory {
   id: string;
@@ -62,6 +65,7 @@ export const ChatHistorySidebar = ({
 }: ChatHistorySidebarProps) => {
   const { state } = useSidebar();
   const isCollapsed = state === 'collapsed';
+  const { theme, setTheme } = useTheme();
 
   const formatDate = (date: Date) => {
     const now = new Date();
@@ -217,6 +221,69 @@ export const ChatHistorySidebar = ({
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+
+      <SidebarFooter className="p-4 border-t">
+        {!isCollapsed ? (
+          <div className="space-y-3">
+            {/* Profile Section */}
+            <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-accent/50 cursor-pointer transition-colors">
+              <Avatar className="h-8 w-8">
+                <AvatarImage src="/placeholder.svg" alt="Dr. Smith" />
+                <AvatarFallback className="bg-primary/10 text-primary">DS</AvatarFallback>
+              </Avatar>
+              <div className="flex-1 text-left">
+                <p className="text-sm font-medium">Dr. Smith</p>
+                <p className="text-xs text-muted-foreground">Medical AI Assistant</p>
+              </div>
+            </div>
+
+            {/* Settings and Theme Toggle */}
+            <div className="flex gap-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="flex-1 justify-start gap-2"
+              >
+                <Settings className="h-4 w-4" />
+                Settings
+              </Button>
+              
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                className="h-8 w-8"
+              >
+                {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center gap-2">
+            {/* Collapsed Profile */}
+            <Avatar className="h-8 w-8">
+              <AvatarImage src="/placeholder.svg" alt="Dr. Smith" />
+              <AvatarFallback className="bg-primary/10 text-primary">DS</AvatarFallback>
+            </Avatar>
+            
+            {/* Collapsed Controls */}
+            <div className="flex flex-col gap-1">
+              <Button variant="ghost" size="icon" className="h-8 w-8">
+                <Settings className="h-4 w-4" />
+              </Button>
+              
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                className="h-8 w-8"
+              >
+                {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              </Button>
+            </div>
+          </div>
+        )}
+      </SidebarFooter>
     </Sidebar>
   );
 };
