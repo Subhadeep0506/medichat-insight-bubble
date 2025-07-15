@@ -30,7 +30,7 @@ export const QuestionSuggestions = ({ onSuggestionSelect, hasImage }: QuestionSu
     <div className="space-y-2">
       <div className="flex items-center space-x-2 text-sm text-gray-600">
         <Lightbulb className="h-4 w-4" />
-        <span className="font-medium">Suggested questions:</span>
+        <span className="font-medium text-gray-700 dark:text-gray-400">Suggested questions:</span>
       </div>
       
       <div className="flex flex-wrap gap-2">
@@ -42,7 +42,7 @@ export const QuestionSuggestions = ({ onSuggestionSelect, hasImage }: QuestionSu
               variant="outline"
               size="sm"
               onClick={() => onSuggestionSelect(suggestion.text)}
-              className="text-left justify-start hover:bg-blue-50 hover:border-blue-300 transition-colors"
+              className="text-left justify-start hover:bg-blue-50 hover:border-blue-500 transition-colors dark:hover:bg-slate-700 dark:hover:border-slate-600"
             >
               <IconComponent className="h-3 w-3 mr-2 text-blue-600" />
               <span className="text-xs">{suggestion.text}</span>

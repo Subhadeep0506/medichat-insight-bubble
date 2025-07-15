@@ -268,7 +268,7 @@ export const MedicalChatInterface = () => {
                 messagesEndRef={messagesEndRef}
               />
               
-              <div className="border-t bg-gray-50/50 p-4 space-y-4">
+              <div className="border-t bg-gray-50/50 p-4 space-y-4 dark:bg-slate-800/50">
                 <ImageUpload 
                   onImageUpload={handleImageUpload}
                   currentImage={currentImage}

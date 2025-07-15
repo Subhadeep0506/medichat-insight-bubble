@@ -25,7 +25,7 @@ export const MessageBubble = ({ message }: MessageBubbleProps) => {
       <div className={`flex-1 max-w-xl ${isUser ? 'text-right' : ''}`}>
         <div className={`relative inline-block p-4 rounded-2xl shadow-lg ${
           isUser 
-            ? 'bg-primary text-primary-foreground rounded-br-sm' 
+            ? 'bg-secondary text-secondary-foreground rounded-br-sm' 
             : 'bg-card text-card-foreground rounded-bl-sm border border-border'
         }`}>
           {/* Responsibility AI Indicator for Assistant Messages */}
@@ -45,14 +45,14 @@ export const MessageBubble = ({ message }: MessageBubbleProps) => {
                 </HoverCardTrigger>
                 <HoverCardContent className="w-80 p-4">
                   <div className="space-y-2">
-                    <h4 className="font-semibold text-green-800 flex items-center">
+                    <h4 className="font-semibold text-green-800 dark:text-green-400 flex items-center">
                       <Shield className="h-4 w-4 mr-2" />
                       Responsible AI Score: {message.responsibilityScore}%
                     </h4>
-                    <p className="text-sm text-gray-600 leading-relaxed">
+                    <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
                       {message.responsibilityReason}
                     </p>
-                    <div className="mt-3 text-xs text-gray-500 bg-gray-50 p-2 rounded">
+                    <div className="mt-3 text-xs text-gray-500 bg-gray-50 dark:text-gray-200 dark:bg-gray-800 p-2 rounded">
                       <strong>Note:</strong> This score reflects adherence to ethical AI practices in medical contexts, including appropriate disclaimers and professional consultation recommendations.
                     </div>
                   </div>

@@ -12,13 +12,13 @@ interface ChatMessagesProps {
 
 export const ChatMessages = ({ messages, isLoading, messagesEndRef }: ChatMessagesProps) => {
   return (
-    <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-gradient-to-b from-blue-50/30 to-transparent">
+    <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-gradient-to-b from-blue-50/30 to-transparent dark:from-slate-500/30 dark:to-slate-800/30">
       {messages.map((message) => (
         <MessageBubble key={message.id} message={message} />
       ))}
-      
+
       {isLoading && <LoadingMessage />}
-      
+
       <div ref={messagesEndRef} />
     </div>
   );

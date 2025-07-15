@@ -32,7 +32,7 @@ export const ImageUpload = ({ onImageUpload, currentImage }: ImageUploadProps) =
           <img 
             src={currentImage} 
             alt="Uploaded medical image" 
-            className="max-w-32 h-20 object-cover rounded-lg border-2 border-green-200 shadow-sm"
+            className="max-w-32 h-20 object-cover rounded-lg border-2 border-green-200 shadow-sm dark:border-green-600"
           />
           <Button
             size="sm"
@@ -52,9 +52,9 @@ export const ImageUpload = ({ onImageUpload, currentImage }: ImageUploadProps) =
               onChange={handleFileSelect}
               className="hidden"
             />
-            <div className="flex items-center space-x-2 px-4 py-2 bg-blue-50 hover:bg-blue-100 border-2 border-dashed border-blue-300 rounded-lg transition-colors">
-              <Upload className="h-4 w-4 text-blue-600" />
-              <span className="text-sm font-medium text-blue-700">Upload Medical Image</span>
+            <div className="flex items-center space-x-2 px-4 py-2 bg-blue-50 hover:bg-blue-100 border-2 border-dashed border-blue-300 rounded-lg transition-colors dark:bg-slate-700 dark:hover:bg-slate-600">
+              <Upload className="h-4 w-4 text-blue-600 dark:text-blue-200" />
+              <span className="text-sm font-medium text-blue-700  dark:text-blue-100">Upload Medical Image</span>
             </div>
           </label>
           
