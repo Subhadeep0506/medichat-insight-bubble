@@ -1,5 +1,7 @@
 
 import React, { useState, useRef } from 'react';
+import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
+import { ChatHistorySidebar, ChatHistory } from './chat/ChatHistorySidebar';
 import { ChatHeader } from './chat/ChatHeader';
 import { ChatMessages } from './chat/ChatMessages';
 import { ChatInput } from './chat/ChatInput';
@@ -16,20 +18,41 @@ export interface ChatMessage {
   responsibilityReason?: string;
 }
 
+interface ChatSession {
+  id: string;
+  messages: ChatMessage[];
+  title: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export const MedicalChatInterface = () => {
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      id: '1',
-      type: 'assistant',
-      content: 'Hello! I\'m here to help you analyze medical images and answer your questions. Please upload an image and ask your question.',
-      timestamp: new Date(),
-      responsibilityScore: 95,
-      responsibilityReason: 'This greeting follows medical AI guidelines by clearly stating capabilities and limitations while maintaining a professional tone.'
+  const [currentChatId, setCurrentChatId] = useState<string>('default');
+  const [chatSessions, setChatSessions] = useState<Record<string, ChatSession>>({
+    default: {
+      id: 'default',
+      title: 'Medical Image Analysis',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      messages: [
+        {
+          id: '1',
+          type: 'assistant',
+          content: 'Hello! I\'m here to help you analyze medical images and answer your questions. Please upload an image and ask your question.',
+          timestamp: new Date(),
+          responsibilityScore: 95,
+          responsibilityReason: 'This greeting follows medical AI guidelines by clearly stating capabilities and limitations while maintaining a professional tone.'
+        }
+      ]
     }
-  ]);
+  });
+  
   const [currentImage, setCurrentImage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const currentSession = chatSessions[currentChatId];
+  const messages = currentSession?.messages || [];
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -38,6 +61,11 @@ export const MedicalChatInterface = () => {
   React.useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  const generateChatTitle = (firstMessage: string): string => {
+    const words = firstMessage.split(' ').slice(0, 4);
+    return words.length > 0 ? words.join(' ') + '...' : 'New Chat';
+  };
 
   const handleSendMessage = async (content: string) => {
     if (!content.trim()) return;
@@ -50,7 +78,22 @@ export const MedicalChatInterface = () => {
       timestamp: new Date()
     };
 
-    setMessages(prev => [...prev, userMessage]);
+    // Update current session with new message
+    setChatSessions(prev => {
+      const updatedSession = {
+        ...prev[currentChatId],
+        messages: [...prev[currentChatId].messages, userMessage],
+        updatedAt: new Date(),
+        // Update title if this is the first user message
+        title: prev[currentChatId].messages.length === 1 ? generateChatTitle(content) : prev[currentChatId].title
+      };
+
+      return {
+        ...prev,
+        [currentChatId]: updatedSession
+      };
+    });
+
     setIsLoading(true);
 
     // Simulate AI response
@@ -64,7 +107,15 @@ export const MedicalChatInterface = () => {
         responsibilityReason: 'This response follows responsible AI practices by providing informative analysis while emphasizing the importance of professional medical consultation and avoiding definitive diagnoses.'
       };
 
-      setMessages(prev => [...prev, assistantMessage]);
+      setChatSessions(prev => ({
+        ...prev,
+        [currentChatId]: {
+          ...prev[currentChatId],
+          messages: [...prev[currentChatId].messages, assistantMessage],
+          updatedAt: new Date()
+        }
+      }));
+
       setIsLoading(false);
     }, 2000);
   };
@@ -77,37 +128,110 @@ export const MedicalChatInterface = () => {
     handleSendMessage(suggestion);
   };
 
+  const handleNewChat = () => {
+    const newChatId = Date.now().toString();
+    const newSession: ChatSession = {
+      id: newChatId,
+      title: 'New Medical Analysis',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      messages: [
+        {
+          id: newChatId + '_welcome',
+          type: 'assistant',
+          content: 'Hello! I\'m here to help you analyze medical images and answer your questions. Please upload an image and ask your question.',
+          timestamp: new Date(),
+          responsibilityScore: 95,
+          responsibilityReason: 'This greeting follows medical AI guidelines by clearly stating capabilities and limitations while maintaining a professional tone.'
+        }
+      ]
+    };
+
+    setChatSessions(prev => ({
+      ...prev,
+      [newChatId]: newSession
+    }));
+    
+    setCurrentChatId(newChatId);
+    setCurrentImage(null);
+  };
+
+  const handleSelectChat = (chatId: string) => {
+    setCurrentChatId(chatId);
+    setCurrentImage(null);
+  };
+
+  const handleDeleteChat = (chatId: string) => {
+    if (Object.keys(chatSessions).length === 1) return; // Don't delete the last chat
+
+    setChatSessions(prev => {
+      const updated = { ...prev };
+      delete updated[chatId];
+      return updated;
+    });
+
+    if (currentChatId === chatId) {
+      const remainingChats = Object.keys(chatSessions).filter(id => id !== chatId);
+      setCurrentChatId(remainingChats[0]);
+    }
+  };
+
+  const chatHistories: ChatHistory[] = Object.values(chatSessions)
+    .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
+    .map(session => ({
+      id: session.id,
+      title: session.title,
+      lastMessage: session.messages[session.messages.length - 1]?.content || '',
+      timestamp: session.updatedAt,
+      messageCount: session.messages.length
+    }));
+
   return (
-    <div className="flex flex-col h-screen max-w-6xl mx-auto bg-white shadow-2xl">
-      <ChatHeader />
-      
-      <div className="flex-1 flex overflow-hidden">
-        {/* Main Chat Area */}
+    <SidebarProvider defaultOpen={true}>
+      <div className="flex h-screen w-full bg-background">
+        <ChatHistorySidebar
+          chatHistories={chatHistories}
+          currentChatId={currentChatId}
+          onSelectChat={handleSelectChat}
+          onNewChat={handleNewChat}
+          onDeleteChat={handleDeleteChat}
+        />
+
         <div className="flex-1 flex flex-col">
-          <ChatMessages 
-            messages={messages} 
-            isLoading={isLoading}
-            messagesEndRef={messagesEndRef}
-          />
+          <div className="flex items-center gap-2 p-4 border-b">
+            <SidebarTrigger />
+            <ChatHeader />
+          </div>
           
-          <div className="border-t bg-gray-50/50 p-4 space-y-4">
-            <ImageUpload 
-              onImageUpload={handleImageUpload}
-              currentImage={currentImage}
-            />
-            
-            <QuestionSuggestions 
-              onSuggestionSelect={handleSuggestionSelect}
-              hasImage={!!currentImage}
-            />
-            
-            <ChatInput 
-              onSendMessage={handleSendMessage}
-              disabled={isLoading}
-            />
+          <div className="flex-1 flex overflow-hidden">
+            {/* Main Chat Area */}
+            <div className="flex-1 flex flex-col">
+              <ChatMessages 
+                messages={messages} 
+                isLoading={isLoading}
+                messagesEndRef={messagesEndRef}
+              />
+              
+              <div className="border-t bg-gray-50/50 p-4 space-y-4">
+                <ImageUpload 
+                  onImageUpload={handleImageUpload}
+                  currentImage={currentImage}
+                />
+                
+                <QuestionSuggestions 
+                  onSuggestionSelect={handleSuggestionSelect}
+                  hasImage={!!currentImage}
+                />
+                
+                <ChatInput 
+                  onSendMessage={handleSendMessage}
+                  disabled={isLoading}
+                />
+              </div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </SidebarProvider>
   );
 };
