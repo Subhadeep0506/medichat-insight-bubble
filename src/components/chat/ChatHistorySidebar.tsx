@@ -138,17 +138,15 @@ export const ChatHistorySidebar = ({
                                 {categoryInfo.label}
                               </Badge>
                             </div>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                            <button
+                              className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded hover:bg-destructive/10 hover:text-destructive"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 onDeleteChat(chat.id);
                               }}
                             >
                               <Trash2 className="h-3 w-3" />
-                            </Button>
+                            </button>
                           </div>
 
                           {/* Title */}
