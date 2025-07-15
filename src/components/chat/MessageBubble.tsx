@@ -16,7 +16,7 @@ export const MessageBubble = ({ message }: MessageBubbleProps) => {
     <div className={`flex items-start space-x-3 ${isUser ? 'flex-row-reverse space-x-reverse' : ''}`}>
       {/* Avatar */}
       <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
-        isUser ? 'bg-blue-600 text-white' : 'bg-green-600 text-white'
+        isUser ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground'
       }`}>
         {isUser ? <User className="h-5 w-5" /> : <Bot className="h-5 w-5" />}
       </div>
@@ -25,8 +25,8 @@ export const MessageBubble = ({ message }: MessageBubbleProps) => {
       <div className={`flex-1 max-w-xl ${isUser ? 'text-right' : ''}`}>
         <div className={`relative inline-block p-4 rounded-2xl shadow-lg ${
           isUser 
-            ? 'bg-blue-600 text-white rounded-br-sm' 
-            : 'bg-white text-gray-800 rounded-bl-sm border border-gray-200'
+            ? 'bg-primary text-primary-foreground rounded-br-sm' 
+            : 'bg-card text-card-foreground rounded-bl-sm border border-border'
         }`}>
           {/* Responsibility AI Indicator for Assistant Messages */}
           {!isUser && message.responsibilityScore && (

@@ -39,21 +39,21 @@ interface ChatHistorySidebarProps {
 }
 
 const categoryConfig = {
-  radiology: { icon: Eye, color: 'bg-blue-500', label: 'Radiology' },
-  cardiology: { icon: Heart, color: 'bg-red-500', label: 'Cardiology' },
-  neurology: { icon: Brain, color: 'bg-purple-500', label: 'Neurology' },
-  orthopedics: { icon: Bone, color: 'bg-amber-500', label: 'Orthopedics' },
-  general: { icon: Stethoscope, color: 'bg-green-500', label: 'General' },
-  pathology: { icon: Activity, color: 'bg-pink-500', label: 'Pathology' },
+  radiology: { icon: Eye, color: 'bg-blue-600 dark:bg-blue-500', label: 'Radiology' },
+  cardiology: { icon: Heart, color: 'bg-red-600 dark:bg-red-500', label: 'Cardiology' },
+  neurology: { icon: Brain, color: 'bg-purple-600 dark:bg-purple-500', label: 'Neurology' },
+  orthopedics: { icon: Bone, color: 'bg-amber-600 dark:bg-amber-500', label: 'Orthopedics' },
+  general: { icon: Stethoscope, color: 'bg-green-600 dark:bg-green-500', label: 'General' },
+  pathology: { icon: Activity, color: 'bg-pink-600 dark:bg-pink-500', label: 'Pathology' },
 };
 
 const tagColors = [
-  'bg-emerald-100 text-emerald-800 border-emerald-200',
-  'bg-blue-100 text-blue-800 border-blue-200',
-  'bg-violet-100 text-violet-800 border-violet-200',
-  'bg-orange-100 text-orange-800 border-orange-200',
-  'bg-rose-100 text-rose-800 border-rose-200',
-  'bg-cyan-100 text-cyan-800 border-cyan-200',
+  'bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-900 dark:text-emerald-200 dark:border-emerald-700',
+  'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900 dark:text-blue-200 dark:border-blue-700',
+  'bg-violet-100 text-violet-800 border-violet-200 dark:bg-violet-900 dark:text-violet-200 dark:border-violet-700',
+  'bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-900 dark:text-orange-200 dark:border-orange-700',
+  'bg-rose-100 text-rose-800 border-rose-200 dark:bg-rose-900 dark:text-rose-200 dark:border-rose-700',
+  'bg-cyan-100 text-cyan-800 border-cyan-200 dark:bg-cyan-900 dark:text-cyan-200 dark:border-cyan-700',
 ];
 
 export const ChatHistorySidebar = ({
