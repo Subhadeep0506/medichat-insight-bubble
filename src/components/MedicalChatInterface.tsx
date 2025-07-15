@@ -24,6 +24,8 @@ interface ChatSession {
   title: string;
   createdAt: Date;
   updatedAt: Date;
+  category: 'radiology' | 'cardiology' | 'neurology' | 'orthopedics' | 'general' | 'pathology';
+  tags: string[];
 }
 
 export const MedicalChatInterface = () => {
@@ -34,6 +36,8 @@ export const MedicalChatInterface = () => {
       title: 'Medical Image Analysis',
       createdAt: new Date(),
       updatedAt: new Date(),
+      category: 'general',
+      tags: ['initial', 'consultation'],
       messages: [
         {
           id: '1',
@@ -67,6 +71,47 @@ export const MedicalChatInterface = () => {
     return words.length > 0 ? words.join(' ') + '...' : 'New Chat';
   };
 
+  const categorizeChat = (message: string): 'radiology' | 'cardiology' | 'neurology' | 'orthopedics' | 'general' | 'pathology' => {
+    const lowerMessage = message.toLowerCase();
+    
+    if (lowerMessage.includes('x-ray') || lowerMessage.includes('mri') || lowerMessage.includes('ct') || lowerMessage.includes('scan')) {
+      return 'radiology';
+    } else if (lowerMessage.includes('heart') || lowerMessage.includes('cardiac') || lowerMessage.includes('ecg')) {
+      return 'cardiology';
+    } else if (lowerMessage.includes('brain') || lowerMessage.includes('neuro') || lowerMessage.includes('spine')) {
+      return 'neurology';
+    } else if (lowerMessage.includes('bone') || lowerMessage.includes('joint') || lowerMessage.includes('fracture')) {
+      return 'orthopedics';
+    } else if (lowerMessage.includes('tissue') || lowerMessage.includes('biopsy') || lowerMessage.includes('cell')) {
+      return 'pathology';
+    }
+    
+    return 'general';
+  };
+
+  const generateTags = (message: string, category: string): string[] => {
+    const tags: string[] = [];
+    const lowerMessage = message.toLowerCase();
+    
+    // Add category-specific tags
+    tags.push(category);
+    
+    // Add common medical terms as tags
+    const medicalTerms = ['diagnosis', 'analysis', 'scan', 'image', 'symptom', 'treatment', 'urgent', 'follow-up'];
+    medicalTerms.forEach(term => {
+      if (lowerMessage.includes(term)) {
+        tags.push(term);
+      }
+    });
+    
+    // Add some sample tags for demo
+    if (lowerMessage.includes('pain')) tags.push('pain assessment');
+    if (lowerMessage.includes('urgent')) tags.push('urgent');
+    if (lowerMessage.includes('follow')) tags.push('follow-up');
+    
+    return tags.slice(0, 4); // Limit to 4 tags
+  };
+
   const handleSendMessage = async (content: string) => {
     if (!content.trim()) return;
 
@@ -80,12 +125,18 @@ export const MedicalChatInterface = () => {
 
     // Update current session with new message
     setChatSessions(prev => {
+      const currentSession = prev[currentChatId];
+      const isFirstUserMessage = currentSession.messages.length === 1;
+      const category = isFirstUserMessage ? categorizeChat(content) : currentSession.category;
+      const newTags = isFirstUserMessage ? generateTags(content, category) : currentSession.tags;
+
       const updatedSession = {
-        ...prev[currentChatId],
-        messages: [...prev[currentChatId].messages, userMessage],
+        ...currentSession,
+        messages: [...currentSession.messages, userMessage],
         updatedAt: new Date(),
-        // Update title if this is the first user message
-        title: prev[currentChatId].messages.length === 1 ? generateChatTitle(content) : prev[currentChatId].title
+        category,
+        tags: newTags,
+        title: isFirstUserMessage ? generateChatTitle(content) : currentSession.title
       };
 
       return {
@@ -135,6 +186,8 @@ export const MedicalChatInterface = () => {
       title: 'New Medical Analysis',
       createdAt: new Date(),
       updatedAt: new Date(),
+      category: 'general',
+      tags: ['new consultation'],
       messages: [
         {
           id: newChatId + '_welcome',
@@ -183,7 +236,10 @@ export const MedicalChatInterface = () => {
       title: session.title,
       lastMessage: session.messages[session.messages.length - 1]?.content || '',
       timestamp: session.updatedAt,
-      messageCount: session.messages.length
+      createdAt: session.createdAt,
+      messageCount: session.messages.length,
+      category: session.category,
+      tags: session.tags
     }));
 
   return (

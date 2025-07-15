@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { MessageSquare, Plus, Trash2 } from 'lucide-react';
+import { MessageSquare, Plus, Trash2, Clock, Calendar, Tag, Stethoscope, Heart, Brain, Eye, Bone, Activity } from 'lucide-react';
 import {
   Sidebar,
   SidebarContent,
@@ -14,13 +14,17 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 
 export interface ChatHistory {
   id: string;
   title: string;
   lastMessage: string;
   timestamp: Date;
+  createdAt: Date;
   messageCount: number;
+  category: 'radiology' | 'cardiology' | 'neurology' | 'orthopedics' | 'general' | 'pathology';
+  tags: string[];
 }
 
 interface ChatHistorySidebarProps {
@@ -30,6 +34,24 @@ interface ChatHistorySidebarProps {
   onNewChat: () => void;
   onDeleteChat: (chatId: string) => void;
 }
+
+const categoryConfig = {
+  radiology: { icon: Eye, color: 'bg-blue-500', label: 'Radiology' },
+  cardiology: { icon: Heart, color: 'bg-red-500', label: 'Cardiology' },
+  neurology: { icon: Brain, color: 'bg-purple-500', label: 'Neurology' },
+  orthopedics: { icon: Bone, color: 'bg-amber-500', label: 'Orthopedics' },
+  general: { icon: Stethoscope, color: 'bg-green-500', label: 'General' },
+  pathology: { icon: Activity, color: 'bg-pink-500', label: 'Pathology' },
+};
+
+const tagColors = [
+  'bg-emerald-100 text-emerald-800 border-emerald-200',
+  'bg-blue-100 text-blue-800 border-blue-200',
+  'bg-violet-100 text-violet-800 border-violet-200',
+  'bg-orange-100 text-orange-800 border-orange-200',
+  'bg-rose-100 text-rose-800 border-rose-200',
+  'bg-cyan-100 text-cyan-800 border-cyan-200',
+];
 
 export const ChatHistorySidebar = ({
   chatHistories,
@@ -45,16 +67,28 @@ export const ChatHistorySidebar = ({
     const now = new Date();
     const diffTime = now.getTime() - date.getTime();
     const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    const diffHours = Math.floor(diffTime / (1000 * 60 * 60));
+    const diffMinutes = Math.floor(diffTime / (1000 * 60));
     
-    if (diffDays === 0) return 'Today';
+    if (diffMinutes < 1) return 'Just now';
+    if (diffMinutes < 60) return `${diffMinutes}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
     if (diffDays === 1) return 'Yesterday';
-    if (diffDays < 7) return `${diffDays} days ago`;
+    if (diffDays < 7) return `${diffDays}d ago`;
     return date.toLocaleDateString();
+  };
+
+  const formatTime = (date: Date) => {
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
   const truncateText = (text: string, maxLength: number) => {
     if (text.length <= maxLength) return text;
     return text.substring(0, maxLength) + '...';
+  };
+
+  const getTagColor = (index: number) => {
+    return tagColors[index % tagColors.length];
   };
 
   return (
@@ -66,7 +100,7 @@ export const ChatHistorySidebar = ({
           variant="outline"
         >
           <Plus className="h-4 w-4" />
-          {!isCollapsed && "New Chat"}
+          {!isCollapsed && "New Medical Chat"}
         </Button>
       </SidebarHeader>
 
@@ -77,57 +111,106 @@ export const ChatHistorySidebar = ({
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {chatHistories.map((chat) => (
-                <SidebarMenuItem key={chat.id}>
-                  <SidebarMenuButton
-                    isActive={currentChatId === chat.id}
-                    onClick={() => onSelectChat(chat.id)}
-                    className="group relative flex items-start gap-3 p-3 hover:bg-accent/50"
-                  >
-                    <MessageSquare className="h-4 w-4 mt-1 flex-shrink-0" />
-                    
-                    {!isCollapsed && (
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between">
-                          <h4 className="text-sm font-medium truncate">
-                            {truncateText(chat.title, 20)}
+              {chatHistories.map((chat) => {
+                const categoryInfo = categoryConfig[chat.category];
+                const CategoryIcon = categoryInfo.icon;
+                
+                return (
+                  <SidebarMenuItem key={chat.id}>
+                    <SidebarMenuButton
+                      isActive={currentChatId === chat.id}
+                      onClick={() => onSelectChat(chat.id)}
+                      className="group relative flex flex-col items-start gap-2 p-3 hover:bg-accent/50 h-auto"
+                    >
+                      {!isCollapsed ? (
+                        <div className="w-full space-y-2">
+                          {/* Header with category and delete button */}
+                          <div className="flex items-center justify-between w-full">
+                            <div className="flex items-center gap-2">
+                              <div className={`p-1 rounded ${categoryInfo.color} text-white`}>
+                                <CategoryIcon className="h-3 w-3" />
+                              </div>
+                              <Badge variant="outline" className="text-xs">
+                                {categoryInfo.label}
+                              </Badge>
+                            </div>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onDeleteChat(chat.id);
+                              }}
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
+
+                          {/* Title */}
+                          <h4 className="text-sm font-medium text-left w-full">
+                            {truncateText(chat.title, 30)}
                           </h4>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onDeleteChat(chat.id);
-                            }}
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
+                          
+                          {/* Last message preview */}
+                          <p className="text-xs text-muted-foreground text-left w-full leading-relaxed">
+                            {truncateText(chat.lastMessage, 60)}
+                          </p>
+                          
+                          {/* Tags */}
+                          {chat.tags.length > 0 && (
+                            <div className="flex flex-wrap gap-1 w-full">
+                              {chat.tags.slice(0, 3).map((tag, index) => (
+                                <span
+                                  key={tag}
+                                  className={`text-xs px-1.5 py-0.5 rounded-full border ${getTagColor(index)}`}
+                                >
+                                  {truncateText(tag, 8)}
+                                </span>
+                              ))}
+                              {chat.tags.length > 3 && (
+                                <span className="text-xs text-muted-foreground">
+                                  +{chat.tags.length - 3}
+                                </span>
+                              )}
+                            </div>
+                          )}
+                          
+                          {/* Timestamps and message count */}
+                          <div className="flex items-center justify-between w-full text-xs text-muted-foreground">
+                            <div className="flex items-center gap-3">
+                              <div className="flex items-center gap-1">
+                                <Calendar className="h-3 w-3" />
+                                <span>{formatDate(chat.createdAt)}</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <Clock className="h-3 w-3" />
+                                <span>{formatTime(chat.timestamp)}</span>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <MessageSquare className="h-3 w-3" />
+                              <span>{chat.messageCount}</span>
+                            </div>
+                          </div>
                         </div>
-                        
-                        <p className="text-xs text-muted-foreground truncate mt-1">
-                          {truncateText(chat.lastMessage, 40)}
-                        </p>
-                        
-                        <div className="flex items-center justify-between mt-2">
-                          <span className="text-xs text-muted-foreground">
-                            {formatDate(chat.timestamp)}
-                          </span>
-                          <span className="text-xs bg-muted px-1.5 py-0.5 rounded">
-                            {chat.messageCount}
-                          </span>
+                      ) : (
+                        <div className="flex items-center justify-center w-full">
+                          <div className={`p-2 rounded ${categoryInfo.color} text-white`}>
+                            <CategoryIcon className="h-4 w-4" />
+                          </div>
                         </div>
-                      </div>
-                    )}
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+                      )}
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
               
               {chatHistories.length === 0 && !isCollapsed && (
                 <div className="p-4 text-center text-muted-foreground">
                   <MessageSquare className="h-8 w-8 mx-auto mb-2 opacity-50" />
                   <p className="text-sm">No chat history yet</p>
-                  <p className="text-xs">Start a new conversation</p>
+                  <p className="text-xs">Start a new medical consultation</p>
                 </div>
               )}
             </SidebarMenu>
