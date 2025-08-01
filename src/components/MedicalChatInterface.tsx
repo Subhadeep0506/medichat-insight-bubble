@@ -30,9 +30,10 @@ interface ChatSession {
 
 interface MedicalChatInterfaceProps {
   caseId?: string;
+  onBackToCase?: () => void;
 }
 
-export const MedicalChatInterface = ({ caseId }: MedicalChatInterfaceProps) => {
+export const MedicalChatInterface = ({ caseId, onBackToCase }: MedicalChatInterfaceProps) => {
   const [currentChatId, setCurrentChatId] = useState<string>(caseId || 'default');
   const [chatSessions, setChatSessions] = useState<Record<string, ChatSession>>({
     default: {
@@ -260,7 +261,7 @@ export const MedicalChatInterface = ({ caseId }: MedicalChatInterfaceProps) => {
         <div className="flex-1 flex flex-col">
           <div className="flex items-center gap-2 p-4 border-b">
             <SidebarTrigger />
-            <ChatHeader />
+            <ChatHeader onBackToCase={onBackToCase} />
           </div>
           
           <div className="flex-1 flex overflow-hidden">
