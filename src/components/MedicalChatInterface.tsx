@@ -28,8 +28,12 @@ interface ChatSession {
   tags: string[];
 }
 
-export const MedicalChatInterface = () => {
-  const [currentChatId, setCurrentChatId] = useState<string>('default');
+interface MedicalChatInterfaceProps {
+  caseId?: string;
+}
+
+export const MedicalChatInterface = ({ caseId }: MedicalChatInterfaceProps) => {
+  const [currentChatId, setCurrentChatId] = useState<string>(caseId || 'default');
   const [chatSessions, setChatSessions] = useState<Record<string, ChatSession>>({
     default: {
       id: 'default',
