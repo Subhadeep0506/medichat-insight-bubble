@@ -34,26 +34,42 @@ interface MedicalChatInterfaceProps {
 }
 
 export const MedicalChatInterface = ({ caseId, onBackToCase }: MedicalChatInterfaceProps) => {
-  const [currentChatId, setCurrentChatId] = useState<string>(caseId || 'default');
-  const [chatSessions, setChatSessions] = useState<Record<string, ChatSession>>({
-    default: {
+  const [currentChatId, setCurrentChatId] = useState<string>(() => caseId || 'default');
+  const [chatSessions, setChatSessions] = useState<Record<string, ChatSession>>(() => {
+    const defaultSession = {
       id: 'default',
       title: 'Medical Image Analysis',
       createdAt: new Date(),
       updatedAt: new Date(),
-      category: 'general',
+      category: 'general' as const,
       tags: ['initial', 'consultation'],
       messages: [
         {
           id: '1',
-          type: 'assistant',
+          type: 'assistant' as const,
           content: 'Hello! I\'m here to help you analyze medical images and answer your questions. Please upload an image and ask your question.',
           timestamp: new Date(),
           responsibilityScore: 95,
           responsibilityReason: 'This greeting follows medical AI guidelines by clearly stating capabilities and limitations while maintaining a professional tone.'
         }
       ]
+    };
+
+    // If a caseId is provided, create a session for it
+    if (caseId && caseId !== 'default') {
+      const caseSession = {
+        ...defaultSession,
+        id: caseId,
+        title: `Case ${caseId}`,
+        tags: ['case', 'consultation']
+      };
+      return {
+        default: defaultSession,
+        [caseId]: caseSession
+      };
     }
+
+    return { default: defaultSession };
   });
   
   const [currentImage, setCurrentImage] = useState<string | null>(null);
@@ -63,6 +79,35 @@ export const MedicalChatInterface = ({ caseId, onBackToCase }: MedicalChatInterf
 
   const currentSession = chatSessions[currentChatId];
   const messages = currentSession?.messages || [];
+
+  // Safety check - if currentSession doesn't exist, create it
+  React.useEffect(() => {
+    if (!currentSession && currentChatId) {
+      const newSession: ChatSession = {
+        id: currentChatId,
+        title: `Case ${currentChatId}`,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        category: 'general',
+        tags: ['case', 'consultation'],
+        messages: [
+          {
+            id: currentChatId + '_welcome',
+            type: 'assistant',
+            content: 'Hello! I\'m here to help you analyze medical images and answer your questions. Please upload an image and ask your question.',
+            timestamp: new Date(),
+            responsibilityScore: 95,
+            responsibilityReason: 'This greeting follows medical AI guidelines by clearly stating capabilities and limitations while maintaining a professional tone.'
+          }
+        ]
+      };
+      
+      setChatSessions(prev => ({
+        ...prev,
+        [currentChatId]: newSession
+      }));
+    }
+  }, [currentChatId, currentSession]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -132,6 +177,8 @@ export const MedicalChatInterface = ({ caseId, onBackToCase }: MedicalChatInterf
     // Update current session with new message
     setChatSessions(prev => {
       const currentSession = prev[currentChatId];
+      if (!currentSession) return prev; // Safety check
+      
       const isFirstUserMessage = currentSession.messages.length === 1;
       const category = isFirstUserMessage ? categorizeChat(content) : currentSession.category;
       const newTags = isFirstUserMessage ? generateTags(content, category) : currentSession.tags;
