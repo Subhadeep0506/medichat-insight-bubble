@@ -1,5 +1,7 @@
 
 import React from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { ChatMessage } from '../MedicalChatInterface';
 import { User, Bot, Info, Shield } from 'lucide-react';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
@@ -73,9 +75,33 @@ export const MessageBubble = ({ message }: MessageBubbleProps) => {
           )}
           
           {/* Message Text */}
-          <p className="text-sm leading-relaxed whitespace-pre-wrap">
-            {message.content}
-          </p>
+          <div className="text-sm leading-relaxed prose prose-sm max-w-none dark:prose-invert">
+            <ReactMarkdown 
+              remarkPlugins={[remarkGfm]}
+              components={{
+                // Customize heading styles
+                h1: ({children}) => <h1 className="text-lg font-bold mb-2 text-foreground">{children}</h1>,
+                h2: ({children}) => <h2 className="text-base font-semibold mb-2 text-foreground">{children}</h2>,
+                h3: ({children}) => <h3 className="text-sm font-semibold mb-1 text-foreground">{children}</h3>,
+                // Customize paragraph styles
+                p: ({children}) => <p className="mb-2 last:mb-0 text-foreground">{children}</p>,
+                // Customize list styles
+                ul: ({children}) => <ul className="list-disc list-inside mb-2 space-y-1 text-foreground">{children}</ul>,
+                ol: ({children}) => <ol className="list-decimal list-inside mb-2 space-y-1 text-foreground">{children}</ol>,
+                li: ({children}) => <li className="text-foreground">{children}</li>,
+                // Customize strong/bold styles
+                strong: ({children}) => <strong className="font-semibold text-foreground">{children}</strong>,
+                // Customize emphasis/italic styles
+                em: ({children}) => <em className="italic text-foreground">{children}</em>,
+                // Customize code styles
+                code: ({children}) => <code className="bg-muted px-1 py-0.5 rounded text-xs font-mono text-foreground">{children}</code>,
+                // Customize blockquote styles
+                blockquote: ({children}) => <blockquote className="border-l-4 border-primary pl-4 italic text-muted-foreground">{children}</blockquote>,
+              }}
+            >
+              {message.content}
+            </ReactMarkdown>
+          </div>
           
           {/* Timestamp */}
           <div className={`mt-2 text-xs opacity-70 ${isUser ? 'text-right' : ''}`}>
