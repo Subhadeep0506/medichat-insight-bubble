@@ -58,6 +58,7 @@ export const MedicalChatInterface = ({ caseId, onBackToCase }: MedicalChatInterf
   
   const [currentImage, setCurrentImage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const currentSession = chatSessions[currentChatId];
@@ -157,10 +158,28 @@ export const MedicalChatInterface = ({ caseId, onBackToCase }: MedicalChatInterf
       const assistantMessage: ChatMessage = {
         id: Date.now().toString() + '_assistant',
         type: 'assistant',
-        content: `Based on your question about "${content}", I've analyzed the provided image. Here's my assessment: This appears to be a medical scan that requires careful examination. I recommend consulting with a qualified healthcare professional for proper diagnosis and treatment recommendations.`,
+        content: `The image you provided appears to be a chest X-ray. Here are some observations that can help in assessing whether there might be any abnormalities:
+
+**Lung Fields:** The lung fields show increased opacities, which could indicate consolidation, pleural effusion, or other pathologies such as pneumonia, pulmonary edema, or fibrosis.
+
+**Heart Size and Shape:** The heart size and shape appear within normal limits. However, the heart borders should always be carefully evaluated separately for any signs of enlargement or distortion.
+
+**Bony Structures:** The bony structures (ribs, clavicles, scapulae) appear intact without any obvious fractures or deformities.
+
+**Diaphragm:** The diaphragm appears to be intact with no signs of elevation or flattening, which could suggest a condition like atelectasis or pleural effusion.
+
+**Mediastinum:** The mediastinum appears to be within normal limits, with no widening or shift of the trachea.
+
+**Pleural Spaces:** There do not appear to be any significant pleural effusions based on this image.
+
+**Recommendations:**
+- **Consultation with a Radiologist:** A professional radiologist is best equipped to interpret chest X-rays accurately.
+- **Clinical Context:** The interpretation of an X-ray should always be done in conjunction with the patient's clinical history, symptoms, and physical examination findings.
+
+If you have concerns about the image, it would be advisable to consult with a healthcare provider who can provide a more detailed analysis and appropriate medical advice.`,
         timestamp: new Date(),
-        responsibilityScore: Math.floor(Math.random() * 20) + 80,
-        responsibilityReason: 'This response follows responsible AI practices by providing informative analysis while emphasizing the importance of professional medical consultation and avoiding definitive diagnoses.'
+        responsibilityScore: 92,
+        responsibilityReason: 'This response provides detailed medical analysis while emphasizing the importance of professional medical consultation and avoiding definitive diagnoses.'
       };
 
       setChatSessions(prev => ({
@@ -173,6 +192,7 @@ export const MedicalChatInterface = ({ caseId, onBackToCase }: MedicalChatInterf
       }));
 
       setIsLoading(false);
+      setCurrentImage(null); // Clear image after response
     }, 2000);
   };
 
@@ -274,20 +294,23 @@ export const MedicalChatInterface = ({ caseId, onBackToCase }: MedicalChatInterf
               />
               
               <div className="border-t bg-gray-50/50 p-4 space-y-4 dark:bg-slate-800/50">
-                <ImageUpload 
-                  onImageUpload={handleImageUpload}
-                  currentImage={currentImage}
-                />
+                {!isLoading && messages.length <= 1 && (
+                  <ImageUpload 
+                    onImageUpload={handleImageUpload}
+                    currentImage={currentImage}
+                  />
+                )}
                 
-                <QuestionSuggestions 
-                  onSuggestionSelect={handleSuggestionSelect}
-                  hasImage={!!currentImage}
-                />
-                
-                <ChatInput 
-                  onSendMessage={handleSendMessage}
-                  disabled={isLoading}
-                />
+                <div className="relative">
+                  <ChatInput 
+                    onSendMessage={handleSendMessage}
+                    disabled={isLoading}
+                    onTypingChange={setIsTyping}
+                    onSuggestionSelect={handleSuggestionSelect}
+                    hasImage={!!currentImage}
+                    showSuggestions={isTyping && messages.length <= 1}
+                  />
+                </div>
               </div>
             </div>
           </div>
