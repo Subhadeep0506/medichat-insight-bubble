@@ -24,7 +24,7 @@ export const MessageBubble = ({ message }: MessageBubbleProps) => {
       </div>
       
       {/* Message Content */}
-      <div className={`flex-1 max-w-xl ${isUser ? 'text-right' : ''}`}>
+      <div className={`flex-1 max-w-[70%] ${isUser ? 'text-right' : ''}`}>
         <div className={`relative inline-block p-4 rounded-2xl shadow-lg ${
           isUser 
             ? 'bg-secondary text-secondary-foreground rounded-br-sm' 

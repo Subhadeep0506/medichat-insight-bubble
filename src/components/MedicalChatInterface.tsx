@@ -340,6 +340,19 @@ If you have concerns about the image, it would be advisable to consult with a he
                 messagesEndRef={messagesEndRef}
               />
               
+              {/* Image Preview */}
+              {currentImage && (
+                <div className="p-4 border-t border-border bg-muted/30">
+                  <div className="max-w-xs">
+                    <img 
+                      src={currentImage} 
+                      alt="Uploaded medical image" 
+                      className="w-full rounded-lg shadow-md"
+                    />
+                  </div>
+                </div>
+              )}
+
               <div className="border-t bg-gray-50/50 p-4 space-y-4 dark:bg-slate-800/50">
                 {!isLoading && messages.length <= 1 && (
                   <ImageUpload 
