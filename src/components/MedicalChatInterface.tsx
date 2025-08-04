@@ -72,7 +72,7 @@ export const MedicalChatInterface = ({ caseId, onBackToCase }: MedicalChatInterf
     return { default: defaultSession };
   });
   
-  const [currentImage, setCurrentImage] = useState<string | null>(null);
+  const [currentImages, setCurrentImages] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -170,7 +170,7 @@ export const MedicalChatInterface = ({ caseId, onBackToCase }: MedicalChatInterf
       id: Date.now().toString() + '_user',
       type: 'user',
       content,
-      image: currentImage || undefined,
+      image: currentImages.length > 0 ? currentImages[0] : undefined,
       timestamp: new Date()
     };
 
@@ -239,12 +239,12 @@ If you have concerns about the image, it would be advisable to consult with a he
       }));
 
       setIsLoading(false);
-      setCurrentImage(null); // Clear image after response
+      setCurrentImages([]); // Clear images after response
     }, 2000);
   };
 
-  const handleImageUpload = (imageUrl: string) => {
-    setCurrentImage(imageUrl);
+  const handleImageUpload = (imageUrls: string[]) => {
+    setCurrentImages(imageUrls);
   };
 
   const handleSuggestionSelect = (suggestion: string) => {
@@ -278,12 +278,12 @@ If you have concerns about the image, it would be advisable to consult with a he
     }));
     
     setCurrentChatId(newChatId);
-    setCurrentImage(null);
+    setCurrentImages([]);
   };
 
   const handleSelectChat = (chatId: string) => {
     setCurrentChatId(chatId);
-    setCurrentImage(null);
+    setCurrentImages([]);
   };
 
   const handleDeleteChat = (chatId: string) => {
@@ -341,25 +341,26 @@ If you have concerns about the image, it would be advisable to consult with a he
               />
               
               {/* Image Preview */}
-              {currentImage && (
+              {currentImages.length > 0 && (
                 <div className="p-4 border-t border-border bg-muted/30">
-                  <div className="max-w-xs">
-                    <img 
-                      src={currentImage} 
-                      alt="Uploaded medical image" 
-                      className="w-full rounded-lg shadow-md"
-                    />
+                  <div className="flex flex-wrap gap-2 max-w-md">
+                    {currentImages.map((image, index) => (
+                      <img 
+                        key={index}
+                        src={image} 
+                        alt={`Uploaded medical image ${index + 1}`} 
+                        className="w-20 h-20 object-cover rounded-lg shadow-md"
+                      />
+                    ))}
                   </div>
                 </div>
               )}
 
               <div className="border-t bg-gray-50/50 p-4 space-y-4 dark:bg-slate-800/50">
-                {!isLoading && messages.length <= 1 && (
-                  <ImageUpload 
-                    onImageUpload={handleImageUpload}
-                    currentImage={currentImage}
-                  />
-                )}
+                <ImageUpload 
+                  onImageUpload={handleImageUpload}
+                  currentImages={currentImages}
+                />
                 
                 <div className="relative">
                   <ChatInput 
@@ -367,7 +368,7 @@ If you have concerns about the image, it would be advisable to consult with a he
                     disabled={isLoading}
                     onTypingChange={setIsTyping}
                     onSuggestionSelect={handleSuggestionSelect}
-                    hasImage={!!currentImage}
+                    hasImage={currentImages.length > 0}
                     showSuggestions={isTyping && messages.length <= 1}
                   />
                 </div>
