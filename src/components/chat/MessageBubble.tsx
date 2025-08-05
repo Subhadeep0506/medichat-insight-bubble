@@ -15,17 +15,17 @@ export const MessageBubble = ({ message }: MessageBubbleProps) => {
   const isUser = message.type === 'user';
   
   return (
-    <div className={`flex items-start space-x-3 ${isUser ? 'flex-row-reverse space-x-reverse' : ''}`}>
+    <div className={`flex items-start space-x-2 md:space-x-3 ${isUser ? 'flex-row-reverse space-x-reverse' : ''}`}>
       {/* Avatar */}
-      <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
+      <div className={`flex-shrink-0 w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center ${
         isUser ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground'
       }`}>
-        {isUser ? <User className="h-5 w-5" /> : <Bot className="h-5 w-5" />}
+        {isUser ? <User className="h-4 w-4 md:h-5 md:w-5" /> : <Bot className="h-4 w-4 md:h-5 md:w-5" />}
       </div>
       
       {/* Message Content */}
-      <div className={`flex-1 max-w-[70%] ${isUser ? 'text-right' : ''}`}>
-        <div className={`relative inline-block p-4 rounded-2xl shadow-lg ${
+      <div className={`flex-1 max-w-[85%] md:max-w-[70%] ${isUser ? 'text-right' : ''}`}>
+        <div className={`relative inline-block p-3 md:p-4 rounded-2xl shadow-lg ${
           isUser 
             ? 'bg-secondary text-secondary-foreground rounded-br-sm' 
             : 'bg-card text-card-foreground rounded-bl-sm border border-border'
@@ -69,7 +69,7 @@ export const MessageBubble = ({ message }: MessageBubbleProps) => {
               <img 
                 src={message.image} 
                 alt="Uploaded medical image" 
-                className="max-w-xs rounded-lg shadow-md"
+                className="max-w-full md:max-w-xs rounded-lg shadow-md"
               />
             </div>
           )}

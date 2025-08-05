@@ -103,14 +103,14 @@ export const ChatInput = ({
         </div>
       )}
 
-      <div className="flex items-end space-x-3">
+      <div className="flex items-end space-x-2 md:space-x-3">
         <div className="flex-1 relative">
           <Textarea
             value={message}
             onChange={handleInputChange}
             onKeyPress={handleKeyPress}
             placeholder="Ask about the medical image or request analysis..."
-            className="min-h-[60px] pr-12 resize-none border-2 border-input focus:border-primary transition-colors"
+            className="min-h-[50px] md:min-h-[60px] pr-12 resize-none border-2 border-input focus:border-primary transition-colors text-sm md:text-base"
             disabled={disabled}
           />
           
@@ -118,21 +118,21 @@ export const ChatInput = ({
             size="sm"
             variant="ghost"
             onClick={toggleVoiceInput}
-            className={`absolute bottom-2 right-2 h-8 w-8 p-0 ${
+            className={`absolute bottom-2 right-2 h-6 w-6 md:h-8 md:w-8 p-0 ${
               isListening ? 'text-destructive bg-destructive/10' : 'text-muted-foreground hover:text-foreground'
             }`}
           >
-            {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+            {isListening ? <MicOff className="h-3 w-3 md:h-4 md:w-4" /> : <Mic className="h-3 w-3 md:h-4 md:w-4" />}
           </Button>
         </div>
         
         <Button
           onClick={handleSend}
           disabled={!message.trim() || disabled}
-          className="h-[60px] px-6 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 transition-all"
+          className="h-[50px] md:h-[60px] px-3 md:px-6 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 transition-all text-sm md:text-base"
         >
-          <Send className="h-4 w-4 mr-2" />
-          Send
+          <Send className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2" />
+          <span className="hidden sm:inline">Send</span>
         </Button>
       </div>
     </div>

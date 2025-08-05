@@ -339,7 +339,7 @@ In conclusion, while the X-ray suggests a possible pneumonia in the right lower 
         />
 
         <div className="flex-1 flex flex-col">
-          <div className="flex items-center gap-2 p-4 border-b">
+          <div className="flex items-center gap-2 p-2 md:p-4 border-b">
             <SidebarTrigger />
             <ChatHeader onBackToCase={onBackToCase} />
           </div>
@@ -353,7 +353,7 @@ In conclusion, while the X-ray suggests a possible pneumonia in the right lower 
                 messagesEndRef={messagesEndRef}
               />
 
-              <div className="border-t bg-gray-50/50 p-4 space-y-4 dark:bg-slate-800/50">
+              <div className="border-t bg-gray-50/50 p-2 md:p-4 space-y-2 md:space-y-4 dark:bg-slate-800/50">
                 <ImageUpload 
                   onImageUpload={handleImageUpload}
                   currentImages={currentImages}

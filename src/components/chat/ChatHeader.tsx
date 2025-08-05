@@ -9,32 +9,32 @@ interface ChatHeaderProps {
 
 export const ChatHeader = ({ onBackToCase }: ChatHeaderProps) => {
   return (
-    <div className="flex-1 flex items-center justify-between">
-      <div className="flex items-center gap-3">
+    <div className="flex-1 flex items-center justify-between min-w-0">
+      <div className="flex items-center gap-2 md:gap-3 min-w-0 flex-1">
         {onBackToCase && (
-          <Button variant="ghost" onClick={onBackToCase} className="flex items-center gap-2">
+          <Button variant="ghost" onClick={onBackToCase} className="flex items-center gap-1 md:gap-2 px-2 md:px-3">
             <ArrowLeft className="w-4 h-4" />
-            Back to Cases
+            <span className="hidden sm:inline">Back to Cases</span>
           </Button>
         )}
-        <div className="p-2 bg-blue-100 rounded-lg dark:bg-blue-900/50">
-          <Stethoscope className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+        <div className="p-1.5 md:p-2 bg-blue-100 rounded-lg dark:bg-blue-900/50 flex-shrink-0">
+          <Stethoscope className="h-5 w-5 md:h-6 md:w-6 text-blue-600 dark:text-blue-400" />
         </div>
-        <div>
-          <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">AI Pathology Assistant</h1>
-          <p className="text-sm text-gray-600 dark:text-gray-300">Analyze medical images with AI-powered insights</p>
+        <div className="min-w-0 flex-1">
+          <h1 className="text-lg md:text-xl font-semibold text-gray-900 dark:text-gray-100 truncate">AI Pathology Assistant</h1>
+          <p className="text-xs md:text-sm text-gray-600 dark:text-gray-300 hidden sm:block truncate">Analyze medical images with AI-powered insights</p>
         </div>
       </div>
 
-      <div className="flex items-center gap-4">
-        <div className="flex items-center gap-2 px-3 py-1.5 bg-green-100 rounded-full dark:bg-green-900/30">
-          <Activity className="h-4 w-4 text-green-600 dark:text-green-400" />
-          <span className="text-sm font-medium text-green-700 dark:text-green-300">Active</span>
+      <div className="flex items-center gap-1 md:gap-2 flex-shrink-0">
+        <div className="flex items-center gap-1 px-2 md:px-3 py-1 md:py-1.5 bg-green-100 rounded-full dark:bg-green-900/30">
+          <Activity className="h-3 w-3 md:h-4 md:w-4 text-green-600 dark:text-green-400" />
+          <span className="text-xs md:text-sm font-medium text-green-700 dark:text-green-300 hidden sm:inline">Active</span>
         </div>
 
-        <div className="flex items-center gap-2 px-3 py-1.5 bg-purple-100 rounded-full dark:bg-purple-900/30">
-          <Shield className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-          <span className="text-sm font-medium text-purple-700 dark:text-purple-300">Secure</span>
+        <div className="flex items-center gap-1 px-2 md:px-3 py-1 md:py-1.5 bg-purple-100 rounded-full dark:bg-purple-900/30">
+          <Shield className="h-3 w-3 md:h-4 md:w-4 text-purple-600 dark:text-purple-400" />
+          <span className="text-xs md:text-sm font-medium text-purple-700 dark:text-purple-300 hidden sm:inline">Secure</span>
         </div>
       </div>
     </div>
