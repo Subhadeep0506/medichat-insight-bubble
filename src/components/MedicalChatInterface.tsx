@@ -205,25 +205,38 @@ export const MedicalChatInterface = ({ caseId, onBackToCase }: MedicalChatInterf
       const assistantMessage: ChatMessage = {
         id: Date.now().toString() + '_assistant',
         type: 'assistant',
-        content: `The image you provided appears to be a chest X-ray. Here are some observations that can help in assessing whether there might be any abnormalities:
-
-**Lung Fields:** The lung fields show increased opacities, which could indicate consolidation, pleural effusion, or other pathologies such as pneumonia, pulmonary edema, or fibrosis.
-
-**Heart Size and Shape:** The heart size and shape appear within normal limits. However, the heart borders should always be carefully evaluated separately for any signs of enlargement or distortion.
-
-**Bony Structures:** The bony structures (ribs, clavicles, scapulae) appear intact without any obvious fractures or deformities.
-
-**Diaphragm:** The diaphragm appears to be intact with no signs of elevation or flattening, which could suggest a condition like atelectasis or pleural effusion.
-
-**Mediastinum:** The mediastinum appears to be within normal limits, with no widening or shift of the trachea.
-
-**Pleural Spaces:** There do not appear to be any significant pleural effusions based on this image.
-
-**Recommendations:**
-- **Consultation with a Radiologist:** A professional radiologist is best equipped to interpret chest X-rays accurately.
-- **Clinical Context:** The interpretation of an X-ray should always be done in conjunction with the patient's clinical history, symptoms, and physical examination findings.
-
-If you have concerns about the image, it would be advisable to consult with a healthcare provider who can provide a more detailed analysis and appropriate medical advice.`,
+        content: `The provided chest X-ray image shows a significant area of increased opacity in the right lower lung field, which is a concerning finding. Here's a detailed analysis of the image:  
+## **Observations**:  
+### Right Lower Lung Field:
+There is a prominent area of increased density in the right lower lung field, which is not consistent with normal lung tissue.  
+This increased density could represent several possibilities, including:  
+- Pneumonia: Consolidation from bacterial, viral, or fungal infection.  
+- Atelectasis: Collapse of part of the lung due to obstruction or disease.  
+- Mass or Tumor: A solid mass could also cause this appearance.  
+- Hematoma or Hemorrhage: Bleeding into the lung tissue.  
+- Other Pathologies: Such as lymphangitis, pulmonary embolism, or other inflammatory processes.  
+### Other Lung Fields:
+The left lung field appears relatively normal, with no significant opacities or consolidations.  
+The lung fields above the right lower lobe do not show any obvious signs of consolidation or other abnormalities.  
+- Bony Structures: The ribs, clavicles, and spine appear intact without any fractures or deformities. The diaphragm is visible and appears to be in a normal position.  
+- Mediastinum: The mediastinum does not appear widened, suggesting no significant shift of the heart or great vessels.  
+- Pleural Spaces: The pleural spaces appear clear, with no evidence of pleural effusion.  
+## **Possible Interpretations:**  
+**Pneumonia**: The most likely initial interpretation is that the increased density in the right lower lung field represents consolidation, which is a common finding in pneumonia. However, further investigation is necessary to confirm the diagnosis.  
+**Other Pathologies**: Other possibilities include atelectasis, mass, or hemorrhage. These require further evaluation with additional imaging studies, such as a CT scan, and possibly a biopsy or other diagnostic tests.  
+## **Recommendations:**  
+**Consultation with a Radiologist:**
+A radiologist should review the X-ray to provide a more detailed interpretation and assess the extent and nature of the abnormality.  
+**Clinical Correlation:**
+The patient's symptoms, medical history, and physical examination findings should be correlated with the X-ray results. Symptoms such as cough, fever, shortness of breath, and sputum production can help narrow down the differential diagnosis.  
+**Further Imaging:**
+If the radiologist suspects pneumonia, a CT scan may be ordered to better characterize the lesion and rule out other possibilities.  
+If the suspicion is high for a mass or other serious pathology, a CT-guided biopsy might be considered.  
+**Antibiotic Therapy:**
+If the radiologist confirms pneumonia, appropriate antibiotic therapy should be initiated based on the suspected causative organism (e.g., Streptococcus pneumoniae, Haemophilus influenzae, or Mycoplasma pneumoniae).  
+## **Follow-Up**:
+The patient should be monitored closely, and repeat X-rays may be taken after treatment to ensure resolution of the abnormality.  
+In conclusion, while the X-ray suggests a possible pneumonia in the right lower lung field, a definitive diagnosis requires a comprehensive evaluation by a medical professional. Immediate consultation with a radiologist and appropriate clinical correlation are essential steps in the management of this case.`,
         timestamp: new Date(),
         responsibilityScore: 92,
         responsibilityReason: 'This response provides detailed medical analysis while emphasizing the importance of professional medical consultation and avoiding definitive diagnoses.'
@@ -239,7 +252,7 @@ If you have concerns about the image, it would be advisable to consult with a he
       }));
 
       setIsLoading(false);
-      setCurrentImages([]); // Clear images after response
+      // setCurrentImages([]); // Clear images after response
     }, 2000);
   };
 
@@ -339,22 +352,6 @@ If you have concerns about the image, it would be advisable to consult with a he
                 isLoading={isLoading}
                 messagesEndRef={messagesEndRef}
               />
-              
-              {/* Image Preview */}
-              {currentImages.length > 0 && (
-                <div className="p-4 border-t border-border bg-muted/30">
-                  <div className="flex flex-wrap gap-2 max-w-md">
-                    {currentImages.map((image, index) => (
-                      <img 
-                        key={index}
-                        src={image} 
-                        alt={`Uploaded medical image ${index + 1}`} 
-                        className="w-20 h-20 object-cover rounded-lg shadow-md"
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
 
               <div className="border-t bg-gray-50/50 p-4 space-y-4 dark:bg-slate-800/50">
                 <ImageUpload 
@@ -369,7 +366,7 @@ If you have concerns about the image, it would be advisable to consult with a he
                     onTypingChange={setIsTyping}
                     onSuggestionSelect={handleSuggestionSelect}
                     hasImage={currentImages.length > 0}
-                    showSuggestions={isTyping && messages.length <= 1}
+                    showSuggestions={isTyping}
                   />
                 </div>
               </div>
