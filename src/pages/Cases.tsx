@@ -313,12 +313,12 @@ const Cases = () => {
                             <Edit className="w-4 h-4" />
                           </Button>
                         </DialogTrigger>
-                        <DialogContent className="sm:max-w-[425px]">
-                          <DialogHeader>
-                            <DialogTitle>Edit Case</DialogTitle>
-                          </DialogHeader>
-                          <Form {...form}>
-                            <form onSubmit={form.handleSubmit(onEditSubmit)} className="space-y-4">
+                         <DialogContent className="sm:max-w-[425px]" onClick={(e) => e.stopPropagation()}>
+                           <DialogHeader>
+                             <DialogTitle>Edit Case</DialogTitle>
+                           </DialogHeader>
+                           <Form {...form}>
+                             <form onSubmit={form.handleSubmit(onEditSubmit)} className="space-y-4" onClick={(e) => e.stopPropagation()}>
                               <FormField
                                 control={form.control}
                                 name="title"
