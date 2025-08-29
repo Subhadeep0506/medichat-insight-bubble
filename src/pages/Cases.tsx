@@ -7,7 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';
-import { Trash2, Plus, Calendar, Eye, Search, Filter, Edit, User, ChevronDown, ChevronUp } from 'lucide-react';
+import { Trash2, Plus, Calendar, Eye, Search, Filter, Edit, User, ChevronDown, ChevronUp, UserPlus } from 'lucide-react';
+import FloatingNavbar from '@/components/FloatingNavbar';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -213,8 +214,29 @@ const Cases = () => {
     navigate(`/case/${caseId}`);
   };
 
-  const handleNewCase = () => {
-    navigate('/new-case');
+  const handleNewPatient = () => {
+    // Navigate to new patient form or handle patient creation
+    console.log('Creating new patient...');
+  };
+
+  const handleNewCase = (patientId: string) => {
+    navigate('/new-case', { state: { patientId } });
+  };
+
+  const handleEditPatient = (patient: Patient) => {
+    // Handle edit patient logic
+    console.log('Editing patient:', patient);
+  };
+
+  const handleDeletePatient = (patientId: string) => {
+    setPatients(prev => prev.filter(p => p.id !== patientId));
+    setCases(prev => prev.filter(c => c.patientId !== patientId));
+    if (selectedPatient?.id === patientId) {
+      setSelectedPatient(null);
+    }
+    if (expandedPatient === patientId) {
+      setExpandedPatient(null);
+    }
   };
 
   const handlePatientClick = (patient: Patient) => {
@@ -303,7 +325,8 @@ const Cases = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto p-6">
+      <FloatingNavbar />
+      <div className="container mx-auto p-6 pt-20">
         {/* Header */}
         <div className="flex flex-col gap-6 mb-8">
           <div className="flex justify-between items-center">
@@ -311,9 +334,9 @@ const Cases = () => {
               <h1 className="text-3xl font-bold text-foreground">Medical Cases & Patients</h1>
               <p className="text-muted-foreground mt-2">Manage patients and review their medical case analyses</p>
             </div>
-            <Button onClick={handleNewCase} className="flex items-center gap-2">
-              <Plus className="w-4 h-4" />
-              New Case
+            <Button onClick={handleNewPatient} className="flex items-center gap-2">
+              <UserPlus className="w-4 h-4" />
+              New Patient
             </Button>
           </div>
         </div>
@@ -401,16 +424,74 @@ const Cases = () => {
                                 </div>
                               </div>
 
-                              <Button 
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleOpenCases(patient);
-                                }}
-                                className="w-full mt-3"
-                                size="sm"
-                              >
-                                Open Cases ({cases.filter(c => c.patientId === patient.id).length})
-                              </Button>
+                              <div className="flex flex-col gap-2 mt-3">
+                                <Button 
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleOpenCases(patient);
+                                  }}
+                                  className="w-full"
+                                  size="sm"
+                                >
+                                  Open Cases ({cases.filter(c => c.patientId === patient.id).length})
+                                </Button>
+                                
+                                <div className="flex gap-2">
+                                  <Button 
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleNewCase(patient.id);
+                                    }}
+                                    variant="outline"
+                                    className="flex-1"
+                                    size="sm"
+                                  >
+                                    <Plus className="w-3 h-3 mr-1" />
+                                    New Case
+                                  </Button>
+                                  
+                                  <Button 
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleEditPatient(patient);
+                                    }}
+                                    variant="outline"
+                                    size="sm"
+                                  >
+                                    <Edit className="w-3 h-3" />
+                                  </Button>
+                                  
+                                  <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                      <Button 
+                                        onClick={(e) => e.stopPropagation()}
+                                        variant="outline"
+                                        size="sm"
+                                        className="text-destructive hover:text-destructive"
+                                      >
+                                        <Trash2 className="w-3 h-3" />
+                                      </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                      <AlertDialogHeader>
+                                        <AlertDialogTitle>Delete Patient</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                          Are you sure you want to delete {patient.name}? This will also delete all associated cases. This action cannot be undone.
+                                        </AlertDialogDescription>
+                                      </AlertDialogHeader>
+                                      <AlertDialogFooter>
+                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                        <AlertDialogAction 
+                                          onClick={() => handleDeletePatient(patient.id)}
+                                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                        >
+                                          Delete
+                                        </AlertDialogAction>
+                                      </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                  </AlertDialog>
+                                </div>
+                              </div>
                             </CardContent>
                           )}
                         </CardHeader>
