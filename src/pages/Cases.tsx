@@ -66,7 +66,7 @@ const editCaseSchema = z.object({
 
 const Cases = () => {
   const navigate = useNavigate();
-  
+
   // Separate search and filter states for patients and cases
   const [patientSearchQuery, setPatientSearchQuery] = useState('');
   const [caseSearchQuery, setCaseSearchQuery] = useState('');
@@ -75,7 +75,7 @@ const Cases = () => {
   const [editingCase, setEditingCase] = useState<Case | null>(null);
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const [expandedPatient, setExpandedPatient] = useState<string | null>(null);
-  
+
   const form = useForm<z.infer<typeof editCaseSchema>>({
     resolver: zodResolver(editCaseSchema),
     defaultValues: {
@@ -87,7 +87,7 @@ const Cases = () => {
       tags: '',
     },
   });
-  
+
   // Sample patients data
   const [patients, setPatients] = useState<Patient[]>([
     {
@@ -192,19 +192,19 @@ const Cases = () => {
 
   const onEditSubmit = (values: z.infer<typeof editCaseSchema>) => {
     if (!editingCase) return;
-    
-    setCases(prev => prev.map(case_ => 
-      case_.id === editingCase.id 
+
+    setCases(prev => prev.map(case_ =>
+      case_.id === editingCase.id
         ? {
-            ...case_,
-            title: values.title,
-            description: values.description,
-            patientAge: values.patientAge ? parseInt(values.patientAge) : undefined,
-            patientHeight: values.patientHeight,
-            patientWeight: values.patientWeight,
-            tags: values.tags ? values.tags.split(',').map(tag => tag.trim()).filter(Boolean) : [],
-            lastUpdated: new Date(),
-          }
+          ...case_,
+          title: values.title,
+          description: values.description,
+          patientAge: values.patientAge ? parseInt(values.patientAge) : undefined,
+          patientHeight: values.patientHeight,
+          patientWeight: values.patientWeight,
+          tags: values.tags ? values.tags.split(',').map(tag => tag.trim()).filter(Boolean) : [],
+          lastUpdated: new Date(),
+        }
         : case_
     ));
     setEditingCase(null);
@@ -215,7 +215,7 @@ const Cases = () => {
   };
 
   const handleNewPatient = () => {
-    // Navigate to new patient form or handle patient creation
+    navigate('/new-patient');
     console.log('Creating new patient...');
   };
 
@@ -282,7 +282,7 @@ const Cases = () => {
 
   // Filtered patients
   const filteredPatients = useMemo(() => {
-    return patients.filter(patient => 
+    return patients.filter(patient =>
       patient.name.toLowerCase().includes(patientSearchQuery.toLowerCase()) ||
       patient.id.toLowerCase().includes(patientSearchQuery.toLowerCase())
     );
@@ -290,19 +290,19 @@ const Cases = () => {
 
   // Filtered and sorted cases for selected patient
   const filteredAndSortedCases = useMemo(() => {
-    let filtered = selectedPatient 
+    let filtered = selectedPatient
       ? cases.filter(case_ => case_.patientId === selectedPatient.id)
       : [];
 
     // Apply search filter
     filtered = filtered.filter(case_ => {
-      const matchesSearch = 
+      const matchesSearch =
         case_.id.toLowerCase().includes(caseSearchQuery.toLowerCase()) ||
         case_.title.toLowerCase().includes(caseSearchQuery.toLowerCase()) ||
         case_.tags.some(tag => tag.toLowerCase().includes(caseSearchQuery.toLowerCase()));
-      
+
       const matchesCategory = selectedCategory === 'all' || case_.category === selectedCategory;
-      
+
       return matchesSearch && matchesCategory;
     });
 
@@ -344,7 +344,7 @@ const Cases = () => {
         {/* Two Panel Layout */}
         <div className="h-[calc(100vh-200px)] w-full">
           <ResizablePanelGroup direction="horizontal" className="min-h-full border rounded-lg">
-            
+
             {/* Patients Panel - Left 40% */}
             <ResizablePanel defaultSize={40} minSize={30}>
               <div className="flex flex-col h-full">
@@ -354,7 +354,7 @@ const Cases = () => {
                     <User className="w-5 h-5 text-primary" />
                     <h2 className="text-xl font-semibold text-card-foreground">Patients</h2>
                   </div>
-                  
+
                   {/* Patient Search */}
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
@@ -371,14 +371,13 @@ const Cases = () => {
                 <ScrollArea className="flex-1">
                   <div className="p-4 space-y-2">
                     {filteredPatients.map((patient) => (
-                      <Card 
-                        key={patient.id} 
-                        className={`cursor-pointer transition-colors hover:bg-accent ${
-                          selectedPatient?.id === patient.id ? 'ring-2 ring-primary' : ''
-                        }`}
+                      <Card
+                        key={patient.id}
+                        className={`cursor-pointer transition-colors hover:bg-accent ${selectedPatient?.id === patient.id ? 'ring-2 ring-primary' : ''
+                          }`}
                       >
                         <CardHeader className="pb-2">
-                          <div 
+                          <div
                             className="flex items-center justify-between"
                             onClick={() => handlePatientClick(patient)}
                           >
@@ -388,8 +387,8 @@ const Cases = () => {
                                 ID: {patient.id} • Age: {patient.age} • {patient.gender}
                               </CardDescription>
                             </div>
-                            {expandedPatient === patient.id ? 
-                              <ChevronUp className="w-4 h-4 text-muted-foreground" /> : 
+                            {expandedPatient === patient.id ?
+                              <ChevronUp className="w-4 h-4 text-muted-foreground" /> :
                               <ChevronDown className="w-4 h-4 text-muted-foreground" />
                             }
                           </div>
@@ -398,7 +397,7 @@ const Cases = () => {
                           {expandedPatient === patient.id && (
                             <CardContent className="px-0 pt-4 space-y-3">
                               <Separator />
-                              
+
                               <div className="space-y-2 text-sm">
                                 <div>
                                   <span className="font-medium text-card-foreground">Date of Birth:</span>
@@ -406,7 +405,7 @@ const Cases = () => {
                                     {formatDateOfBirth(patient.dob)}
                                   </span>
                                 </div>
-                                
+
                                 <div>
                                   <span className="font-medium text-card-foreground">Medical History:</span>
                                   <div className="mt-1 flex flex-wrap gap-1">
@@ -425,7 +424,7 @@ const Cases = () => {
                               </div>
 
                               <div className="flex flex-col gap-2 mt-3">
-                                <Button 
+                                <Button
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     handleOpenCases(patient);
@@ -435,9 +434,9 @@ const Cases = () => {
                                 >
                                   Open Cases ({cases.filter(c => c.patientId === patient.id).length})
                                 </Button>
-                                
+
                                 <div className="flex gap-2">
-                                  <Button 
+                                  <Button
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       handleNewCase(patient.id);
@@ -449,8 +448,8 @@ const Cases = () => {
                                     <Plus className="w-3 h-3 mr-1" />
                                     New Case
                                   </Button>
-                                  
-                                  <Button 
+
+                                  <Button
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       handleEditPatient(patient);
@@ -460,10 +459,10 @@ const Cases = () => {
                                   >
                                     <Edit className="w-3 h-3" />
                                   </Button>
-                                  
+
                                   <AlertDialog>
                                     <AlertDialogTrigger asChild>
-                                      <Button 
+                                      <Button
                                         onClick={(e) => e.stopPropagation()}
                                         variant="outline"
                                         size="sm"
@@ -481,7 +480,7 @@ const Cases = () => {
                                       </AlertDialogHeader>
                                       <AlertDialogFooter>
                                         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                        <AlertDialogAction 
+                                        <AlertDialogAction
                                           onClick={() => handleDeletePatient(patient.id)}
                                           className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                                         >
@@ -530,7 +529,7 @@ const Cases = () => {
                       </Badge>
                     )}
                   </div>
-                  
+
                   {/* Case Search & Filters */}
                   {selectedPatient && (
                     <div className="flex flex-col sm:flex-row gap-4">
@@ -543,7 +542,7 @@ const Cases = () => {
                           className="pl-10"
                         />
                       </div>
-                      
+
                       <div className="flex gap-2">
                         <Select value={selectedCategory} onValueChange={setSelectedCategory}>
                           <SelectTrigger className="w-40">
@@ -590,16 +589,16 @@ const Cases = () => {
                       <div className="text-center py-12">
                         <h3 className="text-lg font-semibold text-foreground mb-2">No cases found</h3>
                         <p className="text-muted-foreground">
-                          {cases.filter(c => c.patientId === selectedPatient.id).length === 0 
-                            ? 'This patient has no cases yet' 
+                          {cases.filter(c => c.patientId === selectedPatient.id).length === 0
+                            ? 'This patient has no cases yet'
                             : 'No cases match your search criteria'}
                         </p>
                       </div>
                     ) : (
                       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                         {filteredAndSortedCases.map((case_) => (
-                          <Card 
-                            key={case_.id} 
+                          <Card
+                            key={case_.id}
                             className="hover:shadow-lg transition-all duration-200 cursor-pointer border-border bg-card"
                             onClick={() => handleCaseClick(case_.id)}
                           >
@@ -616,8 +615,8 @@ const Cases = () => {
                                 <div className="flex gap-1">
                                   <Dialog open={editingCase?.id === case_.id} onOpenChange={(open) => !open && setEditingCase(null)}>
                                     <DialogTrigger asChild>
-                                      <Button 
-                                        variant="ghost" 
+                                      <Button
+                                        variant="ghost"
                                         size="icon"
                                         className="h-8 w-8 text-muted-foreground hover:text-primary"
                                         onClick={(e) => {
@@ -647,7 +646,7 @@ const Cases = () => {
                                               </FormItem>
                                             )}
                                           />
-                                          
+
                                           <FormField
                                             control={form.control}
                                             name="description"
@@ -735,8 +734,8 @@ const Cases = () => {
 
                                   <AlertDialog>
                                     <AlertDialogTrigger asChild>
-                                      <Button 
-                                        variant="ghost" 
+                                      <Button
+                                        variant="ghost"
                                         size="icon"
                                         className="h-8 w-8 text-muted-foreground hover:text-destructive"
                                         onClick={(e) => e.stopPropagation()}
@@ -753,7 +752,7 @@ const Cases = () => {
                                       </AlertDialogHeader>
                                       <AlertDialogFooter>
                                         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                        <AlertDialogAction 
+                                        <AlertDialogAction
                                           onClick={() => handleDeleteCase(case_.id)}
                                           className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                                         >
@@ -783,8 +782,8 @@ const Cases = () => {
 
                               {/* Tags */}
                               <div className="flex flex-wrap gap-1">
-                                <Badge 
-                                  variant="secondary" 
+                                <Badge
+                                  variant="secondary"
                                   className={`text-xs text-white ${getCategoryColor(case_.category)}`}
                                 >
                                   {case_.category}
