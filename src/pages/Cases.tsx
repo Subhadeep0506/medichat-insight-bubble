@@ -9,10 +9,12 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Textarea } from '@/components/ui/textarea';
 import { Trash2, Plus, Calendar, Eye, Search, Filter, Edit, User, ChevronDown, ChevronUp, UserPlus } from 'lucide-react';
 import FloatingNavbar from '@/components/FloatingNavbar';
+import { EditPatientDialog } from '@/components/EditPatientDialog';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from '@/hooks/use-toast';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -31,12 +33,14 @@ import { Separator } from '@/components/ui/separator';
 export interface Patient {
   id: string;
   name: string;
-  age: number;
-  gender: 'male' | 'female' | 'other';
+  age: string;
+  gender: string;
   dob: Date;
-  medicalHistory: string[];
-  createdAt: Date;
-  updatedAt: Date;
+  height: string;
+  weight: string;
+  medicalHistory: string;
+  dateCreated: string;
+  dateUpdated: string;
 }
 
 export interface Case {
@@ -66,6 +70,7 @@ const editCaseSchema = z.object({
 
 const Cases = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   // Separate search and filter states for patients and cases
   const [patientSearchQuery, setPatientSearchQuery] = useState('');
@@ -75,6 +80,7 @@ const Cases = () => {
   const [editingCase, setEditingCase] = useState<Case | null>(null);
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const [expandedPatient, setExpandedPatient] = useState<string | null>(null);
+  const [editingPatient, setEditingPatient] = useState<Patient | null>(null);
 
   const form = useForm<z.infer<typeof editCaseSchema>>({
     resolver: zodResolver(editCaseSchema),
@@ -93,32 +99,38 @@ const Cases = () => {
     {
       id: 'patient-1',
       name: 'John Smith',
-      age: 45,
+      age: '45',
       gender: 'male',
       dob: new Date('1979-03-15'),
-      medicalHistory: ['Hypertension', 'Type 2 Diabetes'],
-      createdAt: new Date('2023-12-01'),
-      updatedAt: new Date('2024-01-15'),
+      height: '175',
+      weight: '80',
+      medicalHistory: 'Hypertension, Type 2 Diabetes',
+      dateCreated: '2023-12-01',
+      dateUpdated: '2024-01-15',
     },
     {
       id: 'patient-2',
       name: 'Sarah Johnson',
-      age: 32,
+      age: '32',
       gender: 'female',
       dob: new Date('1992-08-22'),
-      medicalHistory: ['Migraine', 'Anxiety'],
-      createdAt: new Date('2024-01-05'),
-      updatedAt: new Date('2024-01-14'),
+      height: '165',
+      weight: '65',
+      medicalHistory: 'Migraine, Anxiety',
+      dateCreated: '2024-01-05',
+      dateUpdated: '2024-01-14',
     },
     {
       id: 'patient-3',
       name: 'Michael Brown',
-      age: 58,
+      age: '58',
       gender: 'male',
       dob: new Date('1966-11-10'),
-      medicalHistory: ['Coronary Artery Disease', 'High Cholesterol'],
-      createdAt: new Date('2023-11-20'),
-      updatedAt: new Date('2024-01-13'),
+      height: '180',
+      weight: '85',
+      medicalHistory: 'Coronary Artery Disease, High Cholesterol',
+      dateCreated: '2023-11-20',
+      dateUpdated: '2024-01-13',
     },
   ]);
 
@@ -224,8 +236,11 @@ const Cases = () => {
   };
 
   const handleEditPatient = (patient: Patient) => {
-    // Handle edit patient logic
-    console.log('Editing patient:', patient);
+    setEditingPatient(patient);
+  };
+
+  const handlePatientUpdate = (updatedPatient: Patient) => {
+    setPatients(prev => prev.map(p => p.id === updatedPatient.id ? updatedPatient : p));
   };
 
   const handleDeletePatient = (patientId: string) => {
@@ -401,18 +416,14 @@ const Cases = () => {
 
                                 <div>
                                   <span className="font-medium text-card-foreground">Medical History:</span>
-                                  <div className="mt-1 flex flex-wrap gap-1">
-                                    {patient.medicalHistory.map((condition, index) => (
-                                      <Badge key={index} variant="outline" className="text-xs">
-                                        {condition}
-                                      </Badge>
-                                    ))}
+                                  <div className="mt-1 text-sm text-muted-foreground">
+                                    {patient.medicalHistory || 'No medical history recorded'}
                                   </div>
                                 </div>
 
                                 <div className="flex justify-between text-xs text-muted-foreground">
-                                  <span>Created: {formatDate(patient.createdAt)}</span>
-                                  <span>Updated: {formatDate(patient.updatedAt)}</span>
+                                  <span>Created: {patient.dateCreated}</span>
+                                  <span>Updated: {patient.dateUpdated}</span>
                                 </div>
                               </div>
 
@@ -810,6 +821,15 @@ const Cases = () => {
           </ResizablePanelGroup>
         </div>
       </div>
+
+      {editingPatient && (
+        <EditPatientDialog
+          patient={editingPatient}
+          open={!!editingPatient}
+          onOpenChange={(open) => !open && setEditingPatient(null)}
+          onPatientUpdate={handlePatientUpdate}
+        />
+      )}
     </div>
   );
 };
