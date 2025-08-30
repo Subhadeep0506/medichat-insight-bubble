@@ -327,19 +327,12 @@ const Cases = () => {
     <div className="min-h-screen bg-background">
       <FloatingNavbar />
       <div className="container mx-auto p-6 pt-20">
-        {/* Header */}
-        <div className="flex flex-col gap-6 mb-8">
-          <div className="flex justify-between items-center">
+          <div className="flex flex-col gap-6 mb-8">
             <div>
               <h1 className="text-3xl font-bold text-foreground">Medical Cases & Patients</h1>
               <p className="text-muted-foreground mt-2">Manage patients and review their medical case analyses</p>
             </div>
-            <Button onClick={handleNewPatient} className="flex items-center gap-2">
-              <UserPlus className="w-4 h-4" />
-              New Patient
-            </Button>
           </div>
-        </div>
 
         {/* Two Panel Layout */}
         <div className="h-[calc(100vh-200px)] w-full">
