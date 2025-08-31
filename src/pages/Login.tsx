@@ -55,83 +55,81 @@ const Login = () => {
   };
 
   return (
-    <div className="gradient-animate">
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <div className="w-full max-w-md">
-          <div className="mb-6">
-            <Button
-              variant="ghost"
-              onClick={() => navigate("/")}
-              className="text-primary hover:bg-white/10 mb-4"
-            >
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Home
-            </Button>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 flex items-center justify-center p-4">
+      <div className="w-full max-w-lg">
+        <div className="mb-8">
+          <Button
+            variant="ghost"
+            onClick={() => navigate("/")}
+            className="text-slate-600 hover:text-slate-900 hover:bg-slate-100 mb-6 p-2"
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Home
+          </Button>
+        </div>
+
+        <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+          {/* Header */}
+          <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-8 text-center">
+            <div className="flex justify-center mb-4">
+              <div className="p-4 bg-white/20 backdrop-blur-sm rounded-2xl">
+                <LogIn className="h-10 w-10 text-white" />
+              </div>
+            </div>
+            <h1 className="text-3xl font-bold text-white mb-2">Welcome Back</h1>
+            <p className="text-white/80">Sign in to your MediCase account</p>
           </div>
 
-          <Card className="glass-effect border-gray-200">
-            <CardHeader className="text-center">
-              <div className="flex justify-center mb-4">
-                <div className="p-3 rounded-full bg-white/20 backdrop-blur-sm">
-                  <LogIn className="h-8 w-8 text-primary" />
-                </div>
+          {/* Form */}
+          <div className="p-8">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="username" className="text-slate-700 dark:text-slate-300 font-semibold">Username</Label>
+                <Input
+                  id="username"
+                  name="username"
+                  type="text"
+                  required
+                  value={formData.username}
+                  onChange={handleInputChange}
+                  className="h-12 bg-slate-50 dark:bg-slate-700 border-slate-300 dark:border-slate-600 rounded-xl text-slate-900 dark:text-slate-100 placeholder:text-slate-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Enter your username"
+                />
               </div>
-              <CardTitle className="text-2xl text-primary">Welcome Back</CardTitle>
-              <CardDescription className="text-primary/70">
-                Sign in to your MediCase account
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="username" className="text-primary">Username</Label>
-                  <Input
-                    id="username"
-                    name="username"
-                    type="text"
-                    required
-                    value={formData.username}
-                    onChange={handleInputChange}
-                    className="bg-white/10 border-gray text-primary placeholder:text-primary/50"
-                    placeholder="Enter your username"
-                  />
-                </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="password" className="text-primary">Password</Label>
-                  <Input
-                    id="password"
-                    name="password"
-                    type="password"
-                    required
-                    value={formData.password}
-                    onChange={handleInputChange}
-                    className="bg-white/10 border-gray text-primary placeholder:text-primary/50"
-                    placeholder="Enter your password"
-                  />
-                </div>
-
-                <Button
-                  type="submit"
-                  className="w-full  bg-slate-800 text-secondary dark:bg-slate-400 dark:text-primary font-semibold py-2 rounded-lg transition-all duration-300 hover:scale-105"
-                  disabled={isLoading}
-                >
-                  {isLoading ? "Signing In..." : "Sign In"}
-                </Button>
-              </form>
-
-
-              <div className="mt-6 text-center">
-                <span className="text-primary/70">Don't have an account? </span>
-                <button
-                  onClick={() => navigate("/register")}
-                  className="text-primary hover:text-primary/80 underline font-medium"
-                >
-                  Sign up
-                </button>
+              <div className="space-y-2">
+                <Label htmlFor="password" className="text-slate-700 dark:text-slate-300 font-semibold">Password</Label>
+                <Input
+                  id="password"
+                  name="password"
+                  type="password"
+                  required
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  className="h-12 bg-slate-50 dark:bg-slate-700 border-slate-300 dark:border-slate-600 rounded-xl text-slate-900 dark:text-slate-100 placeholder:text-slate-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Enter your password"
+                />
               </div>
-            </CardContent>
-          </Card>
+
+              <Button
+                type="submit"
+                className="w-full h-12 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold rounded-xl transition-all duration-300 hover:scale-[1.02] shadow-lg"
+                disabled={isLoading}
+              >
+                {isLoading ? "Signing In..." : "Sign In"}
+              </Button>
+            </form>
+
+            <div className="mt-8 text-center">
+              <span className="text-slate-600 dark:text-slate-400">Don't have an account? </span>
+              <button
+                onClick={() => navigate("/register")}
+                className="text-blue-600 hover:text-blue-700 font-semibold underline underline-offset-4 decoration-2 hover:decoration-blue-700 transition-colors"
+              >
+                Sign up
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>

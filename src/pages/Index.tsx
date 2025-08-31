@@ -126,39 +126,67 @@ const Index = () => {
           </div>
         </div>
 
-        {/* Support Categories */}
+        {/* Support Categories - Masonry Layout */}
         <div className="mb-8">
           <h2 className="text-xl font-bold text-[#312c51] mb-4">
             I'm looking for support for...
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="columns-1 sm:columns-2 lg:columns-3 gap-4 space-y-4">
             {supportCategories.map((cat, idx) => (
-              <div key={idx} className="bg-[#f7f6f4] rounded-lg p-4 flex gap-4 items-center shadow-sm">
-                <div className="bg-[#ffe7c8] rounded-lg flex items-center justify-center">
-                  <img src={cat.image}></img>
-                </div>
-                <div>
-                  <div className="font-semibold text-[#312c51]">{cat.title}</div>
-                  <div className="text-sm text-[#524e66]">{cat.description}</div>
+              <div 
+                key={idx} 
+                className={`bg-[#f7f6f4] rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 break-inside-avoid mb-4 ${
+                  idx % 3 === 0 ? 'h-48' : idx % 3 === 1 ? 'h-40' : 'h-44'
+                } cursor-pointer hover:scale-[1.02] group`}
+              >
+                <div className="flex flex-col h-full">
+                  <div className="bg-gradient-to-br from-[#ffe7c8] to-[#ffd49e] rounded-xl p-4 mb-4 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
+                    <img src={cat.image} className="w-16 h-16 object-contain" alt={cat.title} />
+                  </div>
+                  <div className="flex-1">
+                    <div className="font-bold text-[#312c51] text-lg mb-2">{cat.title}</div>
+                    <div className="text-sm text-[#524e66] leading-relaxed">{cat.description}</div>
+                  </div>
                 </div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Assessments Section */}
+        {/* Assessments Section - Tile Layout */}
         <div className="mb-8">
           <h2 className="text-xl font-bold text-[#312c51] mb-4">
             Choose self-assessment
           </h2>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {selfAssessments.map((sa, idx) => (
-              <div key={idx} className="bg-[#f7f6f4] rounded-xl p-4 flex flex-col items-center shadow-sm">
-                <div className="bg-[#d7f0fa] rounded-lg mb-3 flex items-center justify-center">
-                  <img src={sa.image}></img>
+              <div 
+                key={idx} 
+                className={`bg-[#f7f6f4] rounded-2xl p-4 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer hover:scale-105 group ${
+                  idx === 0 ? 'md:col-span-2 md:row-span-2' : 
+                  idx === 1 ? 'md:col-span-1' : 
+                  idx === 2 ? 'md:col-span-1' : 'md:col-span-2'
+                }`}
+              >
+                <div className={`flex ${idx === 0 ? 'flex-row items-center gap-4' : 'flex-col items-center'} h-full`}>
+                  <div className={`bg-gradient-to-br from-[#d7f0fa] to-[#b8e6f7] rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform duration-300 ${
+                    idx === 0 ? 'p-6 flex-shrink-0' : 'p-4 mb-3 w-full'
+                  }`}>
+                    <img 
+                      src={sa.image} 
+                      className={`object-contain ${idx === 0 ? 'w-20 h-20' : 'w-12 h-12'}`} 
+                      alt={sa.title} 
+                    />
+                  </div>
+                  <div className={`${idx === 0 ? 'flex-1' : 'text-center'}`}>
+                    <div className={`font-bold text-[#312c51] mb-2 ${idx === 0 ? 'text-xl' : 'text-base'}`}>
+                      {sa.title}
+                    </div>
+                    <div className={`text-[#524e66] leading-relaxed ${idx === 0 ? 'text-base' : 'text-sm'}`}>
+                      {sa.description}
+                    </div>
+                  </div>
                 </div>
-                <div className="font-semibold text-[#312c51] mb-1">{sa.title}</div>
-                <div className="text-sm text-[#524e66]">{sa.description}</div>
               </div>
             ))}
           </div>
