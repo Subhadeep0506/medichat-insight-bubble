@@ -65,11 +65,11 @@ const Register = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 flex items-center justify-center p-4">
       <div className="w-full max-w-lg">
-        <div className="mb-8">
+        <div className="mb-2">
           <Button
             variant="ghost"
             onClick={() => navigate("/")}
-            className="text-slate-600 hover:text-slate-900 hover:bg-slate-100 mb-6 p-2"
+            className="text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-900 mb-6 p-2"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Home
@@ -186,7 +186,7 @@ const Register = () => {
           </div>
         </div>
       </div>
-    </div>  
+    </div>
   );
 };
 

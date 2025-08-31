@@ -384,7 +384,7 @@ const Cases = () => {
                         className={`cursor-pointer transition-colors hover:bg-accent ${selectedPatient?.id === patient.id ? 'ring-2 ring-primary' : ''
                           }`}
                       >
-                        <CardHeader className="pb-2">
+                        <CardHeader className="p-4">
                           <div
                             className="flex items-center justify-between"
                             onClick={() => handlePatientClick(patient)}
@@ -403,7 +403,7 @@ const Cases = () => {
 
                           {/* Patient Details - Accordion Content */}
                           {expandedPatient === patient.id && (
-                            <CardContent className="px-0 pt-4 space-y-3">
+                            <CardContent className="px-0  pt-2 pb-0 space-y-3">
                               <Separator />
 
                               <div className="space-y-2 text-sm">
