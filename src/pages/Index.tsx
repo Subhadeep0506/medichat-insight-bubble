@@ -114,7 +114,7 @@ const Index = () => {
       <div className="max-w-4xl mx-auto px-4 pt-28 pb-6">
         {/* Hero section */}
         <div className="flex flex-col md:flex-row gap-4 items-center mb-10">
-          <div className="bg-[#e0dcf9] rounded-xl w-full md:w-1/2 flex items-center justify-center mb-6 md:mb-0">
+          <div className="bg-[#e0dcf9] rounded-xl w-full md:w-1/2 flex items-center justify-center mb-6 md:mb-0 pb-0">
             <img src="assets/Person with medical mask-pana.png"></img>
           </div>
           <div className="md:w-1/2 flex flex-col justify-center">

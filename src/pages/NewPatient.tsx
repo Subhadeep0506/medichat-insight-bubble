@@ -223,7 +223,7 @@ const NewPatient = () => {
                               className={cn("p-3 pointer-events-auto")}
                               fromYear={1900}
                               toYear={new Date().getFullYear()}
-                              captionLayout="buttons"
+                              captionLayout="dropdown-buttons"
                             />
                           </PopoverContent>
                         </Popover>

@@ -351,7 +351,7 @@ const Cases = () => {
 
         {/* Two Panel Layout */}
         <div className="h-[calc(100vh-200px)] w-full">
-          <ResizablePanelGroup direction="horizontal" className="min-h-full border rounded-lg">
+          <ResizablePanelGroup direction="horizontal" className="min-h-full border  border-green-300 dark:border-green-700 rounded-xl shadow-xl">
 
             {/* Patients Panel - Left 40% */}
             <ResizablePanel defaultSize={40} minSize={30}>
