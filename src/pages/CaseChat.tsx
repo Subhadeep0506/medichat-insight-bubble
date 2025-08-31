@@ -9,7 +9,7 @@ const CaseChat = () => {
   const navigate = useNavigate();
 
   const handleBackToCase = () => {
-    navigate('/');
+    navigate('/cases');
   };
 
   if (!caseId) {

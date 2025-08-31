@@ -106,23 +106,151 @@ All colors MUST be HSL.
 
 @layer base {
   .gradient-animate {
-    background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
-    background-size: 400% 400%;
-    animation: gradient 15s ease infinite;
+    position: relative;
+    background: white;
+    overflow: visible;
   }
 
-  @keyframes gradient {
+  .gradient-animate::before,
+  .gradient-animate::after,
+  .gradient-animate > span,
+  .gradient-animate > span::before {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(40px);
+    opacity: 0.8;
+    pointer-events: none;
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+
+    /* Position bubbles behind content */
+    z-index: -1;
+  }
+
+  .gradient-animate::before {
+    width: 240px;
+    height: 240px;
+    background: radial-gradient(
+      circle at center,
+      rgba(255, 70, 70, 0.85),
+      transparent 70%
+    );
+    top: 10%;
+    left: 20%;
+    animation: moveBubble1 20s infinite;
+  }
+
+  .gradient-animate::after {
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(
+      circle at center,
+      rgba(70, 255, 140, 0.85),
+      transparent 70%
+    );
+    top: 60%;
+    left: 50%;
+    animation: moveBubble2 24s infinite;
+  }
+
+  .gradient-animate > span {
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(
+      circle at center,
+      rgba(70, 90, 255, 0.85),
+      transparent 70%
+    );
+    top: 40%;
+    left: 75%;
+    animation: moveBubble3 22s infinite;
+  }
+
+  .gradient-animate > span::before {
+    width: 180px;
+    height: 180px;
+    background: radial-gradient(
+      circle at center,
+      rgba(255, 255, 90, 0.85),
+      transparent 70%
+    );
+    top: 75%;
+    left: 25%;
+    animation: moveBubble4 18s infinite;
+    position: absolute;
+    content: "";
+  }
+
+  @keyframes moveBubble1 {
     0% {
-      background-position: 0% 50%;
+      transform: translate(0, 0);
+    }
+    25% {
+      transform: translate(30px, 20px);
     }
     50% {
-      background-position: 100% 50%;
+      transform: translate(15px, 35px);
+    }
+    75% {
+      transform: translate(0, 20px);
     }
     100% {
-      background-position: 0% 50%;
+      transform: translate(30px, 0);
     }
   }
-
+  @keyframes moveBubble2 {
+    0% {
+      transform: translate(0, 0);
+    }
+    25% {
+      transform: translate(-30px, 30px);
+    }
+    50% {
+      transform: translate(-15px, -30px);
+    }
+    75% {
+      transform: translate(0, -15px);
+    }
+    100% {
+      transform: translate(-30px, 15px);
+    }
+  }
+  @keyframes moveBubble3 {
+    0% {
+      transform: translate(0, 0);
+    }
+    25% {
+      transform: translate(20px, -30px);
+    }
+    50% {
+      transform: translate(35px, -15px);
+    }
+    75% {
+      transform: translate(20px, 0);
+    }
+    100% {
+      transform: translate(0, -35px);
+    }
+  }
+  @keyframes moveBubble4 {
+    0% {
+      transform: translate(0, 0);
+    }
+    25% {
+      transform: translate(-20px, -20px);
+    }
+    50% {
+      transform: translate(-35px, -35px);
+    }
+    75% {
+      transform: translate(-20px, -15px);
+    }
+    100% {
+      transform: translate(0, -20px);
+    }
+  }
   .glass-effect {
     backdrop-filter: blur(20px);
     background: rgba(255, 255, 255, 0.1);

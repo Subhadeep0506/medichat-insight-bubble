@@ -67,21 +67,19 @@ const NewPatient = () => {
 
   const onSubmit = async (data: FormData) => {
     setIsSubmitting(true);
-    
+
     try {
       // Simulate patient creation - in a real app this would save to database
       const newPatientId = `patient-${Date.now()}`;
-      
+
       // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
+
       toast({
         title: 'Patient Created Successfully',
         description: `New patient ${data.name} has been added to the system.`,
       });
-      
-      // Navigate back to cases page
-      navigate('/');
+      navigate('/cases');
     } catch (error) {
       toast({
         title: 'Error',
@@ -94,7 +92,7 @@ const NewPatient = () => {
   };
 
   const handleBack = () => {
-    navigate('/');
+    navigate('/cases');
   };
 
   return (
@@ -132,9 +130,9 @@ const NewPatient = () => {
                       <FormItem>
                         <FormLabel className="text-card-foreground">Full Name *</FormLabel>
                         <FormControl>
-                          <Input 
-                            placeholder="Enter patient's full name" 
-                            {...field} 
+                          <Input
+                            placeholder="Enter patient's full name"
+                            {...field}
                             className="bg-background border-input"
                           />
                         </FormControl>
@@ -152,10 +150,10 @@ const NewPatient = () => {
                         <FormItem>
                           <FormLabel className="text-card-foreground">Age *</FormLabel>
                           <FormControl>
-                            <Input 
+                            <Input
                               type="number"
-                              placeholder="e.g., 45" 
-                              {...field} 
+                              placeholder="e.g., 45"
+                              {...field}
                               className="bg-background border-input"
                             />
                           </FormControl>
@@ -225,7 +223,7 @@ const NewPatient = () => {
                               className={cn("p-3 pointer-events-auto")}
                               fromYear={1900}
                               toYear={new Date().getFullYear()}
-                              captionLayout="dropdown-buttons"
+                              captionLayout="dropdown"
                             />
                           </PopoverContent>
                         </Popover>
@@ -243,9 +241,9 @@ const NewPatient = () => {
                         <FormItem>
                           <FormLabel className="text-card-foreground">Height *</FormLabel>
                           <FormControl>
-                            <Input 
-                              placeholder="e.g., 5'8&quot; or 173cm" 
-                              {...field} 
+                            <Input
+                              placeholder="e.g., 5'8&quot; or 173cm"
+                              {...field}
                               className="bg-background border-input"
                             />
                           </FormControl>
@@ -261,9 +259,9 @@ const NewPatient = () => {
                         <FormItem>
                           <FormLabel className="text-card-foreground">Weight *</FormLabel>
                           <FormControl>
-                            <Input 
-                              placeholder="e.g., 150lbs or 68kg" 
-                              {...field} 
+                            <Input
+                              placeholder="e.g., 150lbs or 68kg"
+                              {...field}
                               className="bg-background border-input"
                             />
                           </FormControl>

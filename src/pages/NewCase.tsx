@@ -71,19 +71,19 @@ const NewCase = () => {
 
   const onSubmit = async (data: FormData) => {
     setIsSubmitting(true);
-    
+
     try {
       // Simulate case creation - in a real app this would save to database
       const newCaseId = `case-${Date.now()}`;
-      
+
       // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
+
       toast({
         title: 'Case Created Successfully',
         description: `New case ${newCaseId} has been created and is ready for analysis.`,
       });
-      
+
       // Navigate to the chat interface for this case
       navigate(`/case/${newCaseId}`);
     } catch (error) {
@@ -98,7 +98,7 @@ const NewCase = () => {
   };
 
   const handleBack = () => {
-    navigate('/');
+    navigate('/cases');
   };
 
   return (
@@ -191,9 +191,9 @@ const NewCase = () => {
                         <FormItem>
                           <FormLabel className="text-card-foreground">Patient Age</FormLabel>
                           <FormControl>
-                            <Input 
-                              placeholder="e.g., 45" 
-                              {...field} 
+                            <Input
+                              placeholder="e.g., 45"
+                              {...field}
                               className="bg-background border-input"
                             />
                           </FormControl>
@@ -254,9 +254,9 @@ const NewCase = () => {
                         <FormItem>
                           <FormLabel className="text-card-foreground">Height</FormLabel>
                           <FormControl>
-                            <Input 
-                              placeholder="e.g., 5'8&quot; or 173cm" 
-                              {...field} 
+                            <Input
+                              placeholder="e.g., 5'8&quot; or 173cm"
+                              {...field}
                               className="bg-background border-input"
                             />
                           </FormControl>
@@ -272,9 +272,9 @@ const NewCase = () => {
                         <FormItem>
                           <FormLabel className="text-card-foreground">Weight</FormLabel>
                           <FormControl>
-                            <Input 
-                              placeholder="e.g., 150lbs or 68kg" 
-                              {...field} 
+                            <Input
+                              placeholder="e.g., 150lbs or 68kg"
+                              {...field}
                               className="bg-background border-input"
                             />
                           </FormControl>

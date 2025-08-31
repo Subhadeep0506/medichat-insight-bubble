@@ -1,82 +1,166 @@
+import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Stethoscope, Shield, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+
+const supportCategories = [
+  {
+    title: "Young People",
+    description: "Resources and guidance for young people to manage their wellbeing.",
+    placeholder: "image-placeholder-1",
+    image: "assets/Teenager-amico.png"
+  },
+  {
+    title: "Faith & Belief Communities",
+    description: "Support options reflecting a variety of backgrounds.",
+    placeholder: "image-placeholder-2",
+    image: "assets/Community-amico.png"
+  },
+  {
+    title: "Parents & Carers",
+    description: "Dedicated help for those caring for loved ones.",
+    placeholder: "image-placeholder-3",
+    image: "assets/Medical care-pana.png"
+  },
+  {
+    title: "Employers & Employees",
+    description: "Wellbeing resources tailored for workplace situations.",
+    placeholder: "image-placeholder-4",
+    image: "assets/New employee-amico.png"
+  },
+];
+
+const selfAssessments = [
+  {
+    title: "Anxiety",
+    description: "Feeling anxious, can't switch off?",
+    placeholder: "assessment-image-1",
+    image: "assets/Anxiety-rafiki.png"
+  },
+  {
+    title: "Sleep",
+    description: "Trouble sleeping or insomnia?",
+    placeholder: "assessment-image-2",
+    image: "assets/Sleep analysis-amico.png"
+  },
+  {
+    title: "Depression",
+    description: "Feeling low and without motivation?",
+    placeholder: "assessment-image-3",
+    image: "assets/Feeling Blue-amico.png"
+  },
+  {
+    title: "Stress",
+    description: "Feeling stressed or pressured?",
+    placeholder: "assessment-image-4",
+    image: "assets/Stress-amico.png"
+  },
+];
+
+const Navbar = () => {
+  const navigate = useNavigate();
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  return (
+    <nav
+      className={`backdrop-blur-md fixed top-0 left-0 w-full z-30 transition-all duration-300 ${scrolled ? "bg-[#f7f6f4] shadow-sm" : "bg-transparent"
+        }`}
+    >
+      <div className="max-w-6xl mx-auto flex items-center justify-between py-4 px-6">
+        <span className="text-2xl font-bold text-[#312c51] tracking-tight">
+          MindfulCare
+        </span>
+        <div className="flex gap-3 items-center">
+          <Button
+            size="sm"
+            className="bg-[#37a36c] text-white rounded-full px-6 font-semibold transition hover:bg-[#319c63]"
+            onClick={() => navigate("/register")}
+          >
+            Get Started
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="border-[#37a36c] text-[#37a36c] rounded-full px-6 font-semibold bg-white transition hover:bg-[#d6eddc]"
+            onClick={() => navigate("/login")}
+          >
+            Login
+          </Button>
+        </div>
+      </div>
+    </nav>
+  );
+};
 
 const Index = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen gradient-animate">
-      <div className="min-h-screen flex items-center justify-center p-2">
-        <div className="glass-effect rounded-2xl p-8 md:p-8 max-w-8xl w-full text-center shadow-2xl">
-          <div className="mb-8">
-            <div className="flex justify-center mb-6">
-              <div className="p-4 rounded-full bg-white/20 backdrop-blur-sm">
-                <Stethoscope className="h-12 w-12 text-primary" />
-              </div>
-            </div>
-            <h1 className="text-4xl md:text-6xl font-bold text-primary mb-6 leading-tight">
-              MediCase
-              <span className="block text-2xl md:text-3xl font-normal mt-2 text-primary/90">
-                Advanced Medical Case Management
-              </span>
+    <div className="min-h-screen bg-gradient-to-br from-blue-100 via-green-100 to-green-200 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 relative overflow-hidden">
+      <Navbar />
+      <div className="max-w-4xl mx-auto px-4 pt-28 pb-6">
+        {/* Hero section */}
+        <div className="flex flex-col md:flex-row gap-4 items-center mb-10">
+          <div className="bg-[#e0dcf9] rounded-xl w-full md:w-1/2 flex items-center justify-center mb-6 md:mb-0">
+            <img src="assets/Person with medical mask-pana.png"></img>
+          </div>
+          <div className="md:w-1/2 flex flex-col justify-center">
+            <h1 className="text-3xl md:text-5xl font-bold text-[#312c51] mb-4">
+              Mental Health & Wellbeing
             </h1>
-            <p className="text-lg md:text-xl text-primary/80 mb-8 max-w-2xl mx-auto leading-relaxed">
-              Streamline patient care with our comprehensive medical case management system. 
-              Organize patients, track cases, and enhance medical workflows with ease.
+            <p className="text-lg text-[#524e66] mb-3">
+              Chat about mental health, create and track patient cases, and access wellbeing resources all in one supportive space.
             </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-6 mb-10">
-            <div className="glass-effect rounded-xl p-6 text-primary">
-              <Users className="h-8 w-8 mb-4 mx-auto text-primary/90" />
-              <h3 className="text-lg font-semibold mb-2">Patient Management</h3>
-              <p className="text-sm text-primary/70">
-                Organize and manage patient information efficiently
-              </p>
-            </div>
-            <div className="glass-effect rounded-xl p-6 text-primary">
-              <Shield className="h-8 w-8 mb-4 mx-auto text-primary/90" />
-              <h3 className="text-lg font-semibold mb-2">Secure & Private</h3>
-              <p className="text-sm text-primary/70">
-                HIPAA compliant with enterprise-grade security
-              </p>
-            </div>
-            <div className="glass-effect rounded-xl p-6 text-primary">
-              <Stethoscope className="h-8 w-8 mb-4 mx-auto text-primary/90" />
-              <h3 className="text-lg font-semibold mb-2">Case Tracking</h3>
-              <p className="text-sm text-primary/70">
-                Track medical cases from diagnosis to resolution
-              </p>
-            </div>
-          </div>
-
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Button
               size="lg"
-              className="bg-green-400 dark:bg-green-900 text-primary hover:bg-white/90 font-semibold px-8 py-3 rounded-full shadow-lg transition-all duration-300 hover:scale-105"
+              className="bg-[#37a36c] text-white rounded-full px-8 font-semibold w-max"
               onClick={() => navigate("/register")}
             >
               Get Started
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-            <Button
-              variant="outline"
-              size="lg"
-              className="border-white/30 text-primary hover:text-secondary hover:bg-white/10 font-semibold px-8 py-3 rounded-full backdrop-blur-sm transition-all duration-300 hover:scale-105"
-              onClick={() => navigate("/login")}
-            >
-              Sign In
             </Button>
           </div>
+        </div>
 
-          <div className="mt-8 text-primary/60 text-sm">
-            Already have an account? <button 
-              onClick={() => navigate("/login")}
-              className="text-primary hover:text-primary/80 underline font-medium"
-            >
-              Sign in here
-            </button>
+        {/* Support Categories */}
+        <div className="mb-8">
+          <h2 className="text-xl font-bold text-[#312c51] mb-4">
+            I'm looking for support for...
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {supportCategories.map((cat, idx) => (
+              <div key={idx} className="bg-[#f7f6f4] rounded-lg p-4 flex gap-4 items-center shadow-sm">
+                <div className="bg-[#ffe7c8] rounded-lg flex items-center justify-center">
+                  <img src={cat.image}></img>
+                </div>
+                <div>
+                  <div className="font-semibold text-[#312c51]">{cat.title}</div>
+                  <div className="text-sm text-[#524e66]">{cat.description}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Assessments Section */}
+        <div className="mb-8">
+          <h2 className="text-xl font-bold text-[#312c51] mb-4">
+            Choose self-assessment
+          </h2>
+          <div className="grid grid-cols-2 gap-4">
+            {selfAssessments.map((sa, idx) => (
+              <div key={idx} className="bg-[#f7f6f4] rounded-xl p-4 flex flex-col items-center shadow-sm">
+                <div className="bg-[#d7f0fa] rounded-lg mb-3 flex items-center justify-center">
+                  <img src={sa.image}></img>
+                </div>
+                <div className="font-semibold text-[#312c51] mb-1">{sa.title}</div>
+                <div className="text-sm text-[#524e66]">{sa.description}</div>
+              </div>
+            ))}
           </div>
         </div>
       </div>
