@@ -30,15 +30,26 @@ function buildQuery(params?: RequestOptions["query"]) {
   const s = new URLSearchParams();
   Object.entries(params).forEach(([k, v]) => {
     if (v === undefined || v === null) return;
-    s.append(k, String(v));
+    if (Array.isArray(v)) {
+      v.forEach((val) => {
+        if (val !== undefined && val !== null) s.append(k, String(val));
+      });
+    } else {
+      s.append(k, String(v));
+    }
   });
   const str = s.toString();
   return str ? `?${str}` : "";
 }
 
+let authTokenGetter: () => string | null | undefined = () => (typeof localStorage !== "undefined" ? localStorage.getItem("auth_token") : null);
+export function setAuthTokenGetter(fn: () => string | null | undefined) {
+  authTokenGetter = fn;
+}
+
 export function createHttpClient(opts: HttpClientOptions = {}) {
   const base = (opts.baseURL ?? DEFAULT_BASE).replace(/\/$/, "");
-  const getToken = opts.getAuthToken ?? (() => null);
+  const getToken = opts.getAuthToken ?? authTokenGetter;
 
   async function request<TResponse = any, TBody = unknown>(
     path: string,

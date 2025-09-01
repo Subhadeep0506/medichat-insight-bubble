@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Upload, ArrowLeft, Image as ImageIcon } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import {
   Form,
@@ -27,6 +27,7 @@ import {
 import { format } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useCasesStore } from '@/store';
 
 const formSchema = z.object({
   image: z.string().min(1, 'Image is required'),
@@ -41,6 +42,10 @@ type FormData = z.infer<typeof formSchema>;
 
 const NewCase = () => {
   const navigate = useNavigate();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const location = useLocation() as any;
+  const patientId = location?.state?.patientId as string | undefined;
+  const { createCase } = useCasesStore();
   const { toast } = useToast();
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -73,19 +78,22 @@ const NewCase = () => {
     setIsSubmitting(true);
 
     try {
-      // Simulate case creation - in a real app this would save to database
-      const newCaseId = `case-${Date.now()}`;
-
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      if (!patientId) {
+        toast({ title: 'Missing patient', description: 'No patient selected for this case.', variant: 'destructive' });
+        return;
+      }
+      const created = await createCase(patientId, {
+        title: data.description ? data.description.slice(0, 40) : 'New Case',
+        description: data.description,
+        status: 'open',
+      });
 
       toast({
         title: 'Case Created Successfully',
-        description: `New case ${newCaseId} has been created and is ready for analysis.`,
+        description: `New case ${created.id} has been created and is ready for analysis.`,
       });
 
-      // Navigate to the chat interface for this case
-      navigate(`/case/${newCaseId}`);
+      navigate(`/case/${created.id}`);
     } catch (error) {
       toast({
         title: 'Error',

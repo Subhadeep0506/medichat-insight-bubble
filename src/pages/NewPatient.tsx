@@ -33,6 +33,7 @@ import {
 } from '@/components/ui/popover';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { usePatientsStore } from '@/store';
 
 const formSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -69,15 +70,20 @@ const NewPatient = () => {
     setIsSubmitting(true);
 
     try {
-      // Simulate patient creation - in a real app this would save to database
-      const newPatientId = `patient-${Date.now()}`;
-
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const { addPatient } = usePatientsStore.getState();
+      const newPatient = await addPatient({
+        name: data.name,
+        age: parseInt(data.age, 10),
+        gender: data.gender ?? "male",
+        dob: data.dob?.toISOString?.() ?? null,
+        height: data.height,
+        weight: data.weight,
+        medicalHistory: data.medicalHistory,
+      });
 
       toast({
         title: 'Patient Created Successfully',
-        description: `New patient ${data.name} has been added to the system.`,
+        description: `New patient ${newPatient.name} has been added to the system.`,
       });
       navigate('/cases');
     } catch (error) {
@@ -190,7 +196,7 @@ const NewPatient = () => {
                     control={form.control}
                     name="dob"
                     render={({ field }) => (
-                      <FormItem className="flex flex-col min-w-96">
+                      <FormItem className="flex flex-col">
                         <FormLabel className="text-card-foreground">Date of Birth *</FormLabel>
                         <Popover>
                           <PopoverTrigger asChild>

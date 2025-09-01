@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { ArrowLeft, LogIn } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { useAuthStore } from "@/store";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -15,35 +16,19 @@ const Login = () => {
     username: "",
     password: "",
   });
+  const { login } = useAuthStore();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-
-    // Default credentials check
-    if (formData.username === "admin" && formData.password === "admin") {
-      setTimeout(() => {
-        localStorage.setItem("isAuthenticated", "true");
-        localStorage.setItem("currentUser", JSON.stringify({
-          username: "admin",
-          fullName: "Administrator"
-        }));
-        toast({
-          title: "Login Successful",
-          description: "Welcome back!",
-        });
-        navigate("/cases");
-        setIsLoading(false);
-      }, 1000);
-    } else {
-      setTimeout(() => {
-        toast({
-          title: "Login Failed",
-          description: "Invalid credentials. Use admin/admin to login.",
-          variant: "destructive",
-        });
-        setIsLoading(false);
-      }, 1000);
+    try {
+      await login(formData.username, formData.password);
+      toast({ title: "Login Successful", description: "Welcome back!" });
+      navigate("/cases");
+    } catch (err) {
+      toast({ title: "Login Failed", description: "Invalid credentials.", variant: "destructive" });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -84,7 +69,7 @@ const Login = () => {
           <div className="p-8">
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="username" className="text-slate-700 dark:text-slate-300 font-semibold">Username</Label>
+                <Label htmlFor="username" className="text-slate-700 dark:text-slate-300 font-semibold">Email</Label>
                 <Input
                   id="username"
                   name="username"
@@ -93,7 +78,7 @@ const Login = () => {
                   value={formData.username}
                   onChange={handleInputChange}
                   className="h-12 bg-slate-50 dark:bg-slate-700 border-slate-300 dark:border-slate-600 rounded-xl text-slate-900 dark:text-slate-100 placeholder:text-slate-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter your username"
+                  placeholder="Enter your email"
                 />
               </div>
 

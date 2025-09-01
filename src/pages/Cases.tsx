@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -29,6 +29,8 @@ import {
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
+import { seedDemoIfEmpty } from '../store/seed';
+import { usePatientsStore, useCasesStore } from '@/store';
 
 export interface Patient {
   id: string;
@@ -94,7 +96,11 @@ const Cases = () => {
     },
   });
 
-  // Sample patients data
+  useEffect(() => {
+    seedDemoIfEmpty();
+  }, []);
+
+  // Sample patients data (local UI state kept, but mirrored to store)
   const [patients, setPatients] = useState<Patient[]>([
     {
       id: 'patient-1',
@@ -186,7 +192,9 @@ const Cases = () => {
     }
   ]);
 
+  const { deleteCase } = useCasesStore();
   const handleDeleteCase = (caseId: string) => {
+    if (selectedPatient) deleteCase(selectedPatient.id, caseId).catch(() => { });
     setCases(prev => prev.filter(c => c.id !== caseId));
   };
 
@@ -243,7 +251,9 @@ const Cases = () => {
     setPatients(prev => prev.map(p => p.id === updatedPatient.id ? updatedPatient : p));
   };
 
+  const { deletePatient } = usePatientsStore();
   const handleDeletePatient = (patientId: string) => {
+    deletePatient(patientId).catch(() => { });
     setPatients(prev => prev.filter(p => p.id !== patientId));
     setCases(prev => prev.filter(c => c.patientId !== patientId));
     if (selectedPatient?.id === patientId) {
@@ -342,12 +352,12 @@ const Cases = () => {
     <div className="min-h-screen bg-background">
       <FloatingNavbar />
       <div className="container mx-auto p-6 pt-20">
-          <div className="flex flex-col gap-6 mb-8">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">Medical Cases & Patients</h1>
-              <p className="text-muted-foreground mt-2">Manage patients and review their medical case analyses</p>
-            </div>
+        <div className="flex flex-col gap-6 mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">Medical Cases & Patients</h1>
+            <p className="text-muted-foreground mt-2">Manage patients and review their medical case analyses</p>
           </div>
+        </div>
 
         {/* Two Panel Layout */}
         <div className="h-[calc(100vh-200px)] w-full">

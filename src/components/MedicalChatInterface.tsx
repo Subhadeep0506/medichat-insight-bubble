@@ -1,5 +1,5 @@
-
 import React, { useState, useRef } from 'react';
+import { useChatStore } from '@/store';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { ChatHistorySidebar, ChatHistory } from './chat/ChatHistorySidebar';
 import { ChatHeader } from './chat/ChatHeader';
@@ -71,14 +71,37 @@ export const MedicalChatInterface = ({ caseId, onBackToCase }: MedicalChatInterf
 
     return { default: defaultSession };
   });
-  
+
   const [currentImages, setCurrentImages] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const currentSession = chatSessions[currentChatId];
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const messages = currentSession?.messages || [];
+
+  const ensureSession = useChatStore((s) => s.ensureSession);
+  const addLocalMessage = useChatStore((s) => s.addLocalMessage);
+
+  React.useEffect(() => {
+    ensureSession(currentChatId, currentSession?.title);
+  }, [currentChatId, currentSession?.title, ensureSession]);
+
+  const mirrored = React.useRef<Set<string>>(new Set());
+  React.useEffect(() => {
+    messages.forEach((m) => {
+      if (mirrored.current.has(m.id)) return;
+      mirrored.current.add(m.id);
+      addLocalMessage(currentChatId, {
+        id: m.id,
+        sessionId: currentChatId,
+        role: m.type === 'user' ? 'user' : 'assistant',
+        content: m.content,
+        createdAt: m.timestamp.toISOString(),
+      });
+    });
+  }, [messages, currentChatId, addLocalMessage]);
 
   // Safety check - if currentSession doesn't exist, create it
   React.useEffect(() => {
@@ -101,7 +124,7 @@ export const MedicalChatInterface = ({ caseId, onBackToCase }: MedicalChatInterf
           }
         ]
       };
-      
+
       setChatSessions(prev => ({
         ...prev,
         [currentChatId]: newSession
@@ -124,7 +147,7 @@ export const MedicalChatInterface = ({ caseId, onBackToCase }: MedicalChatInterf
 
   const categorizeChat = (message: string): 'radiology' | 'cardiology' | 'neurology' | 'orthopedics' | 'general' | 'pathology' => {
     const lowerMessage = message.toLowerCase();
-    
+
     if (lowerMessage.includes('x-ray') || lowerMessage.includes('mri') || lowerMessage.includes('ct') || lowerMessage.includes('scan')) {
       return 'radiology';
     } else if (lowerMessage.includes('heart') || lowerMessage.includes('cardiac') || lowerMessage.includes('ecg')) {
@@ -136,17 +159,17 @@ export const MedicalChatInterface = ({ caseId, onBackToCase }: MedicalChatInterf
     } else if (lowerMessage.includes('tissue') || lowerMessage.includes('biopsy') || lowerMessage.includes('cell')) {
       return 'pathology';
     }
-    
+
     return 'general';
   };
 
   const generateTags = (message: string, category: string): string[] => {
     const tags: string[] = [];
     const lowerMessage = message.toLowerCase();
-    
+
     // Add category-specific tags
     tags.push(category);
-    
+
     // Add common medical terms as tags
     const medicalTerms = ['diagnosis', 'analysis', 'scan', 'image', 'symptom', 'treatment', 'urgent', 'follow-up'];
     medicalTerms.forEach(term => {
@@ -154,12 +177,12 @@ export const MedicalChatInterface = ({ caseId, onBackToCase }: MedicalChatInterf
         tags.push(term);
       }
     });
-    
+
     // Add some sample tags for demo
     if (lowerMessage.includes('pain')) tags.push('pain assessment');
     if (lowerMessage.includes('urgent')) tags.push('urgent');
     if (lowerMessage.includes('follow')) tags.push('follow-up');
-    
+
     return tags.slice(0, 4); // Limit to 4 tags
   };
 
@@ -178,7 +201,7 @@ export const MedicalChatInterface = ({ caseId, onBackToCase }: MedicalChatInterf
     setChatSessions(prev => {
       const currentSession = prev[currentChatId];
       if (!currentSession) return prev; // Safety check
-      
+
       const isFirstUserMessage = currentSession.messages.length === 1;
       const category = isFirstUserMessage ? categorizeChat(content) : currentSession.category;
       const newTags = isFirstUserMessage ? generateTags(content, category) : currentSession.tags;
@@ -289,7 +312,7 @@ In conclusion, while the X-ray suggests a possible pneumonia in the right lower 
       ...prev,
       [newChatId]: newSession
     }));
-    
+
     setCurrentChatId(newChatId);
     setCurrentImages([]);
   };
@@ -343,24 +366,24 @@ In conclusion, while the X-ray suggests a possible pneumonia in the right lower 
             <SidebarTrigger />
             <ChatHeader onBackToCase={onBackToCase} />
           </div>
-          
+
           <div className="flex-1 flex overflow-hidden">
             {/* Main Chat Area */}
             <div className="flex-1 flex flex-col">
-              <ChatMessages 
-                messages={messages} 
+              <ChatMessages
+                messages={messages}
                 isLoading={isLoading}
                 messagesEndRef={messagesEndRef}
               />
 
               <div className="border-t bg-gray-50/50 p-2 md:p-4 space-y-2 md:space-y-4 dark:bg-slate-800/50">
-                <ImageUpload 
+                <ImageUpload
                   onImageUpload={handleImageUpload}
                   currentImages={currentImages}
                 />
-                
+
                 <div className="relative">
-                  <ChatInput 
+                  <ChatInput
                     onSendMessage={handleSendMessage}
                     disabled={isLoading}
                     onTypingChange={setIsTyping}

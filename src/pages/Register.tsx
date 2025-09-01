@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { ArrowLeft, UserPlus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { useAuthStore } from "@/store";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -18,6 +19,7 @@ const Register = () => {
     password: "",
     confirmPassword: "",
   });
+  const { register: registerUser } = useAuthStore();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,15 +46,15 @@ const Register = () => {
       return;
     }
 
-    // Simulate registration
-    setTimeout(() => {
-      toast({
-        title: "Registration Successful",
-        description: "Your account has been created successfully!",
-      });
-      navigate("/login");
+    try {
+      await registerUser(formData.fullName, formData.email, formData.password);
+      toast({ title: "Registration Successful", description: "Your account has been created successfully!" });
+      navigate("/cases");
+    } catch (err) {
+      toast({ title: "Error", description: "Failed to register", variant: "destructive" });
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {

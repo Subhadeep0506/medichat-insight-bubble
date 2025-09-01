@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import type { User } from "@/types/domain";
 import { AuthApi } from "@/api/auth";
+import { setAuthTokenGetter } from "@/api/http";
 
 interface AuthState {
   user: User | null;
@@ -27,14 +28,19 @@ export const useAuthStore = create<AuthState>()(
         if (token) localStorage.setItem("auth_token", token);
         else localStorage.removeItem("auth_token");
         set({ token });
+        setAuthTokenGetter(() => get().token || (typeof localStorage !== "undefined" ? localStorage.getItem("access_token") : null));
       },
       setUser: (user) => set({ user }),
       login: async (email, password) => {
         set({ loading: true, error: null });
         try {
-          const { user, token } = await AuthApi.login({ email, password });
-          get().setToken(token);
-          set({ user });
+          const { access_token, refresh_token } = await AuthApi.login({ email, password });
+          if (refresh_token) localStorage.setItem("refresh_token", refresh_token);
+          get().setToken(access_token);
+          try {
+            const me = await AuthApi.me();
+            set({ user: me });
+          } catch (_) { }
         } catch (e: any) {
           set({ error: e?.data?.message || e?.message || "Login failed" });
           throw e;
@@ -45,9 +51,13 @@ export const useAuthStore = create<AuthState>()(
       register: async (name, email, password) => {
         set({ loading: true, error: null });
         try {
-          const { user, token } = await AuthApi.register({ name, email, password });
-          get().setToken(token);
-          set({ user });
+          const { access_token, refresh_token } = await AuthApi.register({ name, email, password });
+          if (refresh_token) localStorage.setItem("refresh_token", refresh_token);
+          get().setToken(access_token);
+          try {
+            const me = await AuthApi.me();
+            set({ user: me });
+          } catch (_) { }
         } catch (e: any) {
           set({ error: e?.data?.message || e?.message || "Registration failed" });
           throw e;
@@ -69,7 +79,8 @@ export const useAuthStore = create<AuthState>()(
       logout: async () => {
         try {
           await AuthApi.logout();
-        } catch (_) {}
+        } catch (_) { }
+        localStorage.removeItem("refresh_token");
         get().setToken(null);
         set({ user: null });
       },
