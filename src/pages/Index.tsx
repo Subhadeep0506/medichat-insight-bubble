@@ -97,11 +97,10 @@ const Navbar = () => {
 
   return (
     <nav
-      className={`fixed top-0 left-0 w-full z-30 transition-all duration-300 ${
-        scrolled
+      className={`fixed top-0 left-0 w-full z-30 transition-all duration-300 ${scrolled
           ? "backdrop-blur-md supports-[backdrop-filter]:bg-transparent dark:supports-[backdrop-filter]:bg-slate-900/60 bg-white/80 dark:bg-slate-900/70 shadow-md"
           : "bg-transparent"
-      }`}
+        }`}
     >
       <div className="max-w-7xl mx-auto flex items-center justify-between py-4 px-6">
         <span className={`text-2xl font-bold text-[#0f172a] dark:text-white tracking-tight ${scrolled ? "text-slate-900" : "text-slate-100"}`}>
@@ -134,6 +133,7 @@ const Navbar = () => {
   );
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const Feature = ({ icon: Icon, title, desc }: { icon: any; title: string; desc: string }) => (
   <Card className="bg-white/60 dark:bg-slate-900/60 backdrop-blur border-border">
     <CardHeader className="space-y-1">
@@ -245,7 +245,7 @@ const Index = () => {
                     <Stat value="12k+" label="People supported" />
                     <Stat value="98%" label="Satisfaction" />
                     <Stat value="120+" label="Clinician orgs" />
-                    <Stat value="24/7"  label="Access" />
+                    <Stat value="24/7" label="Access" />
                   </div>
                 </Reveal>
               </div>
@@ -435,14 +435,12 @@ const Index = () => {
           {selfAssessments.map((sa, idx) => (
             <Reveal key={idx} delay={idx * 80}>
               <Card
-                className={`bg-white/60 dark:bg-slate-900/60 backdrop-blur border-border hover:shadow-lg transition-all duration-300 ${
-                  idx === 0 ? "md:col-span-2 md:row-span-2" : ""
-                }`}
+                className={`bg-white/60 dark:bg-slate-900/60 backdrop-blur border-border hover:shadow-lg transition-all duration-300 ${idx === 0 ? "md:col-span-2 md:row-span-2" : ""
+                  }`}
               >
                 <CardContent className="p-4 h-full flex flex-col">
-                  <div className={`rounded-xl flex items-center justify-center mb-3 ${
-                    idx === 0 ? "p-4 bg-blue-50 dark:bg-blue-900/20" : "p-4 bg-blue-50 dark:bg-blue-900/20"
-                  }`}>
+                  <div className={`rounded-xl flex items-center justify-center mb-3 ${idx === 0 ? "p-4 bg-blue-50 dark:bg-blue-900/20" : "p-4 bg-blue-50 dark:bg-blue-900/20"
+                    }`}>
                     <img
                       src={sa.image}
                       className={`${idx === 0 ? "h-24" : "h-24"} object-contain`}
