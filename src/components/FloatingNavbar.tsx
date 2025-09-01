@@ -28,7 +28,7 @@ export function FloatingNavbar() {
 
   return (
     <div className="fixed top-2 left-0 right-0 z-50 px-4">
-      <div className="bg-background/80 backdrop-blur-md rounded-xl border border-border/50 shadow-lg px-6 py-2 max-w-full">
+      <div className="bg-background/80 backdrop-blur-md rounded-xl border border-border/200 shadow-lg px-6 py-2 max-w-full">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <h1 className="text-xl font-bold text-foreground">MediCase</h1>
