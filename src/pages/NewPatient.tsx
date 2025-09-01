@@ -190,7 +190,7 @@ const NewPatient = () => {
                     control={form.control}
                     name="dob"
                     render={({ field }) => (
-                      <FormItem className="flex flex-col">
+                      <FormItem className="flex flex-col min-w-96">
                         <FormLabel className="text-card-foreground">Date of Birth *</FormLabel>
                         <Popover>
                           <PopoverTrigger asChild>

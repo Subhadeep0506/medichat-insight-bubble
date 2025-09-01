@@ -18,12 +18,9 @@ function Calendar({
       showOutsideDays={showOutsideDays}
       className={cn("p-3 pointer-events-auto bg-popover rounded-lg border shadow-lg", className)}
       classNames={{
-        dropdown: "bg-popover border-popover text-popover-foreground",
-        months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
-        month: "flex flex-col space-y-4",
-        dropdown_year: "grid grid-cols-2 gap-2",
-        caption: "flex justify-center pt-1 relative items-center mb-4",
-        caption_label: "flex flex-row gap-2 items-center text-sm font-medium text-foreground",
+        // Caption and navigation
+        caption: "flex justify-center pt-1 relative items-center mb-2",
+        caption_label: "hidden",
         nav: "space-x-1 flex items-center",
         nav_button: cn(
           buttonVariants({ variant: "outline" }),
@@ -31,6 +28,18 @@ function Calendar({
         ),
         nav_button_previous: "absolute left-1",
         nav_button_next: "absolute right-1",
+
+        // Dropdowns (month/year)
+        caption_dropdowns: "flex items-center gap-2",
+        dropdown: "bg-background border border-input text-foreground rounded-md px-2 py-1 text-sm",
+        dropdown_month: "bg-background",
+        dropdown_year: "bg-background",
+
+        // Months grid
+        months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
+        month: "flex flex-col space-y-4",
+
+        // Table and days
         table: "w-full border-collapse",
         head_row: "flex mb-1",
         head_cell:
@@ -53,11 +62,11 @@ function Calendar({
         ...classNames,
       }}
       components={{
+        Caption: (captionProps) => <CaptionDropdowns {...captionProps} />,
         IconLeft: ({ ..._props }) => <ChevronLeft className="h-4 w-4" />,
         IconRight: ({ ..._props }) => <ChevronRight className="h-4 w-4" />,
       }}
-      captionLayout="dropdown"
-      fromYear={2010} // required for dropdowns to show
+      fromYear={2010}
       toYear={2030}
       {...props}
     />
