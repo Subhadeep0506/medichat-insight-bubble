@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -10,20 +11,29 @@ import { LogOut, User, Sun, Moon, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useTheme } from "next-themes";
+import { useAuthStore } from "@/store/auth";
+import { useState } from "react";
 
 export function FloatingNavbar() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { theme, setTheme } = useTheme();
+  const [isLoading, setIsLoading] = useState(false);
+  const { logout } = useAuthStore();
 
-  const handleLogout = () => {
-    localStorage.removeItem("isAuthenticated");
-    localStorage.removeItem("currentUser");
-    toast({
-      title: "Logged out",
-      description: "You have been successfully logged out.",
-    });
-    navigate("/");
+  const handleLogout = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    try {
+      await logout();
+      toast({ title: "Logout Successful", description: "Goodbye! Visit Again" });
+      navigate("/");
+    } catch (err: any) {
+      const desc = err.data.detail;
+      toast({ title: "Logout Failed", description: desc, variant: "destructive" });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

@@ -39,7 +39,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       return { messagesBySession: { ...s.messagesBySession, [sessionId]: [welcome] } };
     }),
   addLocalMessage: (sessionId, msg) =>
-    set((s) => ({ messagesBySession: { ...s.messagesBySession, [sessionId]: [ ...(s.messagesBySession[sessionId] || []), msg ] } })),
+    set((s) => ({ messagesBySession: { ...s.messagesBySession, [sessionId]: [...(s.messagesBySession[sessionId] || []), msg] } })),
   listSessions: async (patientId, caseId) => {
     set({ loading: true, error: null });
     try {
@@ -47,7 +47,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       set((s) => ({ sessionsByCase: { ...s.sessionsByCase, [caseId]: res.items } }));
       return res.items;
     } catch (e: any) {
-      const msg = `${e?.status ? e.status + " " : ""}${e?.data?.message || e?.message || "Failed to load sessions"}`;
+      const msg = `${e?.status ? e.status + " " : ""}${e?.data?.detail || e?.message || "Failed to load sessions"}`;
       set({ error: msg });
       throw e;
     } finally {
@@ -66,7 +66,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       set((s) => ({ messagesBySession: { ...s.messagesBySession, [sessionId]: res.items } }));
       return res.items;
     } catch (e: any) {
-      const msg = `${e?.status ? e.status + " " : ""}${e?.data?.message || e?.message || "Failed to load messages"}`;
+      const msg = `${e?.status ? e.status + " " : ""}${e?.data?.detail || e?.message || "Failed to load messages"}`;
       set({ error: msg });
       throw e;
     } finally {
@@ -90,7 +90,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       patientId,
       prompt: content,
     });
-    set((s) => ({ messagesBySession: { ...s.messagesBySession, [sessionId]: [ ...(s.messagesBySession[sessionId] || []), msg ] } }));
+    set((s) => ({ messagesBySession: { ...s.messagesBySession, [sessionId]: [...(s.messagesBySession[sessionId] || []), msg] } }));
     return msg;
   },
 }));

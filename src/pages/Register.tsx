@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -47,11 +48,12 @@ const Register = () => {
     }
 
     try {
-      await registerUser(formData.fullName, formData.email, formData.password);
-      toast({ title: "Registration Successful", description: "Your account has been created successfully!" });
-      navigate("/cases");
-    } catch (err) {
-      toast({ title: "Error", description: "Failed to register", variant: "destructive" });
+      const message = await registerUser(formData.fullName, formData.email, formData.password, formData.phone);
+      toast({ title: "Registration Successful", description: message || "Your account has been created successfully!" });
+      navigate("/login");
+    } catch (err: any) {
+      const desc = err.data.detail;
+      toast({ title: "Error", description: desc, variant: "destructive" });
     } finally {
       setIsLoading(false);
     }

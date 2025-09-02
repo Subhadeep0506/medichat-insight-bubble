@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,8 +26,8 @@ const Login = () => {
       await login(formData.email, formData.password);
       toast({ title: "Login Successful", description: "Welcome back!" });
       navigate("/cases");
-    } catch (err: unknown) {
-      const desc = `${err?.status ? err.status + " " : ""}${err?.data?.message || err?.message || "Invalid credentials."}`;
+    } catch (err: any) {
+      const desc = err.data.detail;
       toast({ title: "Login Failed", description: desc, variant: "destructive" });
     } finally {
       setIsLoading(false);

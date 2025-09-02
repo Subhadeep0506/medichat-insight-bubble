@@ -1,19 +1,21 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import type { User } from "@/types/domain";
 import { AuthApi } from "@/api/auth";
-import { setAuthTokenGetter } from "@/api/http";
+import { setAccessTokenGetter, setRefreshTokenGetter } from "@/api/http";
 
 interface AuthState {
   user: User | null;
-  token: string | null;
+  access_token: string | null;
+  refresh_token: string | null;
   loading: boolean;
   error: string | null;
   login: (email: string, password: string) => Promise<void>;
-  register: (name: string, email: string, password: string) => Promise<string>;
+  register: (name: string, email: string, password: string, phone?: string) => Promise<string>;
   fetchMe: () => Promise<void>;
   logout: () => Promise<void>;
-  setToken: (token: string | null) => void;
+  setToken: (access_token: string | null, refresh_token: string | null) => void;
   setUser: (user: User | null) => void;
 }
 
@@ -21,41 +23,49 @@ export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
       user: null,
-      token: null,
+      access_token: null,
+      refresh_token: null,
       loading: false,
       error: null,
-      setToken: (token) => {
-        if (token) localStorage.setItem("access_token", token);
-        else localStorage.removeItem("access_token");
-        set({ token });
-        setAuthTokenGetter(() => get().token || (typeof localStorage !== "undefined" ? localStorage.getItem("access_token") : null));
+      setToken: (access_token, refresh_token) => {
+        if (access_token && refresh_token) { localStorage.setItem("access_token", access_token); localStorage.setItem("refresh_token", refresh_token); }
+        else { localStorage.removeItem("access_token"); localStorage.removeItem("refresh_token"); }
+        set({ access_token, refresh_token });
+        setAccessTokenGetter(() => get().access_token || (typeof localStorage !== "undefined" ? localStorage.getItem("access_token") : null));
+        setRefreshTokenGetter(() => get().refresh_token || (typeof localStorage !== "undefined" ? localStorage.getItem("refresh_token") : null));
       },
       setUser: (user) => set({ user }),
       login: async (email, password) => {
         set({ loading: true, error: null });
         try {
           const { access_token, refresh_token } = await AuthApi.login({ email, password });
+          if (access_token) localStorage.setItem("access_token", access_token);
           if (refresh_token) localStorage.setItem("refresh_token", refresh_token);
-          get().setToken(access_token);
+          get().setToken(access_token, refresh_token);
           try {
             const me = await AuthApi.me();
             set({ user: me });
-          } catch (_) {}
+          } catch (e: any) {
+            const msg = `${e?.status ? e.status + " " : ""}${e?.data?.detail || e?.message || "Login failed"}`;
+            set({ error: msg });
+            throw e;
+          }
         } catch (e: any) {
-          const msg = `${e?.status ? e.status + " " : ""}${e?.data?.message || e?.message || "Login failed"}`;
+          console.log(e.data)
+          const msg = `${e?.status ? e.status + " " : ""}${e?.data?.detail || e?.message || "Login failed"}`;
           set({ error: msg });
           throw e;
         } finally {
           set({ loading: false });
         }
       },
-      register: async (name, email, password) => {
+      register: async (name, email, password, phone) => {
         set({ loading: true, error: null });
         try {
-          const { message } = await AuthApi.register({ name, email, password });
+          const { message } = await AuthApi.register({ name, email, password, phone });
           return message;
         } catch (e: any) {
-          const msg = `${e?.status ? e.status + " " : ""}${e?.data?.message || e?.message || "Registration failed"}`;
+          const msg = `${e?.status ? e.status + " " : ""}${e?.data?.detail || e?.message || "Registration failed"}`;
           set({ error: msg });
           throw e;
         } finally {
@@ -76,16 +86,21 @@ export const useAuthStore = create<AuthState>()(
       logout: async () => {
         try {
           await AuthApi.logout();
-        } catch (_) {}
+        } catch (e: any) {
+          const msg = `${e?.status ? e.status + " " : ""}${e?.data?.detail || e?.message || "Login failed"}`;
+          set({ error: msg });
+          throw e;
+        }
+        localStorage.removeItem("access_token");
         localStorage.removeItem("refresh_token");
-        get().setToken(null);
+        get().setToken(null, null);
         set({ user: null });
       },
     }),
     {
       name: "auth-store",
       storage: createJSONStorage(() => localStorage),
-      partialize: (s) => ({ token: s.token, user: s.user }),
+      partialize: (s) => ({ token: s.access_token, user: s.user }),
     }
   )
 );
