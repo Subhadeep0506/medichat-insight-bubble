@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { http } from "./http";
 import type { ApiListResponse, ChatMessage, ChatSession, ID } from "@/types/domain";
 import { v4 as uuidv4 } from "uuid";
@@ -15,7 +14,7 @@ function toCamelSession(s: any): ChatSession {
 }
 
 export const ChatApi = {
-  // Backend has no sessions endpoints. Return empty; store will synthesize sessions.
+  // No backend sessions listing; rely on local store
   listSessions: async (_patientId: ID, _caseId: ID) => ({ items: [] } as ApiListResponse<ChatSession>),
   // Create a new session client-side
   startSession: async (patientId: ID, caseId: ID, title?: string) =>

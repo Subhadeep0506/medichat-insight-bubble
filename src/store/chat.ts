@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { persist, createJSONStorage } from "zustand/middleware";
 import type { ID, ChatSession, ChatMessage, UploadAttachment } from "@/types/domain";
 import { ChatApi } from "@/api/chat";
 
@@ -18,79 +19,87 @@ interface ChatState {
   sendMessage: (sessionId: ID, caseId: ID, patientId: ID, content: string, attachments?: UploadAttachment[]) => Promise<ChatMessage>;
 }
 
-export const useChatStore = create<ChatState>((set, get) => ({
-  sessionsByCase: {},
-  messagesBySession: {},
-  currentSessionId: null,
-  loading: false,
-  error: null,
-  setCurrentSession: (sessionId) => set({ currentSessionId: sessionId }),
-  ensureSession: (sessionId, title) =>
-    set((s) => {
-      if (s.messagesBySession[sessionId]) return s;
-      const welcome: ChatMessage = {
-        id: `${sessionId}_welcome`,
-        sessionId,
-        role: "assistant",
-        content:
-          "Hello! I'm here to help you analyze medical images and answer your questions. Please upload an image and ask your question.",
-        createdAt: new Date().toISOString(),
-      };
-      return { messagesBySession: { ...s.messagesBySession, [sessionId]: [welcome] } };
+export const useChatStore = create<ChatState>()(
+  persist(
+    (set, get) => ({
+      sessionsByCase: {},
+      messagesBySession: {},
+      currentSessionId: null,
+      loading: false,
+      error: null,
+      setCurrentSession: (sessionId) => set({ currentSessionId: sessionId }),
+      ensureSession: (sessionId, title) =>
+        set((s) => {
+          if (s.messagesBySession[sessionId]) return s;
+          const welcome: ChatMessage = {
+            id: `${sessionId}_welcome`,
+            sessionId,
+            role: "assistant",
+            content:
+              "Hello! I'm here to help you analyze medical images and answer your questions. Please upload an image and ask your question.",
+            createdAt: new Date().toISOString(),
+          };
+          return { messagesBySession: { ...s.messagesBySession, [sessionId]: [welcome] } };
+        }),
+      addLocalMessage: (sessionId, msg) =>
+        set((s) => ({ messagesBySession: { ...s.messagesBySession, [sessionId]: [...(s.messagesBySession[sessionId] || []), msg] } })),
+      listSessions: async (_patientId, caseId) => {
+        const items = get().sessionsByCase[caseId] || [];
+        return items;
+      },
+      startSession: async (patientId, caseId, title) => {
+        const session = await ChatApi.startSession(patientId, caseId, title);
+        set((s) => ({ sessionsByCase: { ...s.sessionsByCase, [caseId]: [session, ...(s.sessionsByCase[caseId] || [])] }, currentSessionId: session.id }));
+        return session;
+      },
+      listMessages: async (sessionId) => {
+        set({ loading: true, error: null });
+        try {
+          const res = await ChatApi.listMessages(sessionId);
+          set((s) => ({ messagesBySession: { ...s.messagesBySession, [sessionId]: res.items } }));
+          return res.items;
+        } catch (e: any) {
+          const msg = `${e?.status ? e.status + " " : ""}${e?.data?.detail || e?.message || "Failed to load messages"}`;
+          set({ error: msg });
+          throw e;
+        } finally {
+          set({ loading: false });
+        }
+      },
+      deleteSession: async (sessionId, caseId) => {
+        await ChatApi.deleteHistory(sessionId);
+        set((s) => {
+          const { [sessionId]: _removed, ...restMsgs } = s.messagesBySession;
+          const sessions = (s.sessionsByCase[caseId] || []).filter((x) => x.id !== sessionId);
+          const next = { ...s.sessionsByCase, [caseId]: sessions };
+          const nextCurrent = s.currentSessionId === sessionId ? (sessions[0]?.id || null) : s.currentSessionId;
+          return { messagesBySession: restMsgs, sessionsByCase: next, currentSessionId: nextCurrent };
+        });
+      },
+      sendMessage: async (sessionId, caseId, patientId, content, attachments) => {
+        const msg = await ChatApi.sendMessage({
+          sessionId,
+          caseId,
+          patientId,
+          prompt: content,
+        });
+        set((s) => {
+          const msgs = [...(s.messagesBySession[sessionId] || []), msg];
+          const sessions = (s.sessionsByCase[caseId] || []).map((ses) =>
+            ses.id === sessionId ? { ...ses, updatedAt: new Date().toISOString() } : ses
+          );
+          return {
+            messagesBySession: { ...s.messagesBySession, [sessionId]: msgs },
+            sessionsByCase: { ...s.sessionsByCase, [caseId]: sessions },
+          };
+        });
+        return msg;
+      },
     }),
-  addLocalMessage: (sessionId, msg) =>
-    set((s) => ({ messagesBySession: { ...s.messagesBySession, [sessionId]: [...(s.messagesBySession[sessionId] || []), msg] } })),
-  listSessions: async (patientId, caseId) => {
-    set({ loading: true, error: null });
-    try {
-      const res = await ChatApi.listSessions(patientId, caseId);
-      set((s) => ({ sessionsByCase: { ...s.sessionsByCase, [caseId]: res.items } }));
-      return res.items;
-    } catch (e: any) {
-      const msg = `${e?.status ? e.status + " " : ""}${e?.data?.detail || e?.message || "Failed to load sessions"}`;
-      set({ error: msg });
-      throw e;
-    } finally {
-      set({ loading: false });
+    {
+      name: "chat-store",
+      storage: createJSONStorage(() => localStorage),
+      partialize: (s) => ({ sessionsByCase: s.sessionsByCase, messagesBySession: s.messagesBySession }),
     }
-  },
-  startSession: async (patientId, caseId, title) => {
-    const session = await ChatApi.startSession(patientId, caseId, title);
-    set((s) => ({ sessionsByCase: { ...s.sessionsByCase, [caseId]: [session, ...(s.sessionsByCase[caseId] || [])] }, currentSessionId: session.id }));
-    return session;
-  },
-  listMessages: async (sessionId) => {
-    set({ loading: true, error: null });
-    try {
-      const res = await ChatApi.listMessages(sessionId);
-      set((s) => ({ messagesBySession: { ...s.messagesBySession, [sessionId]: res.items } }));
-      return res.items;
-    } catch (e: any) {
-      const msg = `${e?.status ? e.status + " " : ""}${e?.data?.detail || e?.message || "Failed to load messages"}`;
-      set({ error: msg });
-      throw e;
-    } finally {
-      set({ loading: false });
-    }
-  },
-  deleteSession: async (sessionId, caseId) => {
-    await ChatApi.deleteHistory(sessionId);
-    set((s) => {
-      const { [sessionId]: _removed, ...restMsgs } = s.messagesBySession;
-      const sessions = (s.sessionsByCase[caseId] || []).filter((x) => x.id !== sessionId);
-      const next = { ...s.sessionsByCase, [caseId]: sessions };
-      const nextCurrent = s.currentSessionId === sessionId ? (sessions[0]?.id || null) : s.currentSessionId;
-      return { messagesBySession: restMsgs, sessionsByCase: next, currentSessionId: nextCurrent };
-    });
-  },
-  sendMessage: async (sessionId, caseId, patientId, content, attachments) => {
-    const msg = await ChatApi.sendMessage({
-      sessionId,
-      caseId,
-      patientId,
-      prompt: content,
-    });
-    set((s) => ({ messagesBySession: { ...s.messagesBySession, [sessionId]: [...(s.messagesBySession[sessionId] || []), msg] } }));
-    return msg;
-  },
-}));
+  )
+);
