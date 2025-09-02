@@ -20,7 +20,7 @@ const queryClient = new QueryClient();
 // Protected Route component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const user = useAuthStore((s) => s.user);
-  const token = useAuthStore((s) => s.token) || (typeof localStorage !== "undefined" ? localStorage.getItem("access_token") : null);
+  const token = useAuthStore((s) => s.access_token) || (typeof localStorage !== "undefined" ? localStorage.getItem("access_token") : null);
   return (user || token) ? <>{children}</> : <Navigate to="/login" />;
 };
 

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useMemo, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -49,6 +50,7 @@ const Cases = () => {
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const [expandedPatient, setExpandedPatient] = useState<string | null>(null);
   const [editingPatient, setEditingPatient] = useState<Patient | null>(null);
+  const [deletingPatient, setDeletingPatient] = useState(false)
 
   const form = useForm<z.infer<typeof editCaseSchema>>({
     resolver: zodResolver(editCaseSchema),
@@ -58,16 +60,12 @@ const Cases = () => {
   const { patients, order: patientOrder, fetchPatients, deletePatient } = usePatientsStore();
   const { casesByPatient, orderByPatient, listByPatient, updateCase, deleteCase } = useCasesStore();
 
-  // useEffect(() => {
-  //   fetchPatients().catch(() => {});
-  // }, [fetchPatients]);
   useEffect(() => {
-    fetchPatients().then(() => console.log(`Patients fetched: ${patients}`))  
-    .catch((error) => console.error('Error fetching patients:', error));
-  }, [fetchPatients]);
+    fetchPatients().catch((error) => console.error('Error fetching patients:', error));
+  }, [fetchPatients, deletingPatient]);
 
   useEffect(() => {
-    if (selectedPatient?.id) listByPatient(selectedPatient.id).catch(() => {});
+    if (selectedPatient?.id) listByPatient(selectedPatient.id).catch(() => { });
   }, [selectedPatient?.id, listByPatient]);
 
   const patientsList: Patient[] = useMemo(() => patientOrder.map((id) => patients[id]).filter(Boolean) as Patient[], [patients, patientOrder]);
@@ -128,7 +126,7 @@ const Cases = () => {
 
   const handleDeleteCase = (caseId: string) => {
     if (!selectedPatient) return;
-    deleteCase(selectedPatient.id, caseId).catch(() => {});
+    deleteCase(selectedPatient.id, caseId).catch(() => { });
   };
 
   const handleEditCase = (case_: UICase) => {
@@ -171,9 +169,13 @@ const Cases = () => {
   };
 
   const handleDeletePatient = (patientId: string) => {
-    deletePatient(patientId).catch(() => {});
+    setDeletingPatient(true)
+    deletePatient(patientId).then(() => { toast({ title: "Patient deleted." }); }).catch((err: any) => {
+      toast({ title: "Patient delete failed.", description: err.data.details, variant: "destructive" });
+    });
     if (selectedPatient?.id === patientId) setSelectedPatient(null);
     if (expandedPatient === patientId) setExpandedPatient(null);
+    setDeletingPatient(false)
   };
 
   const handlePatientClick = (patient: Patient) => {
@@ -485,7 +487,7 @@ const Cases = () => {
           }}
           open={!!editingPatient}
           onOpenChange={(open) => !open && setEditingPatient(null)}
-          onPatientUpdate={() => {}}
+          onPatientUpdate={() => { }}
         />
       )}
     </div>

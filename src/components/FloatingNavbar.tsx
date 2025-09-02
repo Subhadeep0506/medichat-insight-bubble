@@ -31,6 +31,7 @@ export function FloatingNavbar() {
     } catch (err: any) {
       const desc = err.data.detail;
       toast({ title: "Logout Failed", description: desc, variant: "destructive" });
+      navigate("/");
     } finally {
       setIsLoading(false);
     }
