@@ -21,7 +21,7 @@ export const PatientsApi = {
     http
       .get<any>("/patient")
       .then((res) => ({
-        items: (res.items || res || []).map(toCamelPatient),
+        items: res.items || [],
       }) as ApiListResponse<Patient>),
   get: (id: ID) => http.get<any>(`/patient/${id}`).then(toCamelPatient),
   create: (body: Partial<Patient>) =>

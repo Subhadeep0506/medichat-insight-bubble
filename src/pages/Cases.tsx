@@ -58,8 +58,12 @@ const Cases = () => {
   const { patients, order: patientOrder, fetchPatients, deletePatient } = usePatientsStore();
   const { casesByPatient, orderByPatient, listByPatient, updateCase, deleteCase } = useCasesStore();
 
+  // useEffect(() => {
+  //   fetchPatients().catch(() => {});
+  // }, [fetchPatients]);
   useEffect(() => {
-    fetchPatients().catch(() => {});
+    fetchPatients().then(() => console.log(`Patients fetched: ${patients}`))  
+    .catch((error) => console.error('Error fetching patients:', error));
   }, [fetchPatients]);
 
   useEffect(() => {
