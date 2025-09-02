@@ -1,14 +1,13 @@
-
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { ChatMessage } from '../MedicalChatInterface';
+import type { ChatMessage as UiMessage } from '../MedicalChatInterface';
 import { User, Bot, Info, Shield } from 'lucide-react';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
 import { Badge } from '@/components/ui/badge';
 
 interface MessageBubbleProps {
-  message: ChatMessage;
+  message: UiMessage;
 }
 
 export const MessageBubble = ({ message }: MessageBubbleProps) => {

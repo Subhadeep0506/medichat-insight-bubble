@@ -60,7 +60,4 @@ export interface UploadAttachment {
 
 export interface ApiListResponse<T> {
   items: T[];
-  total?: number;
-  page?: number;
-  pageSize?: number;
 }

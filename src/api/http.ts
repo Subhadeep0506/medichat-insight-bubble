@@ -1,4 +1,4 @@
-const DEFAULT_BASE = import.meta.env.VITE_API_BASE_URL || "";
+const DEFAULT_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8089";
 
 export type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
@@ -42,7 +42,7 @@ function buildQuery(params?: RequestOptions["query"]) {
   return str ? `?${str}` : "";
 }
 
-let authTokenGetter: () => string | null | undefined = () => (typeof localStorage !== "undefined" ? localStorage.getItem("auth_token") : null);
+let authTokenGetter: () => string | null | undefined = () => (typeof localStorage !== "undefined" ? localStorage.getItem("access_token") : null);
 export function setAuthTokenGetter(fn: () => string | null | undefined) {
   authTokenGetter = fn;
 }
@@ -58,12 +58,15 @@ export function createHttpClient(opts: HttpClientOptions = {}) {
     const token = getToken();
     const url = `${base}${path}${buildQuery(query)}`;
     const isJson = body !== undefined && !(body instanceof FormData);
-
+    console.log(`URL: ${url}`)
+    console.log(`TOKEN: ${token}`)
+    console.log(`QUERY: ${query}`)
+    console.log(`BODY: ${body}`)
     const res = await fetch(url, {
       method,
       headers: {
         ...(isJson ? { "Content-Type": "application/json" } : {}),
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...(token ? { "Authorization": `Bearer ${token}` } : {}),
         ...headers,
       },
       body: isJson ? JSON.stringify(body) : (body as any),
@@ -93,4 +96,4 @@ export function createHttpClient(opts: HttpClientOptions = {}) {
   };
 }
 
-export const http = createHttpClient({ getAuthToken: () => (typeof localStorage !== "undefined" ? localStorage.getItem("auth_token") : null) });
+export const http = createHttpClient({ getAuthToken: () => (typeof localStorage !== "undefined" ? localStorage.getItem("access_token") : null) });

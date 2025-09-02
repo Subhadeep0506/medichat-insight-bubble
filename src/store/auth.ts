@@ -10,7 +10,7 @@ interface AuthState {
   loading: boolean;
   error: string | null;
   login: (email: string, password: string) => Promise<void>;
-  register: (name: string, email: string, password: string) => Promise<void>;
+  register: (name: string, email: string, password: string) => Promise<string>;
   fetchMe: () => Promise<void>;
   logout: () => Promise<void>;
   setToken: (token: string | null) => void;
@@ -25,8 +25,8 @@ export const useAuthStore = create<AuthState>()(
       loading: false,
       error: null,
       setToken: (token) => {
-        if (token) localStorage.setItem("auth_token", token);
-        else localStorage.removeItem("auth_token");
+        if (token) localStorage.setItem("access_token", token);
+        else localStorage.removeItem("access_token");
         set({ token });
         setAuthTokenGetter(() => get().token || (typeof localStorage !== "undefined" ? localStorage.getItem("access_token") : null));
       },
@@ -40,9 +40,10 @@ export const useAuthStore = create<AuthState>()(
           try {
             const me = await AuthApi.me();
             set({ user: me });
-          } catch (_) { }
+          } catch (_) {}
         } catch (e: any) {
-          set({ error: e?.data?.message || e?.message || "Login failed" });
+          const msg = `${e?.status ? e.status + " " : ""}${e?.data?.message || e?.message || "Login failed"}`;
+          set({ error: msg });
           throw e;
         } finally {
           set({ loading: false });
@@ -51,15 +52,11 @@ export const useAuthStore = create<AuthState>()(
       register: async (name, email, password) => {
         set({ loading: true, error: null });
         try {
-          const { access_token, refresh_token } = await AuthApi.register({ name, email, password });
-          if (refresh_token) localStorage.setItem("refresh_token", refresh_token);
-          get().setToken(access_token);
-          try {
-            const me = await AuthApi.me();
-            set({ user: me });
-          } catch (_) { }
+          const { message } = await AuthApi.register({ name, email, password });
+          return message;
         } catch (e: any) {
-          set({ error: e?.data?.message || e?.message || "Registration failed" });
+          const msg = `${e?.status ? e.status + " " : ""}${e?.data?.message || e?.message || "Registration failed"}`;
+          set({ error: msg });
           throw e;
         } finally {
           set({ loading: false });
@@ -79,7 +76,7 @@ export const useAuthStore = create<AuthState>()(
       logout: async () => {
         try {
           await AuthApi.logout();
-        } catch (_) { }
+        } catch (_) {}
         localStorage.removeItem("refresh_token");
         get().setToken(null);
         set({ user: null });

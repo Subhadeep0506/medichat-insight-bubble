@@ -14,6 +14,7 @@ interface CasesState {
   updateCase: (caseId: ID, data: Partial<CaseRecord>) => Promise<CaseRecord>;
   deleteCase: (patientId: ID, caseId: ID) => Promise<void>;
   selectCase: (id: ID | null) => void;
+  findPatientIdByCaseId: (caseId: ID) => ID | undefined;
 }
 
 export const useCasesStore = create<CasesState>((set, get) => ({
@@ -23,18 +24,27 @@ export const useCasesStore = create<CasesState>((set, get) => ({
   loading: false,
   error: null,
   selectCase: (id) => set({ selectedCaseId: id }),
+  findPatientIdByCaseId: (caseId) => {
+    const state = get();
+    for (const pid of Object.keys(state.casesByPatient)) {
+      if (state.casesByPatient[pid]?.[caseId]) return pid as ID;
+    }
+    return undefined;
+  },
   listByPatient: async (patientId) => {
     set({ loading: true, error: null });
     try {
       const res = await CasesApi.listByPatient(patientId);
+      const items = (res.items || []);
       const map: Record<ID, CaseRecord> = {};
-      res.items.forEach((c) => (map[c.id] = c));
+      items.forEach((c) => (map[c.id] = c));
       set((s) => ({
         casesByPatient: { ...s.casesByPatient, [patientId]: map },
-        orderByPatient: { ...s.orderByPatient, [patientId]: res.items.map((c) => c.id) },
+        orderByPatient: { ...s.orderByPatient, [patientId]: items.map((c) => c.id) },
       }));
     } catch (e: any) {
-      set({ error: e?.data?.message || e?.message || "Failed to load cases" });
+      const msg = `${e?.status ? e.status + " " : ""}${e?.data?.message || e?.message || "Failed to load cases"}`;
+      set({ error: msg });
       throw e;
     } finally {
       set({ loading: false });

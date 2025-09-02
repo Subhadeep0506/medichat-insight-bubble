@@ -3,15 +3,10 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { MedicalChatInterface } from '@/components/MedicalChatInterface';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
-import { useChatStore } from '@/store';
 
 const CaseChat = () => {
   const { caseId } = useParams<{ caseId: string }>();
   const navigate = useNavigate();
-  const setCurrentSession = useChatStore((s) => s.setCurrentSession);
-  React.useEffect(() => {
-    if (caseId) setCurrentSession(caseId);
-  }, [caseId, setCurrentSession]);
 
   const handleBackToCase = () => {
     navigate('/cases');

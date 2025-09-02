@@ -13,7 +13,7 @@ const Login = () => {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
-    username: "",
+    email: "",
     password: "",
   });
   const { login } = useAuthStore();
@@ -22,11 +22,12 @@ const Login = () => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      await login(formData.username, formData.password);
+      await login(formData.email, formData.password);
       toast({ title: "Login Successful", description: "Welcome back!" });
       navigate("/cases");
-    } catch (err) {
-      toast({ title: "Login Failed", description: "Invalid credentials.", variant: "destructive" });
+    } catch (err: unknown) {
+      const desc = `${err?.status ? err.status + " " : ""}${err?.data?.message || err?.message || "Invalid credentials."}`;
+      toast({ title: "Login Failed", description: desc, variant: "destructive" });
     } finally {
       setIsLoading(false);
     }
@@ -71,11 +72,11 @@ const Login = () => {
               <div className="space-y-2">
                 <Label htmlFor="username" className="text-slate-700 dark:text-slate-300 font-semibold">Email</Label>
                 <Input
-                  id="username"
-                  name="username"
+                  id="email"
+                  name="email"
                   type="text"
                   required
-                  value={formData.username}
+                  value={formData.email}
                   onChange={handleInputChange}
                   className="h-12 bg-slate-50 dark:bg-slate-700 border-slate-300 dark:border-slate-600 rounded-xl text-slate-900 dark:text-slate-100 placeholder:text-slate-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="Enter your email"

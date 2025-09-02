@@ -34,6 +34,7 @@ import {
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { usePatientsStore } from '@/store';
+import {v4 as uuidv4} from "uuid"
 
 const formSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),

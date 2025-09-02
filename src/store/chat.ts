@@ -14,7 +14,8 @@ interface ChatState {
   listSessions: (patientId: ID, caseId: ID) => Promise<ChatSession[]>;
   startSession: (patientId: ID, caseId: ID, title?: string) => Promise<ChatSession>;
   listMessages: (sessionId: ID) => Promise<ChatMessage[]>;
-  sendMessage: (sessionId: ID, content: string, attachments?: UploadAttachment[]) => Promise<ChatMessage>;
+  deleteSession: (sessionId: ID, caseId: ID) => Promise<void>;
+  sendMessage: (sessionId: ID, caseId: ID, patientId: ID, content: string, attachments?: UploadAttachment[]) => Promise<ChatMessage>;
 }
 
 export const useChatStore = create<ChatState>((set, get) => ({
@@ -45,9 +46,9 @@ export const useChatStore = create<ChatState>((set, get) => ({
       const res = await ChatApi.listSessions(patientId, caseId);
       set((s) => ({ sessionsByCase: { ...s.sessionsByCase, [caseId]: res.items } }));
       return res.items;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (e: any) {
-      set({ error: e?.data?.message || e?.message || "Failed to load sessions" });
+      const msg = `${e?.status ? e.status + " " : ""}${e?.data?.message || e?.message || "Failed to load sessions"}`;
+      set({ error: msg });
       throw e;
     } finally {
       set({ loading: false });
@@ -64,15 +65,31 @@ export const useChatStore = create<ChatState>((set, get) => ({
       const res = await ChatApi.listMessages(sessionId);
       set((s) => ({ messagesBySession: { ...s.messagesBySession, [sessionId]: res.items } }));
       return res.items;
-    } catch (e) {
-      set({ error: e?.data?.message || e?.message || "Failed to load messages" });
+    } catch (e: any) {
+      const msg = `${e?.status ? e.status + " " : ""}${e?.data?.message || e?.message || "Failed to load messages"}`;
+      set({ error: msg });
       throw e;
     } finally {
       set({ loading: false });
     }
   },
-  sendMessage: async (sessionId, content, attachments) => {
-    const msg = await ChatApi.sendMessage(sessionId, { content, attachments });
+  deleteSession: async (sessionId, caseId) => {
+    await ChatApi.deleteHistory(sessionId);
+    set((s) => {
+      const { [sessionId]: _removed, ...restMsgs } = s.messagesBySession;
+      const sessions = (s.sessionsByCase[caseId] || []).filter((x) => x.id !== sessionId);
+      const next = { ...s.sessionsByCase, [caseId]: sessions };
+      const nextCurrent = s.currentSessionId === sessionId ? (sessions[0]?.id || null) : s.currentSessionId;
+      return { messagesBySession: restMsgs, sessionsByCase: next, currentSessionId: nextCurrent };
+    });
+  },
+  sendMessage: async (sessionId, caseId, patientId, content, attachments) => {
+    const msg = await ChatApi.sendMessage({
+      sessionId,
+      caseId,
+      patientId,
+      prompt: content,
+    });
     set((s) => ({ messagesBySession: { ...s.messagesBySession, [sessionId]: [ ...(s.messagesBySession[sessionId] || []), msg ] } }));
     return msg;
   },

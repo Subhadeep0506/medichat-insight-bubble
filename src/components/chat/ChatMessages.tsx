@@ -1,11 +1,10 @@
-
 import React from 'react';
-import { ChatMessage } from '../MedicalChatInterface';
+import type { ChatMessage as UiMessage } from '../MedicalChatInterface';
 import { MessageBubble } from './MessageBubble';
 import { LoadingMessage } from './LoadingMessage';
 
 interface ChatMessagesProps {
-  messages: ChatMessage[];
+  messages: UiMessage[];
   isLoading: boolean;
   messagesEndRef: React.RefObject<HTMLDivElement>;
 }

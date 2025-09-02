@@ -36,6 +36,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
+import { usePatientsStore } from "@/store";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -75,6 +76,7 @@ export function EditPatientDialog({
 }: EditPatientDialogProps) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const updatePatient = usePatientsStore((s) => s.updatePatient);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -92,6 +94,15 @@ export function EditPatientDialog({
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsSubmitting(true);
     try {
+      await updatePatient(patient.id, {
+        name: values.name,
+        age: parseInt(values.age, 10),
+        gender: values.gender as any,
+        dob: values.dob?.toISOString?.() ?? null,
+        height: values.height,
+        weight: values.weight,
+        medicalHistory: values.medicalHistory,
+      });
       const updatedPatient: Patient = {
         ...patient,
         ...values,
