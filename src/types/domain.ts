@@ -30,6 +30,8 @@ export interface CaseRecord {
   status: "open" | "closed" | "on_hold";
   createdAt?: string;
   updatedAt?: string;
+  tags?: string[];
+  priority?: "low" | "medium" | "high";
 }
 
 export type Role = "user" | "admin" | "clinician";

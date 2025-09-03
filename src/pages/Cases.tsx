@@ -1,4 +1,3 @@
-
 import React, { useEffect, useMemo, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';
-import { Trash2, Plus, Calendar, Eye, Search, Filter, Edit, User, ChevronDown, ChevronUp } from 'lucide-react';
+import { Trash2, Plus, Calendar, Eye, Search, Filter, Edit, User, ChevronDown, ChevronUp, X } from 'lucide-react';
 import FloatingNavbar from '@/components/FloatingNavbar';
 import { EditPatientDialog } from '@/components/EditPatientDialog';
 import { useForm } from 'react-hook-form';
@@ -32,10 +31,13 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { usePatientsStore, useCasesStore } from '@/store';
 import type { Patient, CaseRecord, ID } from '@/types/domain';
+import { cn } from '@/lib/utils';
 
 const editCaseSchema = z.object({
-  title: z.string().min(1, 'Title is required'),
+  caseName: z.string().min(1, 'Case name is required'),
   description: z.string().optional(),
+  priority: z.enum(['low', 'medium', 'high']).default('medium'),
+  tags: z.array(z.string()).default([]),
 });
 
 const Cases = () => {
@@ -54,7 +56,7 @@ const Cases = () => {
 
   const form = useForm<z.infer<typeof editCaseSchema>>({
     resolver: zodResolver(editCaseSchema),
-    defaultValues: { title: '', description: '' },
+    defaultValues: { caseName: '', description: '', priority: 'medium', tags: [] },
   });
 
   const { patients, order: patientOrder, fetchPatients, deletePatient } = usePatientsStore();
@@ -101,7 +103,7 @@ const Cases = () => {
       description: c.description,
       lastUpdated: c.updatedAt ? new Date(c.updatedAt) : new Date(),
       category: 'general',
-      tags: [],
+      tags: c.tags || [],
     }));
   }, [selectedPatient, orderByPatient, casesByPatient]);
 
@@ -132,6 +134,30 @@ const Cases = () => {
     deleteCase(selectedPatient.id, caseId).catch(() => { });
   };
 
+  const [editTags, setEditTags] = useState<string[]>([]);
+  const colorIndexFor = useMemo(() => {
+    const COLORS = 12;
+    const fn = (s: string) => {
+      let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+      return (h % COLORS) + 1;
+    };
+    return fn;
+  }, []);
+  const addEditTag = (value: string) => {
+    const v = value.trim();
+    if (!v) return;
+    if (!editTags.includes(v)) setEditTags([...editTags, v]);
+  };
+  const removeEditTag = (value: string) => setEditTags(editTags.filter((t) => t !== value));
+  const onEditTagKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault();
+      const input = e.currentTarget as HTMLInputElement;
+      addEditTag(input.value);
+      input.value = '';
+    }
+  };
+
   const handleEditCase = (case_: UICase) => {
     setEditingCase({
       id: case_.id,
@@ -139,14 +165,17 @@ const Cases = () => {
       title: case_.title,
       description: case_.description,
       status: 'open',
+      updatedAt: case_.lastUpdated.toISOString(),
+      tags: case_.tags,
     });
-    form.reset({ title: case_.title, description: case_.description || '' });
+    setEditTags(case_.tags || []);
+    form.reset({ caseName: case_.title, description: case_.description || '', priority: 'medium', tags: case_.tags || [] });
   };
 
   const onEditSubmit = async (values: z.infer<typeof editCaseSchema>) => {
     if (!editingCase) return;
     try {
-      await updateCase(editingCase.id, { title: values.title, description: values.description });
+      await updateCase(editingCase.id, { title: values.caseName, description: values.description, tags: editTags, priority: values.priority });
       toast({ title: 'Case updated' });
     } catch {
       toast({ title: 'Failed to update case', variant: 'destructive' });
@@ -197,9 +226,9 @@ const Cases = () => {
     return new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'long', day: 'numeric' }).format(new Date(dob));
   };
 
-  const formatDateFull = (datetime?: string | null) => {
-    if (!datetime) return '—';
-    return new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }).format(new Date(datetime));
+  const formatDateTime = (dob?: string | null) => {
+    if (!dob) return '—';
+    return new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'long', day: 'numeric', hour: "2-digit", minute: "2-digit" }).format(new Date(dob));
   };
 
   const getCategoryColor = (category: UICase['category']) => {
@@ -266,8 +295,8 @@ const Cases = () => {
                                   <div className="mt-1 text-sm text-muted-foreground">{patient.medicalHistory || 'No medical history recorded'}</div>
                                 </div>
                                 <div className="flex justify-between text-xs text-muted-foreground">
-                                  <span>Created: {formatDateFull(patient.createdAt) || '—'}</span>
-                                  <span>Updated: {formatDateFull(patient.updatedAt) || '—'}</span>
+                                  <span>Created: {formatDateTime(patient.createdAt) || '—'}</span>
+                                  <span>Updated: {formatDateTime(patient.updatedAt) || '—'}</span>
                                 </div>
                               </div>
                               <div className="flex flex-col gap-2 mt-3">
@@ -409,11 +438,11 @@ const Cases = () => {
                                       </DialogHeader>
                                       <Form {...form}>
                                         <form onSubmit={form.handleSubmit(onEditSubmit)} className="space-y-4" onClick={(e) => e.stopPropagation()}>
-                                          <FormField control={form.control} name="title" render={({ field }) => (
+                                          <FormField control={form.control} name="caseName" render={({ field }) => (
                                             <FormItem>
-                                              <FormLabel>Case Title</FormLabel>
+                                              <FormLabel>Case Name</FormLabel>
                                               <FormControl>
-                                                <Input placeholder="Enter case title" {...field} />
+                                                <Input placeholder="Enter case name" {...field} />
                                               </FormControl>
                                               <FormMessage />
                                             </FormItem>
@@ -427,6 +456,45 @@ const Cases = () => {
                                               <FormMessage />
                                             </FormItem>
                                           )} />
+
+                                          <div>
+                                            <FormLabel>Tags</FormLabel>
+                                            <div className="tag-input-container mt-2">
+                                              {editTags.map((tag) => (
+                                                <span key={tag} className={cn('tag-badge', `tag-color-${colorIndexFor(tag)}`)}>
+                                                  {tag}
+                                                  <button type="button" aria-label={`Remove ${tag}`} className="tag-remove" onClick={() => removeEditTag(tag)}>
+                                                    <X className="w-3 h-3" />
+                                                  </button>
+                                                </span>
+                                              ))}
+                                              <Input
+                                                placeholder="Type a tag and press Enter"
+                                                onKeyDown={onEditTagKeyDown}
+                                                className="tag-input-field flex-1 min-w-[200px]"
+                                              />
+                                            </div>
+                                          </div>
+
+                                          <FormField control={form.control} name="priority" render={({ field }) => (
+                                            <FormItem>
+                                              <FormLabel>Priority</FormLabel>
+                                              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                <FormControl>
+                                                  <SelectTrigger className="w-48">
+                                                    <SelectValue placeholder="Select priority" />
+                                                  </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                  <SelectItem value="low">Low</SelectItem>
+                                                  <SelectItem value="medium">Medium</SelectItem>
+                                                  <SelectItem value="high">High</SelectItem>
+                                                </SelectContent>
+                                              </Select>
+                                              <FormMessage />
+                                            </FormItem>
+                                          )} />
+
                                           <div className="flex gap-2 pt-4">
                                             <Button type="submit" className="flex-1">Save Changes</Button>
                                             <Button type="button" variant="outline" onClick={() => setEditingCase(null)}>Cancel</Button>

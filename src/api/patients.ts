@@ -34,6 +34,8 @@ export const PatientsApi = {
           age: body.age,
           gender: body.gender,
           dob: body.dob,
+          height: body.height,
+          weight: body.weight,
           medical_history: body.medicalHistory,
         },
       })
@@ -46,6 +48,8 @@ export const PatientsApi = {
           age: body.age,
           gender: body.gender,
           dob: body.dob,
+          height: body.height,
+          weight: body.weight,
           medical_history: body.medicalHistory,
         },
       })

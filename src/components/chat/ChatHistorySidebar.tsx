@@ -335,30 +335,14 @@ export const ChatHistorySidebar = ({
                       <SelectValue placeholder="Select provider" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="groq">Groq Cloud</SelectItem>
-                      <SelectItem value="local">Local</SelectItem>
+                      <SelectItem value="groq">groq</SelectItem>
+                      <SelectItem value="local">local</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
                   <Label>Model name</Label>
-                  <Select value={localModel} onValueChange={setLocalModel}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select provider" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem defaultValue="qwen/qwen3-32b" value="qwen/qwen3-32b">qwen/qwen3-32b</SelectItem>
-                      <SelectItem value="deepseek-r1-distill-llama-70b">deepseek-r1-distill-llama-70b</SelectItem>
-                      <SelectItem value="gemma2-9b-it">gemma2-9b-it</SelectItem>
-                      <SelectItem value="compound-beta">compound-beta</SelectItem>
-                      <SelectItem value="llama-3.1-8b-instant">llama-3.1-8b-instant</SelectItem>
-                      <SelectItem value="llama-3.3-70b-versatile">llama-3.3-70b-versatile</SelectItem>
-                      <SelectItem value="meta-llama/llama-4-maverick-17b-128e-instruct">meta-llama/llama-4-maverick-17b-128e-instruct</SelectItem>
-                      <SelectItem value="meta-llama/llama-4-scout-17b-16e-instruct">meta-llama/llama-4-scout-17b-16e-instruct</SelectItem>
-                      <SelectItem value="meta-llama/llama-guard-4-12b">meta-llama/llama-guard-4-12b</SelectItem>
-                      <SelectItem value="openai/gpt-oss-120b">openai/gpt-oss-120b</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Input value={localModel} onChange={(e) => setLocalModel(e.target.value)} placeholder="qwen/qwen3-32b" />
                 </div>
                 <div className="grid grid-cols-3 gap-3">
                   <div className="space-y-2">
@@ -410,7 +394,8 @@ export const ChatHistorySidebar = ({
                 <div className="grid grid-cols-2 gap-2 text-sm">
                   <div className="col-span-2"><span className="text-muted-foreground">Title:</span> {caseRecord?.title || '-'}</div>
                   <div className="col-span-2"><span className="text-muted-foreground">Description:</span> {caseRecord?.description || '-'}</div>
-                  <div><span className="text-muted-foreground">Status:</span> {caseRecord?.status || '-'}</div>
+                  <div><span className="text-muted-foreground">Priority:</span> {caseRecord?.priority || '-'}</div>
+                  <div className="col-span-2"><span className="text-muted-foreground">Tags:</span> {(caseRecord?.tags || []).join(', ') || '-'}</div>
                   <div><span className="text-muted-foreground">Created:</span> {caseRecord?.createdAt ? new Date(caseRecord.createdAt).toLocaleString() : '-'}</div>
                 </div>
               </div>

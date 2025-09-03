@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Upload, ArrowLeft, Image as ImageIcon } from 'lucide-react';
+import { Upload, ArrowLeft, X } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -18,61 +18,69 @@ import {
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Calendar } from '@/components/ui/calendar';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-import { format } from 'date-fns';
-import { CalendarIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useCasesStore } from '@/store';
 
 const formSchema = z.object({
-  image: z.string().min(1, 'Image is required'),
-  age: z.string().optional(),
-  dob: z.date().optional(),
-  height: z.string().optional(),
-  weight: z.string().optional(),
+  caseName: z.string().min(1, 'Case name is required'),
   description: z.string().optional(),
+  priority: z.enum(['low', 'medium', 'high']).default('medium'),
+  tags: z.array(z.string()).default([]),
 });
 
 type FormData = z.infer<typeof formSchema>;
 
 const NewCase = () => {
   const navigate = useNavigate();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const location = useLocation() as any;
   const patientId = location?.state?.patientId as string | undefined;
   const { createCase } = useCasesStore();
   const { toast } = useToast();
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [tags, setTags] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      image: '',
-      age: '',
-      height: '',
-      weight: '',
+      caseName: '',
       description: '',
+      priority: 'medium',
+      tags: [],
     },
   });
 
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const result = e.target?.result as string;
-        setImagePreview(result);
-        form.setValue('image', result);
-      };
-      reader.readAsDataURL(file);
+  const addTag = (value: string) => {
+    const v = value.trim();
+    if (!v) return;
+    if (!tags.includes(v)) {
+      const next = [...tags, v];
+      setTags(next);
+      form.setValue('tags', next);
     }
   };
+  const removeTag = (value: string) => {
+    const next = tags.filter((t) => t !== value);
+    setTags(next);
+    form.setValue('tags', next);
+  };
+  const onTagKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault();
+      const input = e.currentTarget as HTMLInputElement;
+      addTag(input.value);
+      input.value = '';
+    }
+  };
+  const colorIndexFor = useMemo(() => {
+    const COLORS = 12;
+    const fn = (s: string) => {
+      let h = 0;
+      for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+      return (h % COLORS) + 1;
+    };
+    return fn;
+  }, []);
 
   const onSubmit = async (data: FormData) => {
     setIsSubmitting(true);
@@ -83,9 +91,10 @@ const NewCase = () => {
         return;
       }
       const created = await createCase(patientId, {
-        title: data.description ? data.description.slice(0, 40) : 'New Case',
+        title: data.caseName,
         description: data.description,
-        status: 'open',
+        tags: tags,
+        priority: data.priority,
       });
 
       toast({
@@ -120,7 +129,7 @@ const NewCase = () => {
           </Button>
           <div>
             <h1 className="text-3xl font-bold text-foreground">Create New Case</h1>
-            <p className="text-muted-foreground mt-2">Upload medical image and patient details</p>
+            <p className="text-muted-foreground mt-2">Add case details, tags, and priority</p>
           </div>
         </div>
 
@@ -130,168 +139,32 @@ const NewCase = () => {
             <CardHeader>
               <CardTitle className="text-xl text-card-foreground">Case Information</CardTitle>
               <CardDescription>
-                Please provide the medical image and any relevant patient details. Only the image is required.
+                Provide the case name, description, tags, and priority.
               </CardDescription>
             </CardHeader>
             <CardContent>
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                  {/* Image Upload */}
+                  {/* Case Name */}
                   <FormField
                     control={form.control}
-                    name="image"
+                    name="caseName"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-card-foreground">Medical Image *</FormLabel>
+                        <FormLabel className="text-card-foreground">Case Name *</FormLabel>
                         <FormControl>
-                          <div className="space-y-4">
-                            <div
-                              className={cn(
-                                "border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors",
-                                "border-border hover:border-primary/50 bg-background",
-                                imagePreview && "border-primary/50"
-                              )}
-                              onClick={() => document.getElementById('image-upload')?.click()}
-                            >
-                              {imagePreview ? (
-                                <div className="space-y-4">
-                                  <img
-                                    src={imagePreview}
-                                    alt="Upload preview"
-                                    className="max-h-48 mx-auto rounded-md object-contain"
-                                  />
-                                  <p className="text-sm text-muted-foreground">
-                                    Click to change image
-                                  </p>
-                                </div>
-                              ) : (
-                                <div className="space-y-4">
-                                  <ImageIcon className="w-12 h-12 mx-auto text-muted-foreground" />
-                                  <div>
-                                    <p className="text-foreground font-medium">Upload medical image</p>
-                                    <p className="text-sm text-muted-foreground">
-                                      Drag and drop or click to browse
-                                    </p>
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                            <input
-                              id="image-upload"
-                              type="file"
-                              accept="image/*"
-                              onChange={handleImageUpload}
-                              className="hidden"
-                            />
-                          </div>
+                          <Input
+                            placeholder="Enter case name"
+                            {...field}
+                            className="bg-background border-input"
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
 
-                  {/* Patient Details */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="age"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-card-foreground">Patient Age</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="e.g., 45"
-                              {...field}
-                              className="bg-background border-input"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="dob"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-col">
-                          <FormLabel className="text-card-foreground">Date of Birth</FormLabel>
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <FormControl>
-                                <Button
-                                  variant="outline"
-                                  className={cn(
-                                    "w-full pl-3 text-left font-normal bg-background border-input",
-                                    !field.value && "text-muted-foreground"
-                                  )}
-                                >
-                                  {field.value ? (
-                                    format(field.value, "PPP")
-                                  ) : (
-                                    <span>Pick a date</span>
-                                  )}
-                                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                </Button>
-                              </FormControl>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" align="start">
-                              <Calendar
-                                mode="single"
-                                selected={field.value}
-                                onSelect={field.onChange}
-                                disabled={(date) =>
-                                  date > new Date() || date < new Date("1900-01-01")
-                                }
-                                initialFocus
-                                className={cn("p-3 pointer-events-auto")}
-                              />
-                            </PopoverContent>
-                          </Popover>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="height"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-card-foreground">Height</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="e.g., 5'8&quot; or 173cm"
-                              {...field}
-                              className="bg-background border-input"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="weight"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-card-foreground">Weight</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="e.g., 150lbs or 68kg"
-                              {...field}
-                              className="bg-background border-input"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
+                  {/* Description */}
                   <FormField
                     control={form.control}
                     name="description"
@@ -300,11 +173,55 @@ const NewCase = () => {
                         <FormLabel className="text-card-foreground">Description</FormLabel>
                         <FormControl>
                           <Textarea
-                            placeholder="Describe symptoms, concerns, or any relevant medical history..."
+                            placeholder="Enter case description"
                             className="min-h-[100px] bg-background border-input"
                             {...field}
                           />
                         </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Tags */}
+                  <div>
+                    <Label className="text-card-foreground">Tags</Label>
+                    <div className="tag-input-container mt-2">
+                      {tags.map((tag) => (
+                        <span key={tag} className={cn('tag-badge', `tag-color-${colorIndexFor(tag)}`)}>
+                          {tag}
+                          <button type="button" aria-label={`Remove ${tag}`} className="tag-remove" onClick={() => removeTag(tag)}>
+                            <X className="w-3 h-3" />
+                          </button>
+                        </span>
+                      ))}
+                      <Input
+                        placeholder="Type a tag and press Enter"
+                        onKeyDown={onTagKeyDown}
+                        className="tag-input-field flex-1 min-w-[200px]"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Priority */}
+                  <FormField
+                    control={form.control}
+                    name="priority"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-card-foreground">Priority</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger className="bg-background border-input w-48">
+                              <SelectValue placeholder="Select priority" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="low">Low</SelectItem>
+                            <SelectItem value="medium">Medium</SelectItem>
+                            <SelectItem value="high">High</SelectItem>
+                          </SelectContent>
+                        </Select>
                         <FormMessage />
                       </FormItem>
                     )}

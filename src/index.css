@@ -280,3 +280,46 @@ body {
 
   .rdp-caption_dropdowns { display: flex; align-items: center; gap: 0.5rem; }
 }
+
+@layer components {
+  .tag-badge { @apply inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium; }
+  .tag-remove { @apply ml-1 cursor-pointer opacity-70 hover:opacity-100; }
+  .tag-input-container { @apply flex flex-wrap gap-2; }
+  .tag-input-field { @apply bg-background border-input; }
+
+  .tag-color-1 { background-color: hsl(210 100% 95%); color: hsl(210 60% 30%); }
+  .dark .tag-color-1 { background-color: hsl(210 30% 20%); color: hsl(210 60% 85%); }
+
+  .tag-color-2 { background-color: hsl(160 80% 92%); color: hsl(160 40% 25%); }
+  .dark .tag-color-2 { background-color: hsl(160 32% 18%); color: hsl(160 60% 80%); }
+
+  .tag-color-3 { background-color: hsl(280 90% 95%); color: hsl(280 45% 30%); }
+  .dark .tag-color-3 { background-color: hsl(280 35% 20%); color: hsl(280 70% 85%); }
+
+  .tag-color-4 { background-color: hsl(20 100% 95%); color: hsl(20 55% 30%); }
+  .dark .tag-color-4 { background-color: hsl(20 35% 20%); color: hsl(20 70% 85%); }
+
+  .tag-color-5 { background-color: hsl(340 85% 95%); color: hsl(340 50% 30%); }
+  .dark .tag-color-5 { background-color: hsl(340 35% 20%); color: hsl(340 70% 85%); }
+
+  .tag-color-6 { background-color: hsl(120 70% 92%); color: hsl(120 40% 25%); }
+  .dark .tag-color-6 { background-color: hsl(120 30% 18%); color: hsl(120 60% 80%); }
+
+  .tag-color-7 { background-color: hsl(45 95% 92%); color: hsl(45 50% 25%); }
+  .dark .tag-color-7 { background-color: hsl(45 30% 18%); color: hsl(45 60% 80%); }
+
+  .tag-color-8 { background-color: hsl(260 90% 94%); color: hsl(260 50% 28%); }
+  .dark .tag-color-8 { background-color: hsl(260 32% 20%); color: hsl(260 70% 85%); }
+
+  .tag-color-9 { background-color: hsl(0 85% 95%); color: hsl(0 55% 30%); }
+  .dark .tag-color-9 { background-color: hsl(0 30% 20%); color: hsl(0 70% 85%); }
+
+  .tag-color-10 { background-color: hsl(190 90% 92%); color: hsl(190 40% 25%); }
+  .dark .tag-color-10 { background-color: hsl(190 30% 18%); color: hsl(190 60% 80%); }
+
+  .tag-color-11 { background-color: hsl(300 90% 95%); color: hsl(300 45% 30%); }
+  .dark .tag-color-11 { background-color: hsl(300 35% 20%); color: hsl(300 70% 85%); }
+
+  .tag-color-12 { background-color: hsl(80 70% 92%); color: hsl(80 40% 25%); }
+  .dark .tag-color-12 { background-color: hsl(80 30% 18%); color: hsl(80 60% 80%); }
+}

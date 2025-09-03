@@ -6,84 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { BackgroundGradientAnimation } from "@/components/ui/background-gradient-animation";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { Sparkles, ShieldCheck, MessageSquare, Users, Star, LogIn, UserPlus as UserPlusIcon, FolderOpen, Bot, History, ImageUp, FileUp } from "lucide-react";
-
-const supportCategories = [
-  {
-    title: "Young People",
-    description: "Resources and guidance for young people to manage their wellbeing.",
-    placeholder: "image-placeholder-1",
-    image: "assets/Teenager-amico.png",
-    color: "#fef3c7",
-  },
-  {
-    title: "Faith & Belief Communities",
-    description: "Support options reflecting a variety of backgrounds.",
-    placeholder: "image-placeholder-2",
-    image: "assets/Community-amico.png",
-    color: "#ede9fe",
-  },
-  {
-    title: "Parents & Carers",
-    description: "Dedicated help for those caring for loved ones.",
-    placeholder: "image-placeholder-3",
-    image: "assets/Medical care-pana.png",
-    color: "#dbeafe",
-  },
-  {
-    title: "Employers & Employees",
-    description: "Wellbeing resources tailored for workplace situations.",
-    placeholder: "image-placeholder-4",
-    image: "assets/New employee-amico.png",
-    color: "#d1fae5",
-  },
-];
-
-const selfAssessments = [
-  {
-    title: "Anxiety",
-    description: "Feeling anxious, can't switch off?",
-    placeholder: "assessment-image-1",
-    image: "assets/Anxiety-rafiki.png",
-    color: "#f9e2d2",
-  },
-  {
-    title: "Sleep",
-    description: "Trouble sleeping or insomnia?",
-    placeholder: "assessment-image-2",
-    image: "assets/Sleep analysis-amico.png",
-    color: "#dbeafe",
-  },
-  {
-    title: "Depression",
-    description: "Feeling low and without motivation?",
-    placeholder: "assessment-image-3",
-    image: "assets/Feeling Blue-amico.png",
-    color: "#ede9fe",
-  },
-  {
-    title: "Stress",
-    description: "Feeling stressed or pressured?",
-    placeholder: "assessment-image-4",
-    image: "assets/Stress-amico.png",
-    color: "#d1fae5",
-  },
-];
-
-const testimonials = [
-  {
-    quote:
-      "This platform makes it easy to support our team’s wellbeing with real, practical tools.",
-    author: "Amelia, HR Lead",
-  },
-  {
-    quote: "The chat and case tracking helped me structure my care journey.",
-    author: "Ross, Patient",
-  },
-  {
-    quote: "Clean, fast, and empowering. Exactly what mental health tooling should be.",
-    author: "Priya, Therapist",
-  },
-];
+import { supportCategories, selfAssessments, testimonials } from "@/types/constants";
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -97,15 +20,14 @@ const Navbar = () => {
 
   return (
     <nav
-      className={`fixed top-0 left-0 w-full z-30 transition-all duration-300 ${
-        scrolled
-          ? "backdrop-blur-md supports-[backdrop-filter]:bg-white/60 dark:supports-[backdrop-filter]:bg-slate-900/60 bg-white/80 dark:bg-slate-900/70 shadow-sm"
-          : "bg-transparent"
-      }`}
+      className={`fixed top-0 left-0 w-full z-30 transition-all duration-300 ${scrolled
+        ? "backdrop-blur-md supports-[backdrop-filter]:bg-white/60 dark:supports-[backdrop-filter]:bg-slate-900/60 bg-white/80 dark:bg-slate-900/70 shadow-sm"
+        : "bg-transparent"
+        }`}
     >
       <div className="max-w-7xl mx-auto flex items-center justify-between py-4 px-6">
         <span className={`text-2xl font-bold text-[#0f172a] dark:text-white tracking-tight ${scrolled ? "text-slate-900" : "text-slate-100"}`}>
-          MindfulCare
+          MentalCare
         </span>
         <div className="hidden md:flex gap-6 items-center text-sm text-slate-700 dark:text-slate-200">
           <button className={`hover:text-white-600 dark:hover:text-white ${scrolled ? "text-slate-900" : "text-slate-100"}`} onClick={() => window.scrollTo({ top: window.innerHeight, behavior: "smooth" })}>Features</button>
@@ -134,7 +56,7 @@ const Navbar = () => {
   );
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+
 const Feature = ({ icon: Icon, title, desc }: { icon: any; title: string; desc: string }) => (
   <Card className="bg-white/60 dark:bg-slate-900/60 backdrop-blur border-border">
     <CardHeader className="space-y-1">
@@ -214,7 +136,7 @@ const Index = () => {
                 </Reveal>
                 <Reveal delay={100}>
                   <h1 className="text-slate-200 text-4xl md:text-6xl font-extrabold leading-tight tracking-tight">
-                    Compassionate mental health tools for modern care
+                    Mental health tools for modern care
                   </h1>
                 </Reveal>
                 <Reveal delay={200}>
@@ -246,7 +168,7 @@ const Index = () => {
                     <Stat value="12k+" label="People supported" />
                     <Stat value="98%" label="Satisfaction" />
                     <Stat value="120+" label="Clinician orgs" />
-                    <Stat value="24/7"  label="Access" />
+                    <Stat value="24/7" label="Access" />
                   </div>
                 </Reveal>
               </div>
@@ -436,14 +358,12 @@ const Index = () => {
           {selfAssessments.map((sa, idx) => (
             <Reveal key={idx} delay={idx * 80}>
               <Card
-                className={`bg-white/60 dark:bg-slate-900/60 backdrop-blur border-border hover:shadow-lg transition-all duration-300 ${
-                  idx === 0 ? "md:col-span-2 md:row-span-2" : ""
-                }`}
+                className={`bg-white/60 dark:bg-slate-900/60 backdrop-blur border-border hover:shadow-lg transition-all duration-300 ${idx === 0 ? "md:col-span-2 md:row-span-2" : ""
+                  }`}
               >
                 <CardContent className="p-4 h-full flex flex-col">
-                  <div className={`rounded-xl flex items-center justify-center mb-3 ${
-                    idx === 0 ? "p-4 bg-blue-50 dark:bg-blue-900/20" : "p-4 bg-blue-50 dark:bg-blue-900/20"
-                  }`}>
+                  <div className={`rounded-xl flex items-center justify-center mb-3 ${idx === 0 ? "p-4 bg-blue-50 dark:bg-blue-900/20" : "p-4 bg-blue-50 dark:bg-blue-900/20"
+                    }`}>
                     <img
                       src={sa.image}
                       className={`${idx === 0 ? "h-24" : "h-24"} object-contain`}
