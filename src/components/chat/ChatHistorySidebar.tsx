@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { MessageSquare, Plus, Trash2, Clock, Calendar, Tag, Stethoscope, Heart, Brain, Eye, Bone, Activity, User, Settings, Moon, Sun } from 'lucide-react';
 import {
@@ -30,12 +29,21 @@ export interface ChatHistory {
   tags: string[];
 }
 
+import type { Patient, CaseRecord } from "@/types/domain";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useChatSettingsStore } from "@/store/settings";
+
 interface ChatHistorySidebarProps {
   chatHistories: ChatHistory[];
   currentChatId: string | null;
   onSelectChat: (chatId: string) => void;
   onNewChat: () => void;
   onDeleteChat: (chatId: string) => void;
+  patient?: Patient | null;
+  caseRecord?: CaseRecord | null;
 }
 
 const categoryConfig = {
@@ -62,10 +70,33 @@ export const ChatHistorySidebar = ({
   onSelectChat,
   onNewChat,
   onDeleteChat,
+  patient,
+  caseRecord,
 }: ChatHistorySidebarProps) => {
   const { state } = useSidebar();
   const isCollapsed = state === 'collapsed';
   const { theme, setTheme } = useTheme();
+  const [settingsOpen, setSettingsOpen] = React.useState(false);
+  const [profileOpen, setProfileOpen] = React.useState(false);
+
+  const settings = useChatSettingsStore((s) => s.settings);
+  const updateSettings = useChatSettingsStore((s) => s.update);
+
+  const [localProvider, setLocalProvider] = React.useState(settings.modelProvider);
+  const [localModel, setLocalModel] = React.useState(settings.model);
+  const [localTemp, setLocalTemp] = React.useState<number>(settings.temperature);
+  const [localTopP, setLocalTopP] = React.useState<number>(settings.top_p);
+  const [localMaxTokens, setLocalMaxTokens] = React.useState<number>(settings.max_tokens);
+  const [localDebug, setLocalDebug] = React.useState<boolean>(settings.debug);
+
+  React.useEffect(() => {
+    setLocalProvider(settings.modelProvider);
+    setLocalModel(settings.model);
+    setLocalTemp(settings.temperature);
+    setLocalTopP(settings.top_p);
+    setLocalMaxTokens(settings.max_tokens);
+    setLocalDebug(settings.debug);
+  }, [settings]);
 
   const formatDate = (date: Date) => {
     const now = new Date();
@@ -224,14 +255,17 @@ export const ChatHistorySidebar = ({
         {!isCollapsed ? (
           <div className="space-y-3">
             {/* Profile Section */}
-            <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-accent/50 cursor-pointer transition-colors">
+            <div
+              className="flex items-center gap-3 p-2 rounded-lg hover:bg-accent/50 cursor-pointer transition-colors"
+              onClick={() => setProfileOpen(true)}
+            >
               <Avatar className="h-8 w-8">
-                <AvatarImage src="/placeholder.svg" alt="Dr. Smith" />
-                <AvatarFallback className="bg-primary/10 text-primary">DS</AvatarFallback>
+                <AvatarImage src="/placeholder.svg" alt={"Patient"} />
+                <AvatarFallback className="bg-primary/10 text-primary">{(typeof ("" + (patient?.name || "")).charAt === 'function' ? (patient?.name || "?").charAt(0) : 'P')}</AvatarFallback>
               </Avatar>
               <div className="flex-1 text-left">
-                <p className="text-sm font-medium">Dr. Smith</p>
-                <p className="text-xs text-muted-foreground">Medical AI Assistant</p>
+                <p className="text-sm font-medium">{patient?.name || "Patient"}</p>
+                <p className="text-xs text-muted-foreground">{caseRecord?.title || "Case"}</p>
               </div>
             </div>
 
@@ -241,11 +275,12 @@ export const ChatHistorySidebar = ({
                 variant="ghost"
                 size="sm"
                 className="flex-1 justify-start gap-2"
+                onClick={() => setSettingsOpen(true)}
               >
                 <Settings className="h-4 w-4" />
                 Settings
               </Button>
-              
+
               <Button
                 variant="ghost"
                 size="icon"
@@ -259,17 +294,19 @@ export const ChatHistorySidebar = ({
         ) : (
           <div className="flex flex-col items-center gap-2">
             {/* Collapsed Profile */}
-            <Avatar className="h-8 w-8">
-              <AvatarImage src="/placeholder.svg" alt="Dr. Smith" />
-              <AvatarFallback className="bg-primary/10 text-primary">DS</AvatarFallback>
-            </Avatar>
-            
+            <div onClick={() => setProfileOpen(true)}>
+              <Avatar className="h-8 w-8">
+                <AvatarImage src="/placeholder.svg" alt={"Patient"} />
+                <AvatarFallback className="bg-primary/10 text-primary">{(typeof ("" + (patient?.name || "")).charAt === 'function' ? (patient?.name || "?").charAt(0) : 'P')}</AvatarFallback>
+              </Avatar>
+            </div>
+
             {/* Collapsed Controls */}
             <div className="flex flex-col gap-1">
-              <Button variant="ghost" size="icon" className="h-8 w-8">
+              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setSettingsOpen(true)}>
                 <Settings className="h-4 w-4" />
               </Button>
-              
+
               <Button
                 variant="ghost"
                 size="icon"
@@ -281,6 +318,108 @@ export const ChatHistorySidebar = ({
             </div>
           </div>
         )}
+
+        {/* Settings Dialog */}
+        <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Chat settings</DialogTitle>
+              <DialogDescription>Configure model and generation parameters</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 gap-3">
+                <div className="space-y-2">
+                  <Label>Model provider</Label>
+                  <Select value={localProvider} onValueChange={setLocalProvider}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select provider" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="groq">Groq Cloud</SelectItem>
+                      <SelectItem value="local">Local</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Model name</Label>
+                  <Select value={localModel} onValueChange={setLocalModel}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select provider" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem defaultValue="qwen/qwen3-32b" value="qwen/qwen3-32b">qwen/qwen3-32b</SelectItem>
+                      <SelectItem value="deepseek-r1-distill-llama-70b">deepseek-r1-distill-llama-70b</SelectItem>
+                      <SelectItem value="gemma2-9b-it">gemma2-9b-it</SelectItem>
+                      <SelectItem value="compound-beta">compound-beta</SelectItem>
+                      <SelectItem value="llama-3.1-8b-instant">llama-3.1-8b-instant</SelectItem>
+                      <SelectItem value="llama-3.3-70b-versatile">llama-3.3-70b-versatile</SelectItem>
+                      <SelectItem value="meta-llama/llama-4-maverick-17b-128e-instruct">meta-llama/llama-4-maverick-17b-128e-instruct</SelectItem>
+                      <SelectItem value="meta-llama/llama-4-scout-17b-16e-instruct">meta-llama/llama-4-scout-17b-16e-instruct</SelectItem>
+                      <SelectItem value="meta-llama/llama-guard-4-12b">meta-llama/llama-guard-4-12b</SelectItem>
+                      <SelectItem value="openai/gpt-oss-120b">openai/gpt-oss-120b</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="space-y-2">
+                    <Label>Temperature</Label>
+                    <Input type="number" step="0.1" min={0} max={2} value={localTemp} onChange={(e) => setLocalTemp(parseFloat(e.target.value))} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Top P</Label>
+                    <Input type="number" step="0.05" min={0} max={1} value={localTopP} onChange={(e) => setLocalTopP(parseFloat(e.target.value))} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Max tokens</Label>
+                    <Input type="number" step="1" min={1} max={8192} value={localMaxTokens} onChange={(e) => setLocalMaxTokens(parseInt(e.target.value || '0', 10))} />
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <input id="debug-toggle" type="checkbox" className="h-4 w-4" checked={localDebug} onChange={(e) => setLocalDebug(e.target.checked)} />
+                  <Label htmlFor="debug-toggle">Debug mode</Label>
+                </div>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="secondary" onClick={() => setSettingsOpen(false)}>Cancel</Button>
+              <Button onClick={() => { updateSettings({ modelProvider: localProvider, model: localModel, temperature: localTemp, top_p: localTopP, max_tokens: localMaxTokens, debug: localDebug }); setSettingsOpen(false); }}>Save</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Profile Dialog */}
+        <Dialog open={profileOpen} onOpenChange={setProfileOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Patient & case details</DialogTitle>
+              <DialogDescription>Overview of the current patient and case</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <h4 className="text-sm font-semibold mb-2">Patient</h4>
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div><span className="text-muted-foreground">Name:</span> {patient?.name || '-'}</div>
+                  <div><span className="text-muted-foreground">Age:</span> {patient?.age ?? '-'}</div>
+                  <div><span className="text-muted-foreground">Gender:</span> {patient?.gender || '-'}</div>
+                  <div><span className="text-muted-foreground">DOB:</span> {patient?.dob || '-'}</div>
+                  <div className="col-span-2"><span className="text-muted-foreground">Medical history:</span> {patient?.medicalHistory || '-'}</div>
+                </div>
+              </div>
+              <div>
+                <h4 className="text-sm font-semibold mb-2">Case</h4>
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div className="col-span-2"><span className="text-muted-foreground">Title:</span> {caseRecord?.title || '-'}</div>
+                  <div className="col-span-2"><span className="text-muted-foreground">Description:</span> {caseRecord?.description || '-'}</div>
+                  <div><span className="text-muted-foreground">Status:</span> {caseRecord?.status || '-'}</div>
+                  <div><span className="text-muted-foreground">Created:</span> {caseRecord?.createdAt ? new Date(caseRecord.createdAt).toLocaleString() : '-'}</div>
+                </div>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button onClick={() => setProfileOpen(false)}>Close</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </SidebarFooter>
     </Sidebar>
   );

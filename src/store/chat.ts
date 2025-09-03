@@ -77,11 +77,17 @@ export const useChatStore = create<ChatState>()(
         });
       },
       sendMessage: async (sessionId, caseId, patientId, content, attachments) => {
+        const { settings } = (await import("./settings")).useChatSettingsStore.getState();
         const msg = await ChatApi.sendMessage({
           sessionId,
           caseId,
           patientId,
           prompt: content,
+          model: settings.model,
+          model_provider: settings.modelProvider,
+          temperature: settings.temperature,
+          top_p: settings.top_p,
+          max_tokens: settings.max_tokens,
         });
         set((s) => {
           const msgs = [...(s.messagesBySession[sessionId] || []), msg];

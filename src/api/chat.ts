@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { http } from "./http";
 import type { ApiListResponse, ChatMessage, ChatSession, ID } from "@/types/domain";
 import { v4 as uuidv4 } from "uuid";
@@ -25,23 +26,32 @@ export const ChatApi = {
     const items: ChatMessage[] = [];
     conversations.forEach((conv: any, index: number) => {
       const content = conv.content || [];
+      const safety = conv.safety || null;
       content.forEach((m: any, idx: number) => {
         const text = Array.isArray(m.content)
           ? (m.content.find((c: any) => c?.type === "text")?.text ?? "")
           : (m.text ?? m.content ?? "");
+        const isAssistant = m.role !== "user";
         items.push({
           id: `${sessionId}_${index}_${idx}`,
           sessionId,
-          role: m.role === "user" ? "user" : "assistant",
+          role: isAssistant ? "assistant" : "user",
           content: text,
           createdAt: new Date().toISOString(),
+          ...(isAssistant && safety
+            ? {
+                safetyScore: typeof safety.score === "number" ? safety.score : undefined,
+                safetyLevel: typeof safety.safety_level === "string" ? safety.safety_level : undefined,
+                safetyJustification: typeof safety.justification === "string" ? safety.justification : undefined,
+              }
+            : {}),
         });
       });
     });
     return { items } as ApiListResponse<ChatMessage>;
   },
   deleteHistory: (sessionId: ID) => http.delete<void>(`/history/${sessionId}`),
-  sendMessage: async (params: { sessionId: ID; caseId: ID; patientId: ID; prompt: string; model?: string; model_provider?: string; temperature?: number; top_p?: number; max_tokens?: number; files?: File[] }) => {
+  sendMessage: async (params: { sessionId: ID; caseId: ID; patientId: ID; prompt: string; model?: string; model_provider?: string; temperature?: number; top_p?: number; max_tokens?: number; debug?: boolean; files?: File[] }) => {
     const hasFiles = params.files && params.files.length > 0;
     const body = hasFiles ? new FormData() : undefined;
     if (hasFiles && body) {
@@ -58,15 +68,24 @@ export const ChatApi = {
         temperature: params.temperature,
         top_p: params.top_p,
         max_tokens: params.max_tokens,
+        debug: params.debug,
       },
     });
     const text = res?.response ?? "";
+    const safety = res?.safety_score || null;
     const msg: ChatMessage = {
       id: uuidv4(),
       sessionId: params.sessionId,
       role: "assistant",
       content: text,
       createdAt: new Date().toISOString(),
+      ...(safety
+        ? {
+            safetyScore: typeof safety.score === "number" ? safety.score : undefined,
+            safetyLevel: typeof safety.safety_level === "string" ? safety.safety_level : undefined,
+            safetyJustification: typeof safety.justification === "string" ? safety.justification : undefined,
+          }
+        : {}),
     };
     return msg;
   },

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useMemo, useRef, useState } from 'react';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { ChatHistorySidebar, ChatHistory } from './chat/ChatHistorySidebar';
@@ -7,6 +8,8 @@ import { ChatInput } from './chat/ChatInput';
 import { ImageUpload } from './chat/ImageUpload';
 import { useChatStore, useCasesStore } from '@/store';
 import { CasesApi } from '@/api/cases';
+import type { Patient, CaseRecord } from '@/types/domain';
+import { toast } from '@/hooks/use-toast';
 
 export interface ChatMessage {
   id: string;
@@ -43,6 +46,8 @@ export const MedicalChatInterface = ({ caseId, onBackToCase }: MedicalChatInterf
   const findPatientIdByCaseId = useCasesStore((s) => s.findPatientIdByCaseId);
 
   const [resolvedPatientId, setResolvedPatientId] = useState<string | undefined>(undefined);
+  const [patientData, setPatientData] = useState<Patient | null>(null);
+  const [caseData, setCaseData] = useState<CaseRecord | null>(null);
   const patientId = useMemo(() => (caseId ? findPatientIdByCaseId(caseId) || resolvedPatientId : undefined), [caseId, findPatientIdByCaseId, resolvedPatientId]);
   const sessions = useMemo(() => (caseId ? sessionsByCase[caseId] || [] : []), [sessionsByCase, caseId]);
   const uiMessages: ChatMessage[] = useMemo(() => {
@@ -53,6 +58,8 @@ export const MedicalChatInterface = ({ caseId, onBackToCase }: MedicalChatInterf
       type: m.role === 'user' ? 'user' : 'assistant',
       content: m.content,
       timestamp: m.createdAt ? new Date(m.createdAt) : new Date(),
+      responsibilityScore: m.role !== 'user' ? m.safetyScore : undefined,
+      responsibilityReason: m.role !== 'user' ? (m.safetyJustification || (m.safetyLevel ? `Safety level: ${m.safetyLevel}` : undefined)) : undefined,
     }));
   }, [messagesBySession, currentSessionId]);
 
@@ -62,12 +69,14 @@ export const MedicalChatInterface = ({ caseId, onBackToCase }: MedicalChatInterf
       const existing = findPatientIdByCaseId(caseId);
       if (existing) {
         setResolvedPatientId(existing);
-        return;
       }
       try {
         const c = await CasesApi.get(caseId);
+        setCaseData(c || null);
         if (c?.patientId) setResolvedPatientId(c.patientId);
-      } catch {}
+      } catch (e: any) {
+        toast({ title: "Failed to load patient", description: e.data.detail, variant: "destructive" })
+      }
     };
     resolve();
   }, [caseId, findPatientIdByCaseId]);
@@ -84,10 +93,26 @@ export const MedicalChatInterface = ({ caseId, onBackToCase }: MedicalChatInterf
         }
         setCurrentSession(sid || null);
         if (sid) await listMessages(sid);
-      } catch {}
+      } catch (e: any) {
+        toast({ title: "Failed to load patient", description: e.data.detail, variant: "destructive" })
+      }
     };
     run();
   }, [caseId, patientId, listSessions, startSession, listMessages, setCurrentSession]);
+
+  React.useEffect(() => {
+    const loadPatient = async () => {
+      if (!patientId) return;
+      try {
+        const { PatientsApi } = await import("@/api/patients");
+        const p = await PatientsApi.get(patientId);
+        setPatientData(p || null);
+      } catch (e: any) {
+        toast({ title: "Failed to load patient", description: e.data.detail, variant: "destructive" })
+      }
+    };
+    loadPatient();
+  }, [patientId]);
 
   React.useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -164,6 +189,8 @@ export const MedicalChatInterface = ({ caseId, onBackToCase }: MedicalChatInterf
           onSelectChat={handleSelectChat}
           onNewChat={handleNewChat}
           onDeleteChat={handleDeleteChat}
+          patient={patientData}
+          caseRecord={caseData}
         />
 
         <div className="flex-1 flex flex-col">

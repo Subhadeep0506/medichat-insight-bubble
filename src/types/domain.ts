@@ -5,6 +5,8 @@ export interface User {
   name: string;
   email: string;
   avatarUrl?: string | null;
+  phone?: string | null;
+  role?: string | null;
 }
 
 export interface Patient {
@@ -48,6 +50,9 @@ export interface ChatMessage {
   content: string;
   createdAt?: string;
   attachments?: UploadAttachment[];
+  safetyScore?: number;
+  safetyLevel?: string;
+  safetyJustification?: string;
 }
 
 export interface UploadAttachment {

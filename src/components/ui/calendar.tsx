@@ -66,7 +66,7 @@ function Calendar({
         IconLeft: ({ ..._props }) => <ChevronLeft className="h-4 w-4" />,
         IconRight: ({ ..._props }) => <ChevronRight className="h-4 w-4" />,
       }}
-      fromYear={2010}
+      fromYear={1900}
       toYear={2030}
       {...props}
     />

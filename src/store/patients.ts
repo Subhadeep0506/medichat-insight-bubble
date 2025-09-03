@@ -27,12 +27,11 @@ export const usePatientsStore = create<PatientsState>((set, get) => ({
     set({ loading: true, error: null });
     try {
       const res = await PatientsApi.list();
-      console.log(`PATIENTS: ${res}`)
       const map: Record<ID, Patient> = {};
       res.items.forEach((p) => (map[p.id] = p));
       set({ patients: map, order: res.items.map((p) => p.id) });
     } catch (e: any) {
-      const msg = `${e?.status ? e.status + " " : ""}${e?.data?.detail || e?.message || "Failed to load patients"}`;
+      const msg = e.data.detail;
       set({ error: msg });
       throw e;
     } finally {

@@ -6,6 +6,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { LogOut, User, Sun, Moon, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -20,6 +21,7 @@ export function FloatingNavbar() {
   const { theme, setTheme } = useTheme();
   const [isLoading, setIsLoading] = useState(false);
   const { logout } = useAuthStore();
+  const user = useAuthStore((s) => s.user);
 
   const handleLogout = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,7 +33,6 @@ export function FloatingNavbar() {
     } catch (err: any) {
       const desc = err.data.detail;
       toast({ title: "Logout Failed", description: desc, variant: "destructive" });
-      navigate("/");
     } finally {
       setIsLoading(false);
     }
@@ -71,8 +72,30 @@ export function FloatingNavbar() {
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56" align="end" forceMount>
-                <DropdownMenuItem onClick={handleLogout}>
+              <DropdownMenuContent className="w-64" align="end" forceMount>
+                <div className="px-2 py-2">
+                  <div className="flex items-center gap-3 px-2 py-1.5">
+                    <Avatar className="h-10 w-10">
+                      <AvatarFallback>
+                        <User className="h-4 w-4" />
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-foreground truncate">{user?.name || "User"}</p>
+                      <p className="text-xs text-muted-foreground truncate">{user?.email || ""}</p>
+                    </div>
+                  </div>
+                  <div className="mt-2 rounded-lg border border-border bg-background px-3 py-2">
+                    <div className="grid grid-cols-3 gap-y-1 text-xs">
+                      <span className="text-muted-foreground">Role</span>
+                      <span className="col-span-2 text-foreground truncate">{user?.role || "—"}</span>
+                      <span className="text-muted-foreground">Phone</span>
+                      <span className="col-span-2 text-foreground truncate">{user?.phone || "—"}</span>
+                    </div>
+                  </div>
+                </div>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleLogout} disabled={isLoading}>
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>Log out</span>
                 </DropdownMenuItem>

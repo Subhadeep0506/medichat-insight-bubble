@@ -61,8 +61,11 @@ const Cases = () => {
   const { casesByPatient, orderByPatient, listByPatient, updateCase, deleteCase } = useCasesStore();
 
   useEffect(() => {
-    fetchPatients().catch((error) => console.error('Error fetching patients:', error));
-  }, [fetchPatients, deletingPatient]);
+    fetchPatients().catch((error) => {
+      console.error('Error fetching patients:', error);
+      toast({ "title": "Failed to fetch patients.", "description": error.data.detail, "variant": 'destructive' })
+    });
+  }, [fetchPatients, deletingPatient, toast]);
 
   useEffect(() => {
     if (selectedPatient?.id) listByPatient(selectedPatient.id).catch(() => { });
@@ -194,6 +197,11 @@ const Cases = () => {
     return new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'long', day: 'numeric' }).format(new Date(dob));
   };
 
+  const formatDateFull = (datetime?: string | null) => {
+    if (!datetime) return '—';
+    return new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }).format(new Date(datetime));
+  };
+
   const getCategoryColor = (category: UICase['category']) => {
     const colors: Record<UICase['category'], string> = {
       radiology: 'bg-primary',
@@ -258,8 +266,8 @@ const Cases = () => {
                                   <div className="mt-1 text-sm text-muted-foreground">{patient.medicalHistory || 'No medical history recorded'}</div>
                                 </div>
                                 <div className="flex justify-between text-xs text-muted-foreground">
-                                  <span>Created: {patient.createdAt || '—'}</span>
-                                  <span>Updated: {patient.updatedAt || '—'}</span>
+                                  <span>Created: {formatDateFull(patient.createdAt) || '—'}</span>
+                                  <span>Updated: {formatDateFull(patient.updatedAt) || '—'}</span>
                                 </div>
                               </div>
                               <div className="flex flex-col gap-2 mt-3">
