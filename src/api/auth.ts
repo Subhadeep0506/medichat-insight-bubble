@@ -1,7 +1,7 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { http } from "./http";
 import type { User } from "@/types/domain";
-import {v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from 'uuid';
 export interface LoginRequest { email: string; password: string }
 export interface LoginResponse { access_token: string; refresh_token?: string }
 export interface RegisterRequest { name: string; email: string; password: string; user_id?: string; phone?: string; role?: string }

@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { http } from "./http";
 import type { ApiListResponse, ChatMessage, ChatSession, ID } from "@/types/domain";
 import { v4 as uuidv4 } from "uuid";
@@ -40,10 +40,10 @@ export const ChatApi = {
           createdAt: new Date().toISOString(),
           ...(isAssistant && safety
             ? {
-                safetyScore: typeof safety.score === "number" ? safety.score : undefined,
-                safetyLevel: typeof safety.safety_level === "string" ? safety.safety_level : undefined,
-                safetyJustification: typeof safety.justification === "string" ? safety.justification : undefined,
-              }
+              safetyScore: typeof safety.score === "number" ? safety.score : undefined,
+              safetyLevel: typeof safety.safety_level === "string" ? safety.safety_level : undefined,
+              safetyJustification: typeof safety.justification === "string" ? safety.justification : undefined,
+            }
             : {}),
         });
       });
@@ -81,10 +81,10 @@ export const ChatApi = {
       createdAt: new Date().toISOString(),
       ...(safety
         ? {
-            safetyScore: typeof safety.score === "number" ? safety.score : undefined,
-            safetyLevel: typeof safety.safety_level === "string" ? safety.safety_level : undefined,
-            safetyJustification: typeof safety.justification === "string" ? safety.justification : undefined,
-          }
+          safetyScore: typeof safety.score === "number" ? safety.score : undefined,
+          safetyLevel: typeof safety.safety_level === "string" ? safety.safety_level : undefined,
+          safetyJustification: typeof safety.justification === "string" ? safety.justification : undefined,
+        }
         : {}),
     };
     return msg;

@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { http } from "./http";
 import type { ApiListResponse, ID, Patient } from "@/types/domain";
 import { v4 as uuidv4 } from "uuid";

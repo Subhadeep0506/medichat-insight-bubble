@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import type { User } from "@/types/domain";
@@ -44,14 +44,16 @@ export const useAuthStore = create<AuthState>()(
           get().setToken(access_token, refresh_token);
           try {
             const me = await AuthApi.me();
-            set({ user: {
-              id: (me as any)?.user?.user_id || (me as any)?.id || "",
-              name: (me as any)?.user?.name || (me as any)?.name || "",
-              email: (me as any)?.user?.email || (me as any)?.email || "",
-              phone: (me as any)?.user?.phone || (me as any)?.phone || null,
-              role: (me as any)?.user?.role || (me as any)?.role || null,
-              avatarUrl: (me as any)?.user?.avatarUrl || (me as any)?.avatarUrl || null,
-            } });
+            set({
+              user: {
+                id: (me as any)?.user?.user_id || (me as any)?.id || "",
+                name: (me as any)?.user?.name || (me as any)?.name || "",
+                email: (me as any)?.user?.email || (me as any)?.email || "",
+                phone: (me as any)?.user?.phone || (me as any)?.phone || null,
+                role: (me as any)?.user?.role || (me as any)?.role || null,
+                avatarUrl: (me as any)?.user?.avatarUrl || (me as any)?.avatarUrl || null,
+              }
+            });
           } catch (e: any) {
             const msg = `${e?.status ? e.status + " " : ""}${e?.data?.detail || e?.message || "Login failed"}`;
             set({ error: msg });
@@ -83,14 +85,16 @@ export const useAuthStore = create<AuthState>()(
         set({ loading: true, error: null });
         try {
           const me = await AuthApi.me();
-          set({ user: {
-            id: (me as any)?.user?.user_id || (me as any)?.id || "",
-            name: (me as any)?.user?.name || (me as any)?.name || "",
-            email: (me as any)?.user?.email || (me as any)?.email || "",
-            phone: (me as any)?.user?.phone || (me as any)?.phone || null,
-            role: (me as any)?.user?.role || (me as any)?.role || null,
-            avatarUrl: (me as any)?.user?.avatarUrl || (me as any)?.avatarUrl || null,
-          } });
+          set({
+            user: {
+              id: (me as any)?.user?.user_id || (me as any)?.id || "",
+              name: (me as any)?.user?.name || (me as any)?.name || "",
+              email: (me as any)?.user?.email || (me as any)?.email || "",
+              phone: (me as any)?.user?.phone || (me as any)?.phone || null,
+              role: (me as any)?.user?.role || (me as any)?.role || null,
+              avatarUrl: (me as any)?.user?.avatarUrl || (me as any)?.avatarUrl || null,
+            }
+          });
         } catch (e: any) {
           // silently ignore if not logged in
         } finally {
