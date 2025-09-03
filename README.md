@@ -1,5 +1,9 @@
 # Qwen 3 Mental Health SuperBot
 
+## Video Preview
+
+https://github.com/user-attachments/assets/859ef909-16e3-48a9-aa63-35fd3888236b
+
 ## How can I edit this code?
 
 There are several ways of editing your application.
