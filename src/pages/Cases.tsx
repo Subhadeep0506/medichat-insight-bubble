@@ -90,6 +90,7 @@ const Cases = () => {
     lastUpdated: Date;
     category: string | null;
     tags: string[];
+    priority: 'low' | 'medium' | 'high';
   };
 
   const casesForSelected: UICase[] = useMemo(() => {
@@ -104,6 +105,7 @@ const Cases = () => {
       lastUpdated: c.updatedAt ? new Date(c.updatedAt) : new Date(),
       category: 'general',
       tags: c.tags || [],
+      priority: (c.priority as 'low' | 'medium' | 'high') || 'medium',
     }));
   }, [selectedPatient, orderByPatient, casesByPatient]);
 
@@ -143,6 +145,13 @@ const Cases = () => {
     tagColorMapRef.current.set(s, idx);
     return idx;
   };
+  const getPriorityClasses = (p?: 'low' | 'medium' | 'high') => {
+    switch (p) {
+      case 'high': return 'priority-badge priority-high';
+      case 'medium': return 'priority-badge priority-medium';
+      default: return 'priority-badge priority-low';
+    }
+  };
   const addEditTag = (value: string) => {
     const v = value.trim();
     if (!v) return;
@@ -169,7 +178,7 @@ const Cases = () => {
       tags: case_.tags,
     });
     setEditTags(case_.tags || []);
-    form.reset({ caseName: case_.title, description: case_.description || '', priority: 'medium', tags: case_.tags || [] });
+    form.reset({ caseName: case_.title, description: case_.description || '', priority: case_.priority, tags: case_.tags || [] });
   };
 
   const onEditSubmit = async (values: z.infer<typeof editCaseSchema>) => {
@@ -467,12 +476,12 @@ const Cases = () => {
                                             {editTags.length > 0 && (
                                               <div className="tag-input-container mt-2">
                                                 {editTags.map((tag) => (
-                                                  <span key={tag} className={cn('tag-badge', `tag-color-${getRandomColorIndexFor(tag)}`)}>
+                                                  <span key={tag} className={`tag-badge tag-color-${getRandomColorIndexFor(tag)}`}>
                                                     {tag}
                                                     <button type="button" aria-label={`Remove ${tag}`} className="tag-remove" onClick={() => removeEditTag(tag)}>
                                                       <X className="w-3 h-3" />
                                                     </button>
-                                                  </span> 
+                                                  </span>
                                                 ))}
                                               </div>
                                             )}
@@ -528,17 +537,22 @@ const Cases = () => {
                             </CardHeader>
 
                             <CardContent className="space-y-4">
-                              {case_.description && <p className="text-sm text-card-foreground line-clamp-2">{case_.description}</p>}
+                              {case_.description && <p className="text-sm text-card-foreground line-clamp-2"><strong>Description:</strong> {case_.description}</p>}
                               <div className="flex flex-wrap gap-1">
                                 {case_.tags.map((tag) => (
-                                  <Badge key={tag} variant="outline" className={`text-xs tag-color-${getRandomColorIndexFor(tag)}`}>
+                                  <span key={tag} className={`tag-badge tag-color-${getRandomColorIndexFor(tag)}`}>
                                     {tag}
-                                  </Badge>
+                                  </span>
                                 ))}
                               </div>
-                              <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                                <Calendar className="w-3 h-3" />
-                                Updated {formatDate(case_.lastUpdated)}
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                  <Calendar className="w-3 h-3" />
+                                  Updated {formatDate(case_.lastUpdated)}
+                                </div>
+                                <span className={getPriorityClasses(case_.priority)}>
+                                  Priority: {case_.priority.charAt(0).toUpperCase() + case_.priority.slice(1)}
+                                </span>
                               </div>
                             </CardContent>
                           </Card>

@@ -193,7 +193,7 @@ const NewCase = () => {
                     {tags.length > 0 && (
                       <div className="tag-input-container mt-2">
                         {tags.map((tag) => (
-                          <span key={tag} className={cn('tag-badge', `tag-color-${getRandomColorIndexFor(tag)}`)}>
+                          <span key={tag} className={`tag-badge tag-color-${getRandomColorIndexFor(tag)}`}>
                             {tag}
                             <button type="button" aria-label={`Remove ${tag}`} className="tag-remove" onClick={() => removeTag(tag)}>
                               <X className="w-3 h-3" />

@@ -88,7 +88,7 @@ export const MedicalChatInterface = ({ caseId, onBackToCase }: MedicalChatInterf
         const list = await listSessions(patientId, caseId);
         let sid = list[0]?.id;
         if (!sid) {
-          const s = await startSession(patientId, caseId, `Case ${caseId}`);
+          const s = await startSession(patientId, caseId, "Initial Session");
           sid = s.id;
         }
         setCurrentSession(sid || null);
@@ -193,8 +193,8 @@ export const MedicalChatInterface = ({ caseId, onBackToCase }: MedicalChatInterf
           caseRecord={caseData}
         />
 
-        <div className="flex-1 flex flex-col">
-          <div className="flex items-center gap-2 p-2 md:p-4 border-b">
+        <div className="flex-1 flex flex-col m-2 rounded-lg border">
+          <div className="flex items-center gap-2 md:p-4 shadow-md rounded-t-lg backdrop-blur-lg">
             <SidebarTrigger />
             <ChatHeader onBackToCase={onBackToCase} />
           </div>
@@ -207,8 +207,8 @@ export const MedicalChatInterface = ({ caseId, onBackToCase }: MedicalChatInterf
                 messagesEndRef={messagesEndRef}
               />
 
-              <div className="border-t bg-gray-50/50 p-2 md:p-4 space-y-2 md:space-y-4 dark:bg-slate-800/50">
-                <ImageUpload onImageUpload={handleImageUpload} currentImages={currentImages} />
+              <div className="border-t rounded-b-lg bg-gray-50/50 md:p-4 space-y-2 md:space-y-4 dark:bg-slate-800/50">
+                {/* <ImageUpload onImageUpload={handleImageUpload} currentImages={currentImages} /> */}
                 <div className="relative">
                   <ChatInput
                     onSendMessage={handleSendMessage}

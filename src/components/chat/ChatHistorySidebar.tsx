@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { MessageSquare, Plus, Trash2, Clock, Calendar, Tag, Stethoscope, Heart, Brain, Eye, Bone, Activity, User, Settings, Moon, Sun } from 'lucide-react';
 import {
   Sidebar,
@@ -98,9 +98,20 @@ export const ChatHistorySidebar = ({
     setLocalDebug(settings.debug);
   }, [settings]);
 
+  const formatDateofBirth = (dob?: string | null) => {
+    if (!dob) return '—';
+    return new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'long', day: 'numeric' }).format(new Date(dob));
+  };
+  const getPriorityClasses = (p?: 'low' | 'medium' | 'high') => {
+    switch (p) {
+      case 'high': return 'priority-badge priority-high';
+      case 'medium': return 'priority-badge priority-medium';
+      default: return 'priority-badge priority-low';
+    }
+  };
   const formatDateTime = (dob?: string | null) => {
     if (!dob) return '—';
-    return new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'long', day: 'numeric'}).format(new Date(dob));
+    return new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'long', day: 'numeric', hour: "2-digit", minute: "2-digit" }).format(new Date(dob));
   };
 
   const formatDate = (date: Date) => {
@@ -130,10 +141,18 @@ export const ChatHistorySidebar = ({
   const getTagColor = (index: number) => {
     return tagColors[index % tagColors.length];
   };
+  const tagColorMapRef = useRef<Map<string, number>>(new Map());
+  const getRandomColorIndexFor = (s: string) => {
+    const existing = tagColorMapRef.current.get(s);
+    if (existing) return existing;
+    const idx = Math.floor(Math.random() * 12) + 1;
+    tagColorMapRef.current.set(s, idx);
+    return idx;
+  };
 
   return (
-    <Sidebar className="border-r bg-background">
-      <SidebarHeader className="p-4">
+    <Sidebar variant='floating' className="mt-0 mr-1 pr-0">
+      <SidebarHeader className="p-4 rounded-t-lg dark:bg-slate-900">
         <Button
           onClick={onNewChat}
           className="w-full justify-start gap-2"
@@ -144,7 +163,7 @@ export const ChatHistorySidebar = ({
         </Button>
       </SidebarHeader>
 
-      <SidebarContent>
+      <SidebarContent className='dark:bg-slate-900'>
         <SidebarGroup>
           <SidebarGroupLabel>
             {!isCollapsed && "Chat History"}
@@ -160,7 +179,8 @@ export const ChatHistorySidebar = ({
                     <SidebarMenuButton
                       isActive={currentChatId === chat.id}
                       onClick={() => onSelectChat(chat.id)}
-                      className="group relative flex flex-col items-start gap-2 p-3 hover:bg-accent/50 h-auto"
+                      className={`group relative flex flex-col items-start gap-2 p-3 hover:bg-slate/90 h-auto dark:bg-slate-800 active:scale-95 active:border active:border-green-400/90 transition-all ${currentChatId === chat.id ? 'border border-green-400/90 dark:border-green-700/90' : ''
+                        }`}
                     >
                       {!isCollapsed ? (
                         <div className="w-full space-y-2">
@@ -256,7 +276,7 @@ export const ChatHistorySidebar = ({
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="p-4 border-t">
+      <SidebarFooter className="p-4 border-t dark:bg-slate-900">
         {!isCollapsed ? (
           <div className="space-y-3">
             {/* Profile Section */}
@@ -390,7 +410,7 @@ export const ChatHistorySidebar = ({
                   <div><span className="text-muted-foreground">Name:</span> {patient?.name || '-'}</div>
                   <div><span className="text-muted-foreground">Age:</span> {patient?.age ?? '-'}</div>
                   <div><span className="text-muted-foreground">Gender:</span> {patient?.gender || '-'}</div>
-                  <div><span className="text-muted-foreground">DOB:</span> {formatDateTime(patient?.dob) || '-'}</div>
+                  <div><span className="text-muted-foreground">DOB:</span> {formatDateofBirth(patient?.dob) || '-'}</div>
                   <div className="col-span-2"><span className="text-muted-foreground">Medical history:</span> {patient?.medicalHistory || '-'}</div>
                 </div>
               </div>
@@ -399,9 +419,25 @@ export const ChatHistorySidebar = ({
                 <div className="grid grid-cols-2 gap-2 text-sm">
                   <div className="col-span-2"><span className="text-muted-foreground">Title:</span> {caseRecord?.title || '-'}</div>
                   <div className="col-span-2"><span className="text-muted-foreground">Description:</span> {caseRecord?.description || '-'}</div>
-                  <div><span className="text-muted-foreground">Priority:</span> {caseRecord?.priority || '-'}</div>
-                  <div className="col-span-2"><span className="text-muted-foreground">Tags:</span> {(caseRecord?.tags || []).join(', ') || '-'}</div>
-                  <div><span className="text-muted-foreground">Created:</span> {caseRecord?.createdAt ? new Date(caseRecord.createdAt).toLocaleString() : '-'}</div>
+                  <div>
+                    <span className="text-muted-foreground">Priority: </span>
+                    <span className={getPriorityClasses(caseRecord?.priority)}>
+                      Priority: {caseRecord?.priority ? caseRecord.priority.charAt(0).toUpperCase() + caseRecord.priority.slice(1) : '-'}
+                    </span>
+                  </div>
+                  <div className="col-span-2">
+                    <div className="flex flex-wrap gap-1">
+                      <span className="text-muted-foreground">Tags:</span>
+                      {caseRecord?.tags.map((tag) => (
+                        <span key={tag} className={`tag-badge tag-color-${getRandomColorIndexFor(tag)}`}>
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="col-span-2">
+                    <span className="text-muted-foreground">Created:</span> {formatDateTime(caseRecord?.createdAt)}
+                  </div>
                 </div>
               </div>
             </div>
