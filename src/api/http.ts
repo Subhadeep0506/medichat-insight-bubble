@@ -1,4 +1,3 @@
-
 import axios, { AxiosError, AxiosRequestConfig, Method } from "axios";
 
 const DEFAULT_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8089";
@@ -13,7 +12,7 @@ export interface HttpClientOptions {
 export interface RequestOptions<TBody = unknown> {
   method?: HttpMethod;
   headers?: Record<string, string>;
-  query?: Record<string, string | number | boolean | null | undefined>;
+  query?: Record<string, string | number | boolean | null | undefined> | URLSearchParams;
   body?: TBody;
 }
 

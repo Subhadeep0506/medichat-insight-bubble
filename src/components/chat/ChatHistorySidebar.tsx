@@ -98,13 +98,18 @@ export const ChatHistorySidebar = ({
     setLocalDebug(settings.debug);
   }, [settings]);
 
+  const formatDateTime = (dob?: string | null) => {
+    if (!dob) return '—';
+    return new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'long', day: 'numeric'}).format(new Date(dob));
+  };
+
   const formatDate = (date: Date) => {
     const now = new Date();
     const diffTime = now.getTime() - date.getTime();
     const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
     const diffHours = Math.floor(diffTime / (1000 * 60 * 60));
     const diffMinutes = Math.floor(diffTime / (1000 * 60));
-    
+
     if (diffMinutes < 1) return 'Just now';
     if (diffMinutes < 60) return `${diffMinutes}m ago`;
     if (diffHours < 24) return `${diffHours}h ago`;
@@ -129,7 +134,7 @@ export const ChatHistorySidebar = ({
   return (
     <Sidebar className="border-r bg-background">
       <SidebarHeader className="p-4">
-        <Button 
+        <Button
           onClick={onNewChat}
           className="w-full justify-start gap-2"
           variant="outline"
@@ -149,7 +154,7 @@ export const ChatHistorySidebar = ({
               {chatHistories.map((chat) => {
                 const categoryInfo = categoryConfig[chat.category];
                 const CategoryIcon = categoryInfo.icon;
-                
+
                 return (
                   <SidebarMenuItem key={chat.id}>
                     <SidebarMenuButton
@@ -184,12 +189,12 @@ export const ChatHistorySidebar = ({
                           <h4 className="text-sm font-medium text-left w-full">
                             {truncateText(chat.title, 30)}
                           </h4>
-                          
+
                           {/* Last message preview */}
                           <p className="text-xs text-muted-foreground text-left w-full leading-relaxed">
                             {truncateText(chat.lastMessage, 60)}
                           </p>
-                          
+
                           {/* Tags */}
                           {chat.tags.length > 0 && (
                             <div className="flex flex-wrap gap-1 w-full">
@@ -208,7 +213,7 @@ export const ChatHistorySidebar = ({
                               )}
                             </div>
                           )}
-                          
+
                           {/* Timestamps and message count */}
                           <div className="flex items-center justify-between w-full text-xs text-muted-foreground">
                             <div className="flex items-center gap-3">
@@ -238,7 +243,7 @@ export const ChatHistorySidebar = ({
                   </SidebarMenuItem>
                 );
               })}
-              
+
               {chatHistories.length === 0 && !isCollapsed && (
                 <div className="p-4 text-center text-muted-foreground">
                   <MessageSquare className="h-8 w-8 mx-auto mb-2 opacity-50" />
@@ -385,7 +390,7 @@ export const ChatHistorySidebar = ({
                   <div><span className="text-muted-foreground">Name:</span> {patient?.name || '-'}</div>
                   <div><span className="text-muted-foreground">Age:</span> {patient?.age ?? '-'}</div>
                   <div><span className="text-muted-foreground">Gender:</span> {patient?.gender || '-'}</div>
-                  <div><span className="text-muted-foreground">DOB:</span> {patient?.dob || '-'}</div>
+                  <div><span className="text-muted-foreground">DOB:</span> {formatDateTime(patient?.dob) || '-'}</div>
                   <div className="col-span-2"><span className="text-muted-foreground">Medical history:</span> {patient?.medicalHistory || '-'}</div>
                 </div>
               </div>

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -88,7 +88,7 @@ const Cases = () => {
     title: string;
     description?: string | null;
     lastUpdated: Date;
-    category: 'general' | 'radiology' | 'cardiology' | 'neurology' | 'orthopedics' | 'pathology';
+    category: string | null;
     tags: string[];
   };
 
@@ -135,14 +135,14 @@ const Cases = () => {
   };
 
   const [editTags, setEditTags] = useState<string[]>([]);
-  const colorIndexFor = useMemo(() => {
-    const COLORS = 12;
-    const fn = (s: string) => {
-      let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
-      return (h % COLORS) + 1;
-    };
-    return fn;
-  }, []);
+  const tagColorMapRef = useRef<Map<string, number>>(new Map());
+  const getRandomColorIndexFor = (s: string) => {
+    const existing = tagColorMapRef.current.get(s);
+    if (existing) return existing;
+    const idx = Math.floor(Math.random() * 12) + 1;
+    tagColorMapRef.current.set(s, idx);
+    return idx;
+  };
   const addEditTag = (value: string) => {
     const v = value.trim();
     if (!v) return;
@@ -459,21 +459,23 @@ const Cases = () => {
 
                                           <div>
                                             <FormLabel>Tags</FormLabel>
-                                            <div className="tag-input-container mt-2">
-                                              {editTags.map((tag) => (
-                                                <span key={tag} className={cn('tag-badge', `tag-color-${colorIndexFor(tag)}`)}>
-                                                  {tag}
-                                                  <button type="button" aria-label={`Remove ${tag}`} className="tag-remove" onClick={() => removeEditTag(tag)}>
-                                                    <X className="w-3 h-3" />
-                                                  </button>
-                                                </span>
-                                              ))}
-                                              <Input
-                                                placeholder="Type a tag and press Enter"
-                                                onKeyDown={onEditTagKeyDown}
-                                                className="tag-input-field flex-1 min-w-[200px]"
-                                              />
-                                            </div>
+                                            <Input
+                                              placeholder="Type a tag and press Enter"
+                                              onKeyDown={onEditTagKeyDown}
+                                              className="tag-input-field mt-2 w-full"
+                                            />
+                                            {editTags.length > 0 && (
+                                              <div className="tag-input-container mt-2">
+                                                {editTags.map((tag) => (
+                                                  <span key={tag} className={cn('tag-badge', `tag-color-${getRandomColorIndexFor(tag)}`)}>
+                                                    {tag}
+                                                    <button type="button" aria-label={`Remove ${tag}`} className="tag-remove" onClick={() => removeEditTag(tag)}>
+                                                      <X className="w-3 h-3" />
+                                                    </button>
+                                                  </span> 
+                                                ))}
+                                              </div>
+                                            )}
                                           </div>
 
                                           <FormField control={form.control} name="priority" render={({ field }) => (
@@ -528,7 +530,11 @@ const Cases = () => {
                             <CardContent className="space-y-4">
                               {case_.description && <p className="text-sm text-card-foreground line-clamp-2">{case_.description}</p>}
                               <div className="flex flex-wrap gap-1">
-                                <Badge variant="secondary" className={`text-xs text-white ${getCategoryColor(case_.category)}`}>{case_.category}</Badge>
+                                {case_.tags.map((tag) => (
+                                  <Badge key={tag} variant="outline" className={`text-xs tag-color-${getRandomColorIndexFor(tag)}`}>
+                                    {tag}
+                                  </Badge>
+                                ))}
                               </div>
                               <div className="flex items-center gap-1 text-xs text-muted-foreground">
                                 <Calendar className="w-3 h-3" />
