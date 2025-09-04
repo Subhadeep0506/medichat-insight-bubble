@@ -405,7 +405,7 @@ export const ChatHistorySidebar = ({
             </DialogHeader>
             <div className="space-y-4">
               <div>
-                <h4 className="text-sm font-semibold mb-2">Patient</h4>
+                <h4 className="text-md font-semibold mb-2">Patient</h4>
                 <div className="grid grid-cols-2 gap-2 text-sm">
                   <div><span className="text-muted-foreground">Name:</span> {patient?.name || '-'}</div>
                   <div><span className="text-muted-foreground">Age:</span> {patient?.age ?? '-'}</div>
@@ -415,7 +415,7 @@ export const ChatHistorySidebar = ({
                 </div>
               </div>
               <div>
-                <h4 className="text-sm font-semibold mb-2">Case</h4>
+                <h4 className="text-md font-semibold mb-2">Case</h4>
                 <div className="grid grid-cols-2 gap-2 text-sm">
                   <div className="col-span-2"><span className="text-muted-foreground">Title:</span> {caseRecord?.title || '-'}</div>
                   <div className="col-span-2"><span className="text-muted-foreground">Description:</span> {caseRecord?.description || '-'}</div>

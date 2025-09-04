@@ -21,8 +21,8 @@ export const ChatHeader = ({ onBackToCase }: ChatHeaderProps) => {
           <Stethoscope className="h-5 w-5 md:h-6 md:w-6 text-blue-600 dark:text-blue-400" />
         </div>
         <div className="min-w-0 flex-1">
-          <h1 className="text-lg md:text-xl font-semibold text-gray-900 dark:text-gray-100 truncate">AI Pathology Assistant</h1>
-          <p className="text-xs md:text-sm text-gray-600 dark:text-gray-300 hidden sm:block truncate">Analyze medical images with AI-powered insights</p>
+          <h1 className="text-lg md:text-xl font-semibold text-gray-900 dark:text-gray-100 truncate">AI Mental Health Assistant</h1>
+          <p className="text-xs md:text-sm text-gray-600 dark:text-gray-300 hidden sm:block truncate">Fully local personal mental lealth assistant</p>
         </div>
       </div>
 
