@@ -10,6 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Trash2, Plus, Calendar, Eye, Search, Filter, Edit, User, ChevronDown, ChevronUp, X } from 'lucide-react';
 import FloatingNavbar from '@/components/FloatingNavbar';
 import { EditPatientDialog } from '@/components/EditPatientDialog';
+import EditCaseDialog from '@/components/EditCaseDialog';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -152,20 +153,6 @@ const Cases = () => {
       default: return 'priority-badge priority-low';
     }
   };
-  const addEditTag = (value: string) => {
-    const v = value.trim();
-    if (!v) return;
-    if (!editTags.includes(v)) setEditTags([...editTags, v]);
-  };
-  const removeEditTag = (value: string) => setEditTags(editTags.filter((t) => t !== value));
-  const onEditTagKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' || e.key === ',') {
-      e.preventDefault();
-      const input = e.currentTarget as HTMLInputElement;
-      addEditTag(input.value);
-      input.value = '';
-    }
-  };
 
   const handleEditCase = (case_: UICase) => {
     setEditingCase({
@@ -173,24 +160,12 @@ const Cases = () => {
       patientId: case_.patientId,
       title: case_.title,
       description: case_.description,
-      status: 'open',
+      priority: case_.priority,
       updatedAt: case_.lastUpdated.toISOString(),
       tags: case_.tags,
     });
     setEditTags(case_.tags || []);
     form.reset({ caseName: case_.title, description: case_.description || '', priority: case_.priority, tags: case_.tags || [] });
-  };
-
-  const onEditSubmit = async (values: z.infer<typeof editCaseSchema>) => {
-    if (!editingCase) return;
-    try {
-      await updateCase(editingCase.id, { title: values.caseName, description: values.description, tags: editTags, priority: values.priority });
-      toast({ title: 'Case updated' });
-    } catch {
-      toast({ title: 'Failed to update case', variant: 'destructive' });
-    } finally {
-      setEditingCase(null);
-    }
   };
 
   const handleCaseClick = (caseId: string) => {
@@ -435,85 +410,18 @@ const Cases = () => {
                                   <CardDescription className="text-sm text-muted-foreground">Case ID: {case_.id}</CardDescription>
                                 </div>
                                 <div className="flex gap-1">
-                                  <Dialog open={editingCase?.id === case_.id} onOpenChange={(open) => !open && setEditingCase(null)}>
-                                    <DialogTrigger asChild>
-                                      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary" onClick={(e) => { e.stopPropagation(); handleEditCase(case_ as any); }}>
-                                        <Edit className="w-4 h-4" />
-                                      </Button>
-                                    </DialogTrigger>
-                                    <DialogContent className="sm:max-w-[425px]" onClick={(e) => e.stopPropagation()}>
-                                      <DialogHeader>
-                                        <DialogTitle>Edit Case</DialogTitle>
-                                      </DialogHeader>
-                                      <Form {...form}>
-                                        <form onSubmit={form.handleSubmit(onEditSubmit)} className="space-y-4" onClick={(e) => e.stopPropagation()}>
-                                          <FormField control={form.control} name="caseName" render={({ field }) => (
-                                            <FormItem>
-                                              <FormLabel>Case Name</FormLabel>
-                                              <FormControl>
-                                                <Input placeholder="Enter case name" {...field} />
-                                              </FormControl>
-                                              <FormMessage />
-                                            </FormItem>
-                                          )} />
-                                          <FormField control={form.control} name="description" render={({ field }) => (
-                                            <FormItem>
-                                              <FormLabel>Description</FormLabel>
-                                              <FormControl>
-                                                <Textarea placeholder="Enter case description" {...field} />
-                                              </FormControl>
-                                              <FormMessage />
-                                            </FormItem>
-                                          )} />
-
-                                          <div>
-                                            <FormLabel>Tags</FormLabel>
-                                            <Input
-                                              placeholder="Type a tag and press Enter"
-                                              onKeyDown={onEditTagKeyDown}
-                                              className="tag-input-field mt-2 w-full"
-                                            />
-                                            {editTags.length > 0 && (
-                                              <div className="tag-input-container mt-2">
-                                                {editTags.map((tag) => (
-                                                  <span key={tag} className={`tag-badge tag-color-${getRandomColorIndexFor(tag)}`}>
-                                                    {tag}
-                                                    <button type="button" aria-label={`Remove ${tag}`} className="tag-remove" onClick={() => removeEditTag(tag)}>
-                                                      <X className="w-3 h-3" />
-                                                    </button>
-                                                  </span>
-                                                ))}
-                                              </div>
-                                            )}
-                                          </div>
-
-                                          <FormField control={form.control} name="priority" render={({ field }) => (
-                                            <FormItem>
-                                              <FormLabel>Priority</FormLabel>
-                                              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                                <FormControl>
-                                                  <SelectTrigger className="w-48">
-                                                    <SelectValue placeholder="Select priority" />
-                                                  </SelectTrigger>
-                                                </FormControl>
-                                                <SelectContent>
-                                                  <SelectItem value="low">Low</SelectItem>
-                                                  <SelectItem value="medium">Medium</SelectItem>
-                                                  <SelectItem value="high">High</SelectItem>
-                                                </SelectContent>
-                                              </Select>
-                                              <FormMessage />
-                                            </FormItem>
-                                          )} />
-
-                                          <div className="flex gap-2 pt-4">
-                                            <Button type="submit" className="flex-1">Save Changes</Button>
-                                            <Button type="button" variant="outline" onClick={() => setEditingCase(null)}>Cancel</Button>
-                                          </div>
-                                        </form>
-                                      </Form>
-                                    </DialogContent>
-                                  </Dialog>
+                                  <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary" onClick={(e) => { e.stopPropagation(); handleEditCase(case_ as any); }}>
+                                    <Edit className="w-4 h-4" />
+                                  </Button>
+                                  <EditCaseDialog
+                                    caseRecord={case_}
+                                    open={editingCase?.id === case_.id}
+                                    onOpenChange={(open) => !open && setEditingCase(null)}
+                                    onCaseUpdate={(updated) => {
+                                      // update handled in store; just close dialog and optionally show toast
+                                      setEditingCase(null);
+                                    }}
+                                  />
 
                                   <AlertDialog>
                                     <AlertDialogTrigger asChild>

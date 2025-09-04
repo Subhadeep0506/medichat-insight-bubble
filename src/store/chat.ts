@@ -59,7 +59,7 @@ export const useChatStore = create<ChatState>()(
           set((s) => ({ messagesBySession: { ...s.messagesBySession, [sessionId]: res.items } }));
           return res.items;
         } catch (e: any) {
-          const msg = `${e?.status ? e.status + " " : ""}${e?.data?.detail || e?.message || "Failed to load messages"}`;
+          const msg = e.data.detail
           set({ error: msg });
           throw e;
         } finally {

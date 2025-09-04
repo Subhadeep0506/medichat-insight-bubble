@@ -55,13 +55,13 @@ export const useAuthStore = create<AuthState>()(
               }
             });
           } catch (e: any) {
-            const msg = `${e?.status ? e.status + " " : ""}${e?.data?.detail || e?.message || "Login failed"}`;
+            const msg = e.data.detail;
             set({ error: msg });
             throw e;
           }
         } catch (e: any) {
           console.log(e.data)
-          const msg = `${e?.status ? e.status + " " : ""}${e?.data?.detail || e?.message || "Login failed"}`;
+          const msg = e.data.detail;
           set({ error: msg });
           throw e;
         } finally {
@@ -74,7 +74,7 @@ export const useAuthStore = create<AuthState>()(
           const { message } = await AuthApi.register({ name, email, password, phone });
           return message;
         } catch (e: any) {
-          const msg = `${e?.status ? e.status + " " : ""}${e?.data?.detail || e?.message || "Registration failed"}`;
+          const msg = e.data.detail
           set({ error: msg });
           throw e;
         } finally {
@@ -105,7 +105,7 @@ export const useAuthStore = create<AuthState>()(
         try {
           await AuthApi.logout();
         } catch (e: any) {
-          const msg = `${e?.status ? e.status + " " : ""}${e?.data?.detail || e?.message || "Login failed"}`;
+          const msg = e.data.detail;
           set({ error: msg });
           throw e;
         }

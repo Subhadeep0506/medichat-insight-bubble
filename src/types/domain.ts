@@ -27,7 +27,6 @@ export interface CaseRecord {
   patientId: ID;
   title: string;
   description?: string | null;
-  status: "open" | "closed" | "on_hold";
   createdAt?: string;
   updatedAt?: string;
   tags?: string[];

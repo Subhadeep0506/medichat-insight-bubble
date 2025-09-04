@@ -43,7 +43,7 @@ export const useCasesStore = create<CasesState>((set, get) => ({
         orderByPatient: { ...s.orderByPatient, [patientId]: items.map((c) => c.id) },
       }));
     } catch (e: any) {
-      const msg = `${e?.status ? e.status + " " : ""}${e?.data?.detail || e?.message || "Failed to load cases"}`;
+      const msg = e.data.detail
       set({ error: msg });
       throw e;
     } finally {
