@@ -26,9 +26,12 @@ function stripAllTags(raw: string) {
 }
 
 function parseAssistantContent(content: string) {
+  console.log(`FULL CONTENT: ${content}`)
   const think = extractOuterTagContent(content, "think");
-  const explicitAnswer = extractOuterTagContent(content, "answer");
+  const explicitAnswer = extractOuterTagContent(content.split("</think>")[1], "answer");
   const answer = explicitAnswer ? explicitAnswer : stripAllTags(content);
+  console.log(`THINK: ${think}`)
+  console.log(`ASNWER: ${answer}`)
   return { think: think ? stripAllTags(think) : null, answer };
 }
 
@@ -41,7 +44,7 @@ export const MessageBubble = ({ message }: MessageBubbleProps) => {
     <div className={`flex items-start space-x-2 md:space-x-3 ${isUser ? 'flex-row-reverse space-x-reverse' : ''}`}>
       {/* Avatar */}
       <div className={`flex-shrink-0 w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center ${
-        isUser ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground'
+        isUser ? 'bg-primary text-primary-foreground ml-4' : 'bg-secondary text-secondary-foreground'
       }`}>
         {isUser ? <User className="h-4 w-4 md:h-5 md:w-5" /> : <Bot className="h-4 w-4 md:h-5 md:w-5" />}
       </div>
@@ -50,8 +53,8 @@ export const MessageBubble = ({ message }: MessageBubbleProps) => {
       <div className={`flex-1 max-w-[85%] md:max-w-[70%] ${isUser ? 'text-right' : ''}`}>
         <div className={`relative inline-block p-3 md:p-4 rounded-2xl shadow-lg ${
           isUser
-            ? 'bg-secondary text-secondary-foreground rounded-br-sm border border-border'
-            : 'bg-card text-card-foreground rounded-bl-sm border border-border'
+            ? 'bg-secondary text-secondary-foreground rounded-br-sm border border-gray-600/20'
+            : 'bg-card text-card-foreground rounded-bl-sm border border-gray-200/20'
         }`}>
           {/* Responsibility AI Indicator for Assistant Messages */}
           {!isUser && message.responsibilityScore && (

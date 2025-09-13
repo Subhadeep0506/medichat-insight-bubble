@@ -30,9 +30,9 @@ const Navbar = () => {
           MentalCare
         </span>
         <div className="hidden md:flex gap-6 items-center text-sm text-slate-700 dark:text-slate-200">
-          <button className={`hover:text-white-600 dark:hover:text-white ${scrolled ? "text-slate-900" : "text-slate-100"}`} onClick={() => window.scrollTo({ top: window.innerHeight, behavior: "smooth" })}>Features</button>
-          <button className={`hover:text-white-600 dark:hover:text-white ${scrolled ? "text-slate-900" : "text-slate-100"}`} onClick={() => window.scrollTo({ top: window.innerHeight * 1.6, behavior: "smooth" })}>Assessments</button>
-          <button className={`hover:text-white-600 dark:hover:text-white ${scrolled ? "text-slate-900" : "text-slate-100"}`} onClick={() => window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" })}>Contact</button>
+          <button className={`hover:text-white-200 dark:hover:text-white ${scrolled ? "text-slate-900 dark:text-slate-200" : "text-slate-100"}`} onClick={() => window.scrollTo({ top: window.innerHeight, behavior: "smooth" })}>Features</button>
+          <button className={`hover:text-white-200 dark:hover:text-white ${scrolled ? "text-slate-900 dark:text-slate-200" : "text-slate-100"}`} onClick={() => window.scrollTo({ top: window.innerHeight * 1.6, behavior: "smooth" })}>Assessments</button>
+          <button className={`hover:text-white-200 dark:hover:text-white ${scrolled ? "text-slate-900 dark:text-slate-200" : "text-slate-100"}`} onClick={() => window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" })}>Contact</button>
         </div>
         <div className="flex gap-3 items-center">
           <Button
