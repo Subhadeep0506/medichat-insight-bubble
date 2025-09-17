@@ -44,3 +44,32 @@ body {
 .read-the-docs {
   color: #888;
 }
+
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+* Floating chat fade blur behind disclaimer */
+.floating-blur-fade {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(60rem, calc(100% - 4rem));
+  height: 88px;
+  bottom: -0.5rem;
+  border-radius: 999px;
+  pointer-events: none;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  background: linear-gradient(to top, rgba(255,255,255,0.55), rgba(255,255,255,0.15), rgba(255,255,255,0));
+  -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,1), rgba(0,0,0,0));
+  mask-image: linear-gradient(to top, rgba(0,0,0,1), rgba(0,0,0,0));
+  z-index: 20;
+}
+
+.dark .floating-blur-fade {
+  background: linear-gradient(to top, rgba(15,23,42,0.55), rgba(15,23,42,0.15), rgba(15,23,42,0));
+}

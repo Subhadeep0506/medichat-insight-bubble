@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, UserPlus, CalendarIcon } from 'lucide-react';
+import { ArrowLeft, UserPlus, CalendarIcon, Loader } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -314,7 +314,7 @@ const NewPatient = () => {
                     >
                       {isSubmitting ? (
                         <>
-                          <UserPlus className="w-4 h-4 mr-2 animate-spin" />
+                          <Loader className="w-4 h-4 mr-2 animate-spin" />
                           Creating Patient...
                         </>
                       ) : (

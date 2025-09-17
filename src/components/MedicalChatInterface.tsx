@@ -1,4 +1,3 @@
-
 import React, { useMemo, useRef, useState } from 'react';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { ChatHistorySidebar, ChatHistory } from './chat/ChatHistorySidebar';
@@ -10,6 +9,7 @@ import { useChatStore, useCasesStore } from '@/store';
 import { CasesApi } from '@/api/cases';
 import type { Patient, CaseRecord } from '@/types/domain';
 import { toast } from '@/hooks/use-toast';
+import { Loader } from 'lucide-react';
 
 export interface ChatMessage {
   id: string;
@@ -43,6 +43,7 @@ export const MedicalChatInterface = ({ caseId, onBackToCase }: MedicalChatInterf
     sendMessage,
     addLocalMessage,
   } = useChatStore();
+  const chatLoading = useChatStore((s) => s.loading);
   const findPatientIdByCaseId = useCasesStore((s) => s.findPatientIdByCaseId);
 
   const [resolvedPatientId, setResolvedPatientId] = useState<string | undefined>(undefined);
@@ -180,9 +181,17 @@ export const MedicalChatInterface = ({ caseId, onBackToCase }: MedicalChatInterf
       });
   }, [sessions, messagesBySession]);
 
+  const showPageSpinner = React.useMemo(() => {
+    if (!caseId) return false;
+    if (!patientId) return true;
+    if (!currentSessionId) return true;
+    if (!messagesBySession[currentSessionId]) return true;
+    return false;
+  }, [caseId, patientId, currentSessionId, messagesBySession]);
+
   return (
     <SidebarProvider defaultOpen={true}>
-      <div className="flex h-screen w-full bg-background">
+      <div className="flex h-screen w-full bg-background relative">
         <ChatHistorySidebar
           chatHistories={chatHistories}
           currentChatId={currentSessionId || null}
@@ -193,7 +202,7 @@ export const MedicalChatInterface = ({ caseId, onBackToCase }: MedicalChatInterf
           caseRecord={caseData}
         />
 
-        <div className="flex-1 flex flex-col m-2 rounded-lg border">
+        <div className="flex-1 flex flex-col m-2 rounded-lg border relative">
           <div className="flex items-center gap-2 md:p-4 shadow-md rounded-t-lg backdrop-blur-lg">
             <SidebarTrigger />
             <ChatHeader onBackToCase={onBackToCase} />
@@ -207,21 +216,22 @@ export const MedicalChatInterface = ({ caseId, onBackToCase }: MedicalChatInterf
                 messagesEndRef={messagesEndRef}
               />
 
-              <div className="border-t rounded-b-lg bg-gray-50/50 md:p-4 space-y-2 md:space-y-4 dark:bg-slate-800/50">
-                {/* <ImageUpload onImageUpload={handleImageUpload} currentImages={currentImages} /> */}
-                <div className="relative">
-                  <ChatInput
-                    onSendMessage={handleSendMessage}
-                    disabled={isLoading}
-                    onTypingChange={setIsTyping}
-                    onSuggestionSelect={(s) => handleSendMessage(s)}
-                    hasImage={currentImages.length > 0}
-                    showSuggestions={isTyping}
-                  />
-                </div>
-              </div>
+              {/* Floating ChatInput is rendered inside the chat column so it overlays messages */}
+              <ChatInput
+                onSendMessage={handleSendMessage}
+                disabled={isLoading}
+                onTypingChange={setIsTyping}
+                onSuggestionSelect={(s) => handleSendMessage(s)}
+                hasImage={currentImages.length > 0}
+                showSuggestions={isTyping}
+              />
             </div>
           </div>
+          {showPageSpinner && (
+            <div className="absolute inset-0 flex items-center justify-center bg-background/60 backdrop-blur-sm z-50">
+              <Loader className="h-6 w-6 animate-spin text-muted-foreground" />
+            </div>
+          )}
         </div>
       </div>
     </SidebarProvider>

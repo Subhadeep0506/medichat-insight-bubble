@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Trash2, Plus, Calendar, Eye, Search, Filter, Edit, User, ChevronDown, ChevronUp, X } from 'lucide-react';
+import { Trash2, Plus, Calendar, Eye, Search, Filter, Edit, User, ChevronDown, ChevronUp, X, Loader } from 'lucide-react';
 import FloatingNavbar from '@/components/FloatingNavbar';
 import { EditPatientDialog } from '@/components/EditPatientDialog';
 import EditCaseDialog from '@/components/EditCaseDialog';
@@ -51,6 +51,7 @@ const Cases = () => {
   const [expandedPatient, setExpandedPatient] = useState<string | null>(null);
   const [editingPatient, setEditingPatient] = useState<Patient | null>(null);
   const [deletingPatient, setDeletingPatient] = useState(false)
+  const [openingPatientId, setOpeningPatientId] = useState<string | null>(null)
 
   const form = useForm<z.infer<typeof editCaseSchema>>({
     resolver: zodResolver(editCaseSchema),
@@ -59,6 +60,8 @@ const Cases = () => {
 
   const { patients, order: patientOrder, fetchPatients, deletePatient } = usePatientsStore();
   const { casesByPatient, orderByPatient, listByPatient, updateCase, deleteCase } = useCasesStore();
+  const patientsLoading = usePatientsStore((s) => s.loading);
+  const casesLoading = useCasesStore((s) => s.loading);
 
   useEffect(() => {
     fetchPatients().catch((error) => {
@@ -196,6 +199,7 @@ const Cases = () => {
   };
 
   const handleOpenCases = (patient: Patient) => {
+    setOpeningPatientId(patient.id);
     setSelectedPatient(patient);
   };
 
@@ -238,7 +242,7 @@ const Cases = () => {
         <div className="h-[calc(100vh-200px)] w-full">
           <ResizablePanelGroup direction="horizontal" className="min-h-full border  border-green-300 dark:border-green-700 rounded-xl shadow-xl">
             <ResizablePanel defaultSize={40} minSize={30}>
-              <div className="flex flex-col h-full">
+              <div className="flex flex-col h-full relative">
                 <div className="p-4 border-b bg-card">
                   <div className="flex items-center gap-2 mb-4">
                     <User className="w-5 h-5 text-primary" />
@@ -281,8 +285,15 @@ const Cases = () => {
                                 </div>
                               </div>
                               <div className="flex flex-col gap-2 mt-3">
-                                <Button onClick={(e) => { e.stopPropagation(); handleOpenCases(patient); }} className="W-full" size="sm">
-                                  Open Cases {(orderByPatient[patient.id]?.length || 0) > 0 ? `(${orderByPatient[patient.id]?.length || 0})` : ''}
+                                <Button onClick={(e) => { e.stopPropagation(); handleOpenCases(patient); }} className="W-full" size="sm" disabled={casesLoading && openingPatientId === patient.id}>
+                                  {openingPatientId === patient.id && casesLoading ? (
+                                    <>
+                                      <Loader className="w-3 h-3 mr-2 animate-spin" />
+                                      Loading...
+                                    </>
+                                  ) : (
+                                    <>Open Cases {(orderByPatient[patient.id]?.length || 0) > 0 ? `(${orderByPatient[patient.id]?.length || 0})` : ''}</>
+                                  )}
                                 </Button>
                                 <div className="flex gap-2">
                                   <Button onClick={(e) => { e.stopPropagation(); handleNewCase(patient.id); }} variant="outline" className="flex-1" size="sm">
@@ -330,13 +341,19 @@ const Cases = () => {
                     )}
                   </div>
                 </ScrollArea>
+
+                {patientsLoading && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-background/60 backdrop-blur-sm z-10">
+                    <Loader className="h-6 w-6 animate-spin text-muted-foreground" />
+                  </div>
+                )}
               </div>
             </ResizablePanel>
 
             <ResizableHandle />
 
             <ResizablePanel defaultSize={60} minSize={40}>
-              <div className="flex flex-col h-full">
+              <div className="flex flex-col h-full relative">
                 <div className="p-4 border-b bg-card">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
@@ -466,6 +483,12 @@ const Cases = () => {
                     )}
                   </div>
                 </ScrollArea>
+
+                {selectedPatient && casesLoading && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-background/60 backdrop-blur-sm z-10">
+                    <Loader className="h-6 w-6 animate-spin text-muted-foreground" />
+                  </div>
+                )}
               </div>
             </ResizablePanel>
           </ResizablePanelGroup>

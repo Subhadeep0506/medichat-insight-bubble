@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Upload, ArrowLeft, X } from 'lucide-react';
+import { Upload, ArrowLeft, X, Loader } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -245,7 +245,7 @@ const NewCase = () => {
                     >
                       {isSubmitting ? (
                         <>
-                          <Upload className="w-4 h-4 mr-2 animate-spin" />
+                          <Loader className="w-4 h-4 mr-2 animate-spin" />
                           Creating Case...
                         </>
                       ) : (
