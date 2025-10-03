@@ -5,12 +5,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { BackgroundGradientAnimation } from "@/components/ui/background-gradient-animation";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
-import { Sparkles, ShieldCheck, MessageSquare, Users, Star, LogIn, UserPlus as UserPlusIcon, FolderOpen, Bot, History, ImageUp, FileUp } from "lucide-react";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+import { Sparkles, ShieldCheck, MessageSquare, Users, Star, LogIn, UserPlus as UserPlusIcon, FolderOpen, Bot, History, ImageUp, FileUp, Menu } from "lucide-react";
 import { supportCategories, selfAssessments, testimonials } from "@/types/constants";
 
 const Navbar = () => {
   const navigate = useNavigate();
   const [scrolled, setScrolled] = useState(false);
+
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -19,40 +22,50 @@ const Navbar = () => {
   }, []);
 
   return (
-    <nav
-      className={`fixed top-0 left-0 w-full z-30 transition-all duration-300 ${scrolled
-        ? "backdrop-blur-md supports-[backdrop-filter]:bg-white/60 dark:supports-[backdrop-filter]:bg-slate-900/60 bg-white/80 dark:bg-slate-900/70 shadow-sm"
-        : "bg-transparent"
-        }`}
-    >
-      <div className="max-w-7xl mx-auto flex items-center justify-between py-4 px-6">
-        <span className={`text-2xl font-bold text-[#0f172a] dark:text-white tracking-tight ${scrolled ? "text-slate-900" : "text-slate-100"}`}>
-          MentalCare
-        </span>
-        <div className="hidden md:flex gap-6 items-center text-sm text-slate-700 dark:text-slate-200">
-          <button className={`hover:text-white-200 dark:hover:text-white ${scrolled ? "text-slate-900 dark:text-slate-200" : "text-slate-100"}`} onClick={() => window.scrollTo({ top: window.innerHeight, behavior: "smooth" })}>Features</button>
-          <button className={`hover:text-white-200 dark:hover:text-white ${scrolled ? "text-slate-900 dark:text-slate-200" : "text-slate-100"}`} onClick={() => window.scrollTo({ top: window.innerHeight * 1.6, behavior: "smooth" })}>Assessments</button>
-          <button className={`hover:text-white-200 dark:hover:text-white ${scrolled ? "text-slate-900 dark:text-slate-200" : "text-slate-100"}`} onClick={() => window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" })}>Contact</button>
+    <>
+      <nav
+        className={`fixed top-0 left-0 w-full z-30 transition-all duration-300 ${scrolled
+          ? "backdrop-blur-md supports-[backdrop-filter]:bg-white/60 dark:supports-[backdrop-filter]:bg-slate-900/60 bg-white/80 dark:bg-slate-900/70 shadow-sm"
+          : "bg-transparent"
+          }`}
+      >
+        <div className="max-w-7xl mx-auto flex items-center justify-between py-4 px-6">
+          <span className={`text-2xl font-bold text-[#0f172a] dark:text-white tracking-tight ${scrolled ? "text-slate-900" : "text-slate-100"}`}>
+            MentalCare
+          </span>
+          <div className="hidden md:flex gap-6 items-center text-sm text-slate-700 dark:text-slate-200">
+            <button className={`hover:text-white-200 dark:hover:text-white ${scrolled ? "text-slate-900 dark:text-slate-200" : "text-slate-100"}`} onClick={() => window.scrollTo({ top: window.innerHeight, behavior: "smooth" })}>Features</button>
+            <button className={`hover:text-white-200 dark:hover:text-white ${scrolled ? "text-slate-900 dark:text-slate-200" : "text-slate-100"}`} onClick={() => window.scrollTo({ top: window.innerHeight * 1.6, behavior: "smooth" })}>Assessments</button>
+            <button className={`hover:text-white-200 dark:hover:text-white ${scrolled ? "text-slate-900 dark:text-slate-200" : "text-slate-100"}`} onClick={() => window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" })}>Contact</button>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="hidden lg:flex gap-3 items-center">
+              <Button size="sm" className="bg-[#37a36c] text-white dark:bg-[#2a7d52] rounded-full px-6 font-semibold transition hover:bg-[#319c63]" onClick={() => navigate("/register")}>Get Started</Button>
+              <Button variant="outline" size="sm" className="border-[#37a36c] text-[#37a36c] rounded-full px-6 font-semibold bg-white transition hover:bg-[#cbeed5]" onClick={() => navigate("/login")}>Login</Button>
+            </div>
+
+            <Popover open={menuOpen} onOpenChange={setMenuOpen}>
+              <PopoverTrigger asChild>
+                <Button className="flex lg:hidden h-9 px-3 rounded-full bg-[#37a36c] text-white">
+                  <Menu className="h-4 w-4" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent side="bottom" align="end" className="w-64 rounded-xl p-4">
+                <div className="flex flex-col gap-2">
+                  <Button variant="ghost" className="justify-start" onClick={() => { window.scrollTo({ top: window.innerHeight, behavior: 'smooth' }); setMenuOpen(false); }}>Features</Button>
+                  <Button variant="ghost" className="justify-start" onClick={() => { window.scrollTo({ top: window.innerHeight * 1.6, behavior: 'smooth' }); setMenuOpen(false); }}>Assessments</Button>
+                  <Button variant="ghost" className="justify-start" onClick={() => { window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }); setMenuOpen(false); }}>Contact</Button>
+                  <div className="border-t my-2" />
+                  <Button className="w-full" onClick={() => { navigate('/register'); setMenuOpen(false); }}>Get Started</Button>
+                  <Button variant="outline" className="w-full" onClick={() => { navigate('/login'); setMenuOpen(false); }}>Login</Button>
+                </div>
+              </PopoverContent>
+            </Popover>
+          </div>
         </div>
-        <div className="flex gap-3 items-center">
-          <Button
-            size="sm"
-            className="bg-[#37a36c] text-white dark:bg-[#2a7d52] rounded-full px-6 font-semibold transition hover:bg-[#319c63] dark:hover:bg-[#319c63]"
-            onClick={() => navigate("/register")}
-          >
-            Get Started
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="border-[#37a36c] text-[#37a36c] rounded-full px-6 font-semibold bg-white transition hover:bg-[#cbeed5] dark:hover:text-[#37a36c]"
-            onClick={() => navigate("/login")}
-          >
-            Login
-          </Button>
-        </div>
-      </div>
-    </nav>
+      </nav>
+
+    </>
   );
 };
 
@@ -401,8 +414,10 @@ const Index = () => {
                 </CarouselItem>
               ))}
             </CarouselContent>
-            <CarouselPrevious />
-            <CarouselNext />
+            <div className="flex justify-center gap-2 mt-4">
+              <CarouselPrevious position="bottom" />
+              <CarouselNext position="bottom" />
+            </div>
           </Carousel>
         </div>
       </section>
