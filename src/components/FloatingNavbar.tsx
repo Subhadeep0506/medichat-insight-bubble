@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -8,7 +7,8 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import { LogOut, User, Sun, Moon, Plus } from "lucide-react";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+import { LogOut, User, Sun, Moon, Plus, Menu } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useTheme } from "next-themes";
@@ -50,19 +50,40 @@ export function FloatingNavbar() {
             <Button
               onClick={() => navigate("/new-patient")}
               size="sm"
-              className="rounded-full mr-4"
+              className="hidden lg:inline-flex rounded-full mr-4"
             >
               <Plus className="w-3 h-3 mr-1" />
               New Patient
             </Button>
+
             <Button
               variant="ghost"
               size="icon"
               onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-              className="h-10 w-10 mr-4"
+              className="hidden lg:inline-flex h-10 w-10 mr-4"
             >
               {theme === 'dark' ? <Sun className="h-10 w-10" /> : <Moon className="h-10 w-10" />}
             </Button>
+
+            {/* Mobile/Tablet snackbar popover with New Patient + Theme */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button className="lg:hidden relative h-10 w-10 rounded-full mr-2">
+                  <Menu className="h-4 w-4" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent align="end" sideOffset={8} className="w-56">
+                <div className="flex flex-col gap-2">
+                  <Button size="sm" className="w-full justify-start" onClick={() => { navigate('/new-patient'); }}>
+                    <Plus className="w-3 h-3 mr-2" /> New Patient
+                  </Button>
+                  <Button variant="ghost" className="w-full justify-start" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
+                    {theme === 'dark' ? <Sun className="w-4 h-4 mr-2" /> : <Moon className="w-4 h-4 mr-2" />} Toggle Theme
+                  </Button>
+                </div>
+              </PopoverContent>
+            </Popover>
+
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-10 w-10 rounded-full">

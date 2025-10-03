@@ -56,8 +56,8 @@ const Navbar = () => {
                   <Button variant="ghost" className="justify-start" onClick={() => { window.scrollTo({ top: window.innerHeight * 1.6, behavior: 'smooth' }); setMenuOpen(false); }}>Assessments</Button>
                   <Button variant="ghost" className="justify-start" onClick={() => { window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }); setMenuOpen(false); }}>Contact</Button>
                   <div className="border-t my-2" />
-                  <Button className="w-full" onClick={() => { navigate('/register'); setMenuOpen(false); }}>Get Started</Button>
-                  <Button variant="outline" className="w-full" onClick={() => { navigate('/login'); setMenuOpen(false); }}>Login</Button>
+                  <Button size="sm" className="bg-[#37a36c] text-white dark:bg-[#2a7d52] rounded-full px-6 font-semibold transition hover:bg-[#319c63]" onClick={() => navigate("/register")}>Get Started</Button>
+              <Button variant="outline" size="sm" className="border-[#37a36c] text-[#37a36c] rounded-full px-6 font-semibold bg-white transition hover:bg-[#cbeed5]" onClick={() => navigate("/login")}>Login</Button>
                 </div>
               </PopoverContent>
             </Popover>
