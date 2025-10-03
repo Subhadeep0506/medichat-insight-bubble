@@ -1,8 +1,5 @@
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+  min-height: 100%;
 }
 
 body {
@@ -52,7 +49,7 @@ body {
   text-align: center;
 }
 
-* Floating chat fade blur behind disclaimer */
+/* Floating chat fade blur behind disclaimer */
 .floating-blur-fade {
   position: absolute;
   left: 50%;
