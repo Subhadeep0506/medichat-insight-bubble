@@ -52,6 +52,14 @@ const Cases = () => {
   const [editingPatient, setEditingPatient] = useState<Patient | null>(null);
   const [deletingPatient, setDeletingPatient] = useState(false)
   const [openingPatientId, setOpeningPatientId] = useState<string | null>(null)
+  const [showDeletePatientDialog, setShowDeletePatientDialog] = useState(false);
+  const [patientToDelete, setPatientToDelete] = useState<string | null>(null);
+  const [caseToDelete, setCaseToDelete] = useState<string | null>(null);
+  const [showDeleteCaseDialog, setShowDeleteCaseDialog] = useState(false);
+
+  // Pagination and table state
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 8;
 
   const form = useForm<z.infer<typeof editCaseSchema>>({
     resolver: zodResolver(editCaseSchema),
@@ -73,6 +81,11 @@ const Cases = () => {
   useEffect(() => {
     if (selectedPatient?.id) listByPatient(selectedPatient.id).catch(() => { });
   }, [selectedPatient?.id, listByPatient]);
+
+  useEffect(() => {
+    // reset pagination whenever filters or search change
+    setCurrentPage(1);
+  }, [patientSearchQuery, caseSearchQuery, selectedCategory, selectedPatient, sortBy]);
 
   const patientsList: Patient[] = useMemo(() => patientOrder.map((id) => patients[id]).filter(Boolean) as Patient[], [patients, patientOrder]);
 
@@ -133,8 +146,9 @@ const Cases = () => {
   }, [casesForSelected, caseSearchQuery, selectedCategory, sortBy]);
 
   const handleDeleteCase = (caseId: string) => {
-    if (!selectedPatient) return;
-    deleteCase(selectedPatient.id, caseId).catch(() => { });
+    // open confirmation dialog first
+    setCaseToDelete(caseId);
+    setShowDeleteCaseDialog(true);
   };
 
   const [editTags, setEditTags] = useState<string[]>([]);
@@ -185,13 +199,9 @@ const Cases = () => {
   };
 
   const handleDeletePatient = (patientId: string) => {
-    setDeletingPatient(true)
-    deletePatient(patientId).then(() => { toast({ title: "Patient deleted." }); }).catch((err: any) => {
-      toast({ title: "Patient delete failed.", description: err.data.details, variant: "destructive" });
-    });
-    if (selectedPatient?.id === patientId) setSelectedPatient(null);
-    if (expandedPatient === patientId) setExpandedPatient(null);
-    setDeletingPatient(false)
+    // open confirmation dialog first
+    setPatientToDelete(patientId);
+    setShowDeletePatientDialog(true);
   };
 
   const handlePatientClick = (patient: Patient) => {
@@ -240,139 +250,99 @@ const Cases = () => {
         </div>
 
         <div className="h-[calc(100vh-200px)] w-full">
-          <ResizablePanelGroup direction="horizontal" className="min-h-full border  border-green-300 dark:border-green-700 rounded-xl shadow-xl">
-            <ResizablePanel defaultSize={40} minSize={30}>
-              <div className="flex flex-col h-full relative">
-                <div className="p-4 border-b bg-card">
-                  <div className="flex items-center gap-2 mb-4">
-                    <User className="w-5 h-5 text-primary" />
-                    <h2 className="text-xl font-semibold text-card-foreground">Patients</h2>
-                  </div>
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                    <Input placeholder="Search patients..." value={patientSearchQuery} onChange={(e) => setPatientSearchQuery(e.target.value)} className="pl-10" />
-                  </div>
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 min-h-full">
+            {/* Patients sidebar */}
+            <div className="lg:col-span-1 bg-card rounded-xl border border-border p-2 flex flex-col">
+              <div className="mb-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <User className="w-5 h-5 text-primary" />
+                  <h3 className="text-lg font-semibold text-card-foreground">Patients</h3>
+                </div>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                  <Input placeholder="Search patients..." value={patientSearchQuery} onChange={(e) => setPatientSearchQuery(e.target.value)} className="pl-10" />
+                </div>
+              </div>
+
+              <div className="flex-1 overflow-y-auto">
+                <div className="space-y-2">
+                  {patientsLoading ? (
+                    <div className="flex flex-col items-center justify-center py-12">
+                      <Loader className="w-8 h-8 animate-spin text-muted-foreground" />
+                      <div className="text-sm text-muted-foreground mt-3">Loading patients...</div>
+                    </div>
+                  ) : (
+                    filteredPatients.map((patient) => (
+                      <div key={patient.id} className={cn('m-1 p-3 rounded-md cursor-pointer border border-border', selectedPatient?.id === patient.id ? 'bg-accent/10 ring-2 ring-primary' : 'hover:bg-accent')}
+                        onClick={() => { setSelectedPatient(patient); setExpandedPatient(patient.id); }}>
+                        <div>
+                          <div className="text-sm font-medium text-card-foreground">{patient.name}</div>
+                          <div className="text-xs text-muted-foreground">{patient.gender ?? '—'}</div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+
+                  {!patientsLoading && filteredPatients.length === 0 && (
+                    <div className="text-center py-8">
+                      <User className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                      <h3 className="text-lg font-semibold text-foreground mb-2">No patients found</h3>
+                      <p className="text-muted-foreground">Try adjusting your search</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Cases & Patient details area */}
+            <div className="lg:col-span-3 mb-4 bg-card rounded-xl border border-border p-4 flex flex-col">
+              <div className="flex flex-col gap-4 h-full">
+                {/* Top: Patient details */}
+                <div className="bg-card-foreground/5 rounded-md border border-border p-4">
+                  {selectedPatient ? (
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
+                      <div>
+                        <h2 className="text-xl font-semibold text-card-foreground">{selectedPatient.name}</h2>
+                        <div className="mt-1 text-sm text-muted-foreground">ID: {selectedPatient.id || '—'}</div>
+                        <div className="text-sm text-muted-foreground mt-1">{selectedPatient.gender ?? '—'} • DOB: {formatDateOfBirth(selectedPatient.dob)}</div>
+                        <div className="text-sm text-muted-foreground mt-2">Age: {selectedPatient.age ?? '���'} | Height: {selectedPatient.height ?? '—'} | Weight: {selectedPatient.weight ?? '—'}</div>
+                        <div className="mt-3 text-sm text-muted-foreground">Medical history: {selectedPatient.medicalHistory || '—'}</div>
+                      </div>
+
+                      <div className="flex-shrink-0 flex items-center gap-2">
+                        <Button size="icon" variant="ghost" onClick={() => handleEditPatient(selectedPatient)} aria-label="Edit patient"><Edit className="w-4 h-4" /></Button>
+                        <Button size="icon" variant="ghost" onClick={() => handleDeletePatient(selectedPatient.id)} aria-label="Delete patient"><Trash2 className="w-4 h-4" /></Button>
+                        <Button size="icon" variant="ghost" onClick={() => handleNewCase(selectedPatient.id)} aria-label="New case"><Plus className="w-4 h-4" /></Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-center text-muted-foreground py-8">Select a patient from the left to view details</div>
+                  )}
                 </div>
 
-                <ScrollArea className="flex-1">
-                  <div className="p-4 space-y-2">
-                    {filteredPatients.map((patient) => (
-                      <Card key={patient.id} className={`cursor-pointer transition-colors hover:bg-accent ${selectedPatient?.id === patient.id ? 'ring-2 ring-primary' : ''}`}>
-                        <CardHeader className="p-4">
-                          <div className="flex items-center justify-between" onClick={() => handlePatientClick(patient)}>
-                            <div>
-                              <CardTitle className="text-base text-card-foreground">{patient.name}</CardTitle>
-                              <CardDescription className="text-sm">ID: {patient.id} • Age: {patient.age ?? '—'} • {patient.gender ?? '—'}</CardDescription>
-                            </div>
-                            {expandedPatient === patient.id ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
-                          </div>
-
-                          {expandedPatient === patient.id && (
-                            <CardContent className="px-0 pt-2 pb-0 space-y-3">
-                              <Separator />
-                              <div className="space-y-2 text-sm">
-                                <div>
-                                  <span className="font-medium text-card-foreground">Date of Birth:</span>
-                                  <span className="text-muted-foreground ml-2">{formatDateOfBirth(patient.dob)}</span>
-                                </div>
-                                <div>
-                                  <span className="font-medium text-card-foreground">Medical History:</span>
-                                  <div className="mt-1 text-sm text-muted-foreground">{patient.medicalHistory || 'No medical history recorded'}</div>
-                                </div>
-                                <div className="flex justify-between text-xs text-muted-foreground">
-                                  <span>Created: {formatDateTime(patient.createdAt) || '—'}</span>
-                                  <span>Updated: {formatDateTime(patient.updatedAt) || '—'}</span>
-                                </div>
-                              </div>
-                              <div className="flex flex-col gap-2 mt-3">
-                                <Button onClick={(e) => { e.stopPropagation(); handleOpenCases(patient); }} className="W-full" size="sm" disabled={casesLoading && openingPatientId === patient.id}>
-                                  {openingPatientId === patient.id && casesLoading ? (
-                                    <>
-                                      <Loader className="w-3 h-3 mr-2 animate-spin" />
-                                      Loading...
-                                    </>
-                                  ) : (
-                                    <>Open Cases {(orderByPatient[patient.id]?.length || 0) > 0 ? `(${orderByPatient[patient.id]?.length || 0})` : ''}</>
-                                  )}
-                                </Button>
-                                <div className="flex gap-2">
-                                  <Button onClick={(e) => { e.stopPropagation(); handleNewCase(patient.id); }} variant="outline" className="flex-1" size="sm">
-                                    <Plus className="w-3 h-3 mr-1" />
-                                    New Case
-                                  </Button>
-                                  <Button onClick={(e) => { e.stopPropagation(); handleEditPatient(patient); }} variant="outline" size="sm">
-                                    <Edit className="w-3 h-3" />
-                                  </Button>
-                                  <AlertDialog>
-                                    <AlertDialogTrigger asChild>
-                                      <Button onClick={(e) => e.stopPropagation()} variant="outline" size="sm" className="text-destructive hover:text-destructive">
-                                        <Trash2 className="w-3 h-3" />
-                                      </Button>
-                                    </AlertDialogTrigger>
-                                    <AlertDialogContent>
-                                      <AlertDialogHeader>
-                                        <AlertDialogTitle>Delete Patient</AlertDialogTitle>
-                                        <AlertDialogDescription>
-                                          Are you sure you want to delete {patient.name}? This will also delete all associated cases. This action cannot be undone.
-                                        </AlertDialogDescription>
-                                      </AlertDialogHeader>
-                                      <AlertDialogFooter>
-                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                        <AlertDialogAction onClick={() => handleDeletePatient(patient.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                                          Delete
-                                        </AlertDialogAction>
-                                      </AlertDialogFooter>
-                                    </AlertDialogContent>
-                                  </AlertDialog>
-                                </div>
-                              </div>
-                            </CardContent>
-                          )}
-                        </CardHeader>
-                      </Card>
-                    ))}
-
-                    {filteredPatients.length === 0 && (
-                      <div className="text-center py-8">
-                        <User className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                        <h3 className="text-lg font-semibold text-foreground mb-2">No patients found</h3>
-                        <p className="text-muted-foreground">Try adjusting your search</p>
-                      </div>
-                    )}
-                  </div>
-                </ScrollArea>
-
-                {patientsLoading && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-background/60 backdrop-blur-sm z-10">
-                    <Loader className="h-6 w-6 animate-spin text-muted-foreground" />
-                  </div>
-                )}
-              </div>
-            </ResizablePanel>
-
-            <ResizableHandle />
-
-            <ResizablePanel defaultSize={60} minSize={40}>
-              <div className="flex flex-col h-full relative">
-                <div className="p-4 border-b bg-card">
+                {/* Bottom: Cases list for selected patient */}
+                <div className="flex-1 flex flex-col overflow-hidden">
                   <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-3">
                       <Calendar className="w-5 h-5 text-primary" />
-                      <h2 className="text-xl font-semibold text-card-foreground">Cases {selectedPatient && `- ${selectedPatient.name}`}</h2>
+                      <h3 className="text-lg font-semibold text-card-foreground">Cases {selectedPatient ? `- ${selectedPatient.name}` : ''}</h3>
+                      {selectedPatient && <Badge variant="secondary">{filteredAndSortedCases.length} case{filteredAndSortedCases.length !== 1 ? 's' : ''}</Badge>}
                     </div>
-                    {selectedPatient && (
-                      <Badge variant="secondary">{filteredAndSortedCases.length} case{filteredAndSortedCases.length !== 1 ? 's' : ''}</Badge>
-                    )}
-                  </div>
 
-                  {selectedPatient && (
-                    <div className="flex flex-col sm:flex-row gap-4">
-                      <div className="relative flex-1">
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                        <Input placeholder="Search cases..." value={caseSearchQuery} onChange={(e) => setCaseSearchQuery(e.target.value)} className="pl-10" />
+                    <div className="flex items-center gap-2">
+                      <div className="hidden sm:block">
+                        <Select value={sortBy} onValueChange={setSortBy}>
+                          <SelectTrigger className="w-40">
+                            <SelectValue placeholder="Sort by" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="lastUpdated">Last Updated</SelectItem>
+                            <SelectItem value="title">Title</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
 
-                      <div className="flex gap-2">
+                      <div className="hidden sm:block">
                         <Select value={selectedCategory} onValueChange={setSelectedCategory}>
                           <SelectTrigger className="w-40">
                             <Filter className="w-4 h-4 mr-2" />
@@ -383,115 +353,70 @@ const Cases = () => {
                             <SelectItem value="general">General</SelectItem>
                           </SelectContent>
                         </Select>
-
-                        <Select value={sortBy} onValueChange={setSortBy}>
-                          <SelectTrigger className="w-32">
-                            <SelectValue placeholder="Sort by" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="lastUpdated">Last Updated</SelectItem>
-                            <SelectItem value="title">Title</SelectItem>
-                          </SelectContent>
-                        </Select>
                       </div>
                     </div>
-                  )}
-                </div>
+                  </div>
 
-                <ScrollArea className="flex-1">
-                  <div className="p-4">
-                    {!selectedPatient ? (
-                      <div className="text-center py-12">
-                        <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
-                          <Eye className="w-12 h-12 text-muted-foreground" />
-                        </div>
-                        <h3 className="text-lg font-semibold text-foreground mb-2">Select a patient</h3>
-                        <p className="text-muted-foreground">Choose a patient from the left panel to view their cases</p>
-                      </div>
-                    ) : filteredAndSortedCases.length === 0 ? (
-                      <div className="text-center py-12">
-                        <h3 className="text-lg font-semibold text-foreground mb-2">No cases found</h3>
-                        <p className="text-muted-foreground">{(orderByPatient[selectedPatient.id]?.length || 0) === 0 ? 'This patient has no cases yet' : 'No cases match your search criteria'}</p>
+                  <div className="flex flex-col sm:flex-row gap-3 mb-4">
+                    <div className="relative flex-1">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                      <Input placeholder="Search cases..." value={caseSearchQuery} onChange={(e) => setCaseSearchQuery(e.target.value)} className="pl-10" />
+                    </div>
+                    <div className="flex gap-2">
+                      <Button onClick={() => { setSelectedPatient(null); setCaseSearchQuery(''); setPatientSearchQuery(''); }}>Reset</Button>
+                      <Button onClick={() => navigate('/new-case', { state: { patientId: selectedPatient?.id } })} variant="outline">New Case</Button>
+                    </div>
+                  </div>
+
+                  {/* Table */}
+                  <div className="overflow-auto flex-1">
+                    {casesLoading ? (
+                      <div className="flex flex-col items-center justify-center h-full py-12">
+                        <Loader className="w-8 h-8 animate-spin text-muted-foreground" />
+                        <div className="text-sm text-muted-foreground mt-3">Loading cases...</div>
                       </div>
                     ) : (
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                        {filteredAndSortedCases.map((case_) => (
-                          <Card key={case_.id} className="hover:shadow-lg transition-all duration-200 cursor-pointer border-border bg-card" onClick={() => handleCaseClick(case_.id)}>
-                            <CardHeader className="pb-3">
-                              <div className="flex justify-between items-start">
-                                <div className="flex-1">
-                                  <CardTitle className="text-lg font-semibold text-card-foreground truncate">{case_.title}</CardTitle>
-                                  <CardDescription className="text-sm text-muted-foreground">Case ID: {case_.id}</CardDescription>
+                      <table className="w-full table-auto">
+                        <thead>
+                          <tr className="text-left text-sm text-muted-foreground">
+                            <th className="py-2 px-3">Case ID</th>
+                            <th className="py-2 px-3">Title</th>
+                            <th className="py-2 px-3">Priority</th>
+                            <th className="py-2 px-3">Updated</th>
+                            <th className="py-2 px-3">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {filteredAndSortedCases.map((case_) => (
+                            <tr key={case_.id} className="border-t">
+                              <td className="py-3 px-3 text-sm text-card-foreground">{case_.id}</td>
+                              <td className="py-3 px-3 text-sm text-card-foreground truncate max-w-xs">{case_.title}</td>
+                              <td className="py-3 px-3 text-sm"><span className={getPriorityClasses(case_.priority)}>{case_.priority}</span></td>
+                              <td className="py-3 px-3 text-sm text-muted-foreground">{formatDate(case_.lastUpdated)}</td>
+                              <td className="py-3 px-3 text-sm">
+                                <div className="flex gap-2">
+                                  <Button size="icon" variant="ghost" onClick={() => handleEditCase(case_ as any)}><Edit className="w-4 h-4" /></Button>
+                                  <Button size="icon" variant="ghost" onClick={() => handleDeleteCase(case_.id)}><Trash2 className="w-4 h-4" /></Button>
+                                  <Button size="icon" variant="ghost" onClick={() => handleCaseClick(case_.id)}><Eye className="w-4 h-4" /></Button>
                                 </div>
-                                <div className="flex gap-1">
-                                  <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary" onClick={(e) => { e.stopPropagation(); handleEditCase(case_ as any); }}>
-                                    <Edit className="w-4 h-4" />
-                                  </Button>
-                                  <EditCaseDialog
-                                    caseRecord={case_}
-                                    open={editingCase?.id === case_.id}
-                                    onOpenChange={(open) => !open && setEditingCase(null)}
-                                    onCaseUpdate={(updated) => {
-                                      // update handled in store; just close dialog and optionally show toast
-                                      setEditingCase(null);
-                                    }}
-                                  />
+                              </td>
+                            </tr>
+                          ))}
 
-                                  <AlertDialog>
-                                    <AlertDialogTrigger asChild>
-                                      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive" onClick={(e) => e.stopPropagation()}>
-                                        <Trash2 className="w-4 h-4" />
-                                      </Button>
-                                    </AlertDialogTrigger>
-                                    <AlertDialogContent>
-                                      <AlertDialogHeader>
-                                        <AlertDialogTitle>Delete Case</AlertDialogTitle>
-                                        <AlertDialogDescription>Are you sure you want to delete this case? This action cannot be undone.</AlertDialogDescription>
-                                      </AlertDialogHeader>
-                                      <AlertDialogFooter>
-                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                        <AlertDialogAction onClick={() => handleDeleteCase(case_.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
-                                      </AlertDialogFooter>
-                                    </AlertDialogContent>
-                                  </AlertDialog>
-                                </div>
-                              </div>
-                            </CardHeader>
+                          {filteredAndSortedCases.length === 0 && (
+                            <tr>
+                              <td colSpan={5} className="py-8 text-center text-muted-foreground">No cases for this patient</td>
+                            </tr>
+                          )}
 
-                            <CardContent className="space-y-4">
-                              {case_.description && <p className="text-sm text-card-foreground line-clamp-2"><strong>Description:</strong> {case_.description}</p>}
-                              <div className="flex flex-wrap gap-1">
-                                {case_.tags.map((tag) => (
-                                  <span key={tag} className={`tag-badge tag-color-${getRandomColorIndexFor(tag)}`}>
-                                    {tag}
-                                  </span>
-                                ))}
-                              </div>
-                              <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                                  <Calendar className="w-3 h-3" />
-                                  Updated {formatDate(case_.lastUpdated)}
-                                </div>
-                                <span className={getPriorityClasses(case_.priority)}>
-                                  Priority: {case_.priority.charAt(0).toUpperCase() + case_.priority.slice(1)}
-                                </span>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        ))}
-                      </div>
+                        </tbody>
+                      </table>
                     )}
                   </div>
-                </ScrollArea>
-
-                {selectedPatient && casesLoading && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-background/60 backdrop-blur-sm z-10">
-                    <Loader className="h-6 w-6 animate-spin text-muted-foreground" />
-                  </div>
-                )}
+                </div>
               </div>
-            </ResizablePanel>
-          </ResizablePanelGroup>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -514,6 +439,73 @@ const Cases = () => {
           onPatientUpdate={() => { }}
         />
       )}
+
+      {/* Edit case dialog */}
+      {editingCase && (
+        <EditCaseDialog
+          caseRecord={editingCase}
+          open={!!editingCase}
+          onOpenChange={(open) => !open && setEditingCase(null)}
+          onCaseUpdate={() => { setEditingCase(null); }}
+        />
+      )}
+
+      {/* Confirm delete patient */}
+      <AlertDialog open={showDeletePatientDialog} onOpenChange={setShowDeletePatientDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete patient?</AlertDialogTitle>
+            <AlertDialogDescription>Are you sure you want to delete this patient? This action cannot be undone.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setShowDeletePatientDialog(false)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={async () => {
+              if (!patientToDelete) return;
+              setShowDeletePatientDialog(false);
+              setDeletingPatient(true);
+              try {
+                await deletePatient(patientToDelete);
+                toast({ title: 'Patient deleted.' });
+                if (selectedPatient?.id === patientToDelete) setSelectedPatient(null);
+                if (expandedPatient === patientToDelete) setExpandedPatient(null);
+              } catch (err: any) {
+                toast({ title: 'Patient delete failed.', description: err?.data?.details ?? String(err), variant: 'destructive' });
+              } finally {
+                setDeletingPatient(false);
+                setPatientToDelete(null);
+              }
+            }}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Confirm delete case */}
+      <AlertDialog open={showDeleteCaseDialog} onOpenChange={setShowDeleteCaseDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete case?</AlertDialogTitle>
+            <AlertDialogDescription>Are you sure you want to delete this case? This action cannot be undone.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setShowDeleteCaseDialog(false)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={async () => {
+              if (!caseToDelete) return;
+              setShowDeleteCaseDialog(false);
+              try {
+                // find patient id owning this case
+                const pid = Object.keys(casesByPatient).find((p) => !!casesByPatient[p]?.[caseToDelete]);
+                if (!pid) throw new Error('Patient for case not found');
+                await deleteCase(pid, caseToDelete);
+                toast({ title: 'Case deleted.' });
+              } catch (err: any) {
+                toast({ title: 'Case delete failed.', description: err?.data?.details ?? String(err), variant: 'destructive' });
+              } finally {
+                setCaseToDelete(null);
+              }
+            }}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

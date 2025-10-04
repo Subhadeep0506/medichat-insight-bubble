@@ -26,7 +26,6 @@ function stripAllTags(raw: string) {
 }
 
 function parseAssistantContent(content: string) {
-  console.log(`FULL CONTENT: ${content}`)
   const think = extractOuterTagContent(content, "think");
   const explicitAnswer = extractOuterTagContent(content.split("</think>")[1], "answer");
   const answer = explicitAnswer ? explicitAnswer : stripAllTags(content);

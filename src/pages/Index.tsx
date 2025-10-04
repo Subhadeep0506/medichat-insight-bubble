@@ -135,7 +135,7 @@ const Index = () => {
       <section className="relative">
         <BackgroundGradientAnimation
           interactive
-          containerClassName="h-[88vh] w-full"
+          containerClassName="w-full h-auto"
           className="relative"
         >
           <div className="absolute inset-0 bg-black/0" />
