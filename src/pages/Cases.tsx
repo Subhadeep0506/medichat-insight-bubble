@@ -379,8 +379,8 @@ const Cases = () => {
                       <table className="w-full table-auto">
                         <thead>
                           <tr className="text-left text-sm text-muted-foreground">
-                            <th className="py-2 px-3">Case ID</th>
                             <th className="py-2 px-3">Title</th>
+                            <th className="py-2 px-3">Case ID</th>
                             <th className="py-2 px-3">Priority</th>
                             <th className="py-2 px-3">Updated</th>
                             <th className="py-2 px-3">Actions</th>
@@ -389,8 +389,8 @@ const Cases = () => {
                         <tbody>
                           {filteredAndSortedCases.map((case_) => (
                             <tr key={case_.id} className="border-t">
-                              <td className="py-3 px-3 text-sm text-card-foreground">{case_.id}</td>
                               <td className="py-3 px-3 text-sm text-card-foreground truncate max-w-xs">{case_.title}</td>
+                              <td className="py-3 px-3 text-sm text-card-foreground">{case_.id}</td>
                               <td className="py-3 px-3 text-sm"><span className={getPriorityClasses(case_.priority)}>{case_.priority}</span></td>
                               <td className="py-3 px-3 text-sm text-muted-foreground">{formatDate(case_.lastUpdated)}</td>
                               <td className="py-3 px-3 text-sm">
