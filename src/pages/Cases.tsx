@@ -38,6 +38,15 @@ const editCaseSchema = z.object({
   tags: z.array(z.string()).default([]),
 });
 
+const tagColors = [
+  'bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-900 dark:text-emerald-200 dark:border-emerald-700',
+  'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900 dark:text-blue-200 dark:border-blue-700',
+  'bg-violet-100 text-violet-800 border-violet-200 dark:bg-violet-900 dark:text-violet-200 dark:border-violet-700',
+  'bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-900 dark:text-orange-200 dark:border-orange-700',
+  'bg-rose-100 text-rose-800 border-rose-200 dark:bg-rose-900 dark:text-rose-200 dark:border-rose-700',
+  'bg-cyan-100 text-cyan-800 border-cyan-200 dark:bg-cyan-900 dark:text-cyan-200 dark:border-cyan-700',
+];
+
 const Cases = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -226,6 +235,15 @@ const Cases = () => {
     return new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'long', day: 'numeric', hour: "2-digit", minute: "2-digit" }).format(new Date(dob));
   };
 
+  const truncateText = (text: string, maxLength: number) => {
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength) + '...';
+  };
+
+  const getTagColor = (index: number) => {
+    return tagColors[index % tagColors.length];
+  };
+
   const getCategoryColor = (category: UICase['category']) => {
     const colors: Record<UICase['category'], string> = {
       radiology: 'bg-primary',
@@ -252,7 +270,7 @@ const Cases = () => {
         <div className="h-[calc(100vh-200px)] w-full">
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 min-h-full">
             {/* Patients sidebar */}
-            <div className="lg:col-span-1 bg-card rounded-xl border border-border p-2 flex flex-col">
+            <div className="lg:col-span-1 mb-4 bg-card rounded-xl border border-border p-2 flex flex-col">
               <div className="mb-4">
                 <div className="flex items-center gap-2 mb-2">
                   <User className="w-5 h-5 text-primary" />
@@ -382,6 +400,7 @@ const Cases = () => {
                             <th className="py-2 px-3">Title</th>
                             <th className="py-2 px-3">Case ID</th>
                             <th className="py-2 px-3">Priority</th>
+                            <th className="py-2 px-3">Tags</th>
                             <th className="py-2 px-3">Updated</th>
                             <th className="py-2 px-3">Actions</th>
                           </tr>
@@ -392,6 +411,25 @@ const Cases = () => {
                               <td className="py-3 px-3 text-sm text-card-foreground truncate max-w-xs">{case_.title}</td>
                               <td className="py-3 px-3 text-sm text-card-foreground">{case_.id}</td>
                               <td className="py-3 px-3 text-sm"><span className={getPriorityClasses(case_.priority)}>{case_.priority}</span></td>
+                              <td className="py-3 px-3 text-sm">
+                                {case_.tags.length > 0 && (
+                                  <div className="flex flex-wrap items-center gap-1 w-full">
+                                    {case_.tags.slice(0, 3).map((tag, index) => (
+                                      <span
+                                        key={tag}
+                                        className={`text-xs px-1.5 py-0.5 rounded-full border ${getTagColor(index)}`}
+                                      >
+                                        {truncateText(tag, 8)}
+                                      </span>
+                                    ))}
+                                    {case_.tags.length > 3 && (
+                                      <span className="text-xs text-muted-foreground">
+                                        +{case_.tags.length - 3}
+                                      </span>
+                                    )}
+                                  </div>
+                                )}
+                              </td>
                               <td className="py-3 px-3 text-sm text-muted-foreground">{formatDate(case_.lastUpdated)}</td>
                               <td className="py-3 px-3 text-sm">
                                 <div className="flex gap-2">
