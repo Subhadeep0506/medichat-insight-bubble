@@ -29,16 +29,12 @@ function parseAssistantContent(content: string) {
   const think = extractOuterTagContent(content, "think");
   const explicitAnswer = extractOuterTagContent(content.split("</think>")[1], "answer");
   const answer = explicitAnswer ? explicitAnswer : stripAllTags(content);
-  console.log(`THINK: ${think}`)
-  console.log(`ASNWER: ${answer}`)
   return { think: think ? stripAllTags(think) : null, answer };
 }
 
 export const MessageBubble = ({ message }: MessageBubbleProps) => {
   const isUser = message.type === 'user';
-
   const sections = !isUser ? parseAssistantContent(message.content) : { think: null as string | null, answer: message.content };
-
   return (
     <div className={`flex items-start space-x-2 md:space-x-3 ${isUser ? 'flex-row-reverse space-x-reverse' : ''}`}>
       {/* Avatar */}

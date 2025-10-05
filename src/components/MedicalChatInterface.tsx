@@ -64,7 +64,26 @@ export const MedicalChatInterface = ({ caseId, onBackToCase }: MedicalChatInterf
     }));
   }, [messagesBySession, currentSessionId]);
 
+  // Attempt to restore persisted chat state early from localStorage to avoid race conditions
   React.useEffect(() => {
+    try {
+      const raw = localStorage.getItem('chat-store');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        const persistedState = parsed?.state || parsed;
+        if (persistedState) {
+          const { sessionsByCase: sBC, messagesBySession: mBS } = persistedState;
+          const current = useChatStore.getState();
+          const isEmpty = Object.keys(current.sessionsByCase || {}).length === 0 && Object.keys(current.messagesBySession || {}).length === 0;
+          if (isEmpty && (sBC || mBS)) {
+            useChatStore.setState({ sessionsByCase: sBC || {}, messagesBySession: mBS || {} });
+          }
+        }
+      }
+    } catch (err) {
+      // ignore
+    }
+
     const resolve = async () => {
       if (!caseId) return;
       const existing = findPatientIdByCaseId(caseId);
@@ -198,6 +217,7 @@ export const MedicalChatInterface = ({ caseId, onBackToCase }: MedicalChatInterf
           onSelectChat={handleSelectChat}
           onNewChat={handleNewChat}
           onDeleteChat={handleDeleteChat}
+          onBackToCase={onBackToCase}
           patient={patientData}
           caseRecord={caseData}
         />
@@ -205,7 +225,7 @@ export const MedicalChatInterface = ({ caseId, onBackToCase }: MedicalChatInterf
         <div className="flex-1 flex flex-col m-2 rounded-lg border relative">
           <div className="flex items-center gap-2 md:p-4 shadow-md rounded-t-lg backdrop-blur-lg">
             <SidebarTrigger />
-            <ChatHeader onBackToCase={onBackToCase} />
+            <ChatHeader title='New Chat'/>
           </div>
 
           <div className="flex-1 flex overflow-hidden">

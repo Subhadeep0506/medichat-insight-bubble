@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { MessageSquare, Plus, Trash2, Clock, Calendar, Tag, Stethoscope, Heart, Brain, Eye, Bone, Activity, User, Settings, Moon, Sun } from 'lucide-react';
+import { MessageSquare, Plus, Trash2, Clock, Calendar, Tag, Stethoscope, ArrowLeft, Heart, Brain, Eye, Bone, Activity, User, Settings, Moon, Sun, Loader } from 'lucide-react';
 import {
   Sidebar,
   SidebarContent,
@@ -42,6 +42,7 @@ interface ChatHistorySidebarProps {
   onSelectChat: (chatId: string) => void;
   onNewChat: () => void;
   onDeleteChat: (chatId: string) => void;
+  onBackToCase?: () => void;
   patient?: Patient | null;
   caseRecord?: CaseRecord | null;
 }
@@ -70,6 +71,7 @@ export const ChatHistorySidebar = ({
   onSelectChat,
   onNewChat,
   onDeleteChat,
+  onBackToCase,
   patient,
   caseRecord,
 }: ChatHistorySidebarProps) => {
@@ -78,6 +80,9 @@ export const ChatHistorySidebar = ({
   const { theme, setTheme } = useTheme();
   const [settingsOpen, setSettingsOpen] = React.useState(false);
   const [profileOpen, setProfileOpen] = React.useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
+  const [pendingDeleteId, setPendingDeleteId] = React.useState<string | null>(null);
+  const [deletingId, setDeletingId] = React.useState<string | null>(null);
 
   const settings = useChatSettingsStore((s) => s.settings);
   const updateSettings = useChatSettingsStore((s) => s.update);
@@ -153,13 +158,25 @@ export const ChatHistorySidebar = ({
   return (
     <Sidebar variant='floating' className="mt-0 mr-1 pr-0">
       <SidebarHeader className="p-4 rounded-t-lg dark:bg-slate-900">
+        {(
+          isCollapsed ? (
+            <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); onBackToCase && onBackToCase(); }} className="mb-2 h-8 w-8">
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+          ) : (
+            <Button variant="secondary" onClick={(e) => { e.stopPropagation(); onBackToCase && onBackToCase(); }} className="w-full justify-start gap-2 mb-2">
+              <ArrowLeft className="h-4 w-4" />
+              Back to Cases
+            </Button>
+          )
+        )}
         <Button
           onClick={onNewChat}
           className="w-full justify-start gap-2"
           variant="outline"
         >
-          <Plus className="h-4 w-4" />
-          {!isCollapsed && "New Medical Chat"}
+          {deletingId ? <Loader className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+          {!isCollapsed && (deletingId ? "Deleting..." : "New Medical Chat")}
         </Button>
       </SidebarHeader>
 
@@ -198,11 +215,17 @@ export const ChatHistorySidebar = ({
                               className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded hover:bg-destructive/10 hover:text-destructive"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                onDeleteChat(chat.id);
+                                setPendingDeleteId(chat.id);
+                                setDeleteDialogOpen(true);
                               }}
                             >
                               <Trash2 className="h-3 w-3" />
                             </button>
+                            {deletingId === chat.id && (
+                              <div className="absolute right-3 top-3">
+                                <Loader className="h-4 w-4 animate-spin text-muted-foreground" />
+                              </div>
+                            )}
                           </div>
 
                           {/* Title */}
@@ -211,9 +234,9 @@ export const ChatHistorySidebar = ({
                           </h4>
 
                           {/* Last message preview */}
-                          <p className="text-xs text-muted-foreground text-left w-full leading-relaxed">
+                          {/* <p className="text-xs text-muted-foreground text-left w-full leading-relaxed">
                             {truncateText(chat.lastMessage, 60)}
-                          </p>
+                          </p> */}
 
                           {/* Tags */}
                           {chat.tags.length > 0 && (
@@ -279,6 +302,7 @@ export const ChatHistorySidebar = ({
       <SidebarFooter className="p-4 border-t dark:bg-slate-900">
         {!isCollapsed ? (
           <div className="space-y-3">
+
             {/* Profile Section */}
             <div
               className="flex items-center gap-3 p-2 rounded-lg hover:bg-accent/50 cursor-pointer transition-colors"
@@ -459,6 +483,19 @@ export const ChatHistorySidebar = ({
             </div>
             <DialogFooter>
               <Button onClick={() => setProfileOpen(false)}>Close</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+        {/* Delete Confirmation Dialog */}
+        <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Delete chat</DialogTitle>
+              <DialogDescription>Are you sure you want to delete this chat? This action cannot be undone.</DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button variant="secondary" onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
+              <Button onClick={async () => { if (pendingDeleteId) { setDeletingId(pendingDeleteId); try { await onDeleteChat(pendingDeleteId); } finally { setDeletingId(null); } } setDeleteDialogOpen(false); setPendingDeleteId(null); }}>Delete</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>

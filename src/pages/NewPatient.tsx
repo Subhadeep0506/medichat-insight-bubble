@@ -106,19 +106,19 @@ const NewPatient = () => {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
       <div className="container mx-auto p-6">
         {/* Header */}
-        <div className="flex items-center gap-4 mb-8">
+        <div className="flex flex-col lg:flex-row items-start lg:items-center gap-4 mb-8">
           <Button variant="ghost" onClick={handleBack} className="flex items-center gap-2">
             <ArrowLeft className="w-4 h-4" />
             Back to Cases
           </Button>
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">Create New Patient</h1>
-            <p className="text-muted-foreground mt-2">Add a new patient to the system</p>
-          </div>
         </div>
 
         {/* Form Card */}
         <div className="max-w-2xl mx-auto">
+          <div className="my-4 mx-2">
+            <h1 className="text-3xl font-bold text-foreground">Create New Patient</h1>
+            <p className="text-muted-foreground mt-2">Add a new patient to the system</p>
+          </div>
           <Card className="border-border bg-card">
             <CardHeader>
               <CardTitle className="text-xl text-card-foreground">Patient Information</CardTitle>

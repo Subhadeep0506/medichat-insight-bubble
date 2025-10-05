@@ -1,28 +1,21 @@
-
 import React from 'react';
-import { Activity, Shield, Stethoscope, ArrowLeft } from 'lucide-react';
+import { Activity, Shield, Stethoscope } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface ChatHeaderProps {
-  onBackToCase?: () => void;
+  title: string
 }
 
-export const ChatHeader = ({ onBackToCase }: ChatHeaderProps) => {
+export const ChatHeader = (_props: ChatHeaderProps) => {
   return (
     <div className="flex-1 flex items-center justify-between min-w-0">
       <div className="flex items-center gap-2 md:gap-3 min-w-0 flex-1">
-        {onBackToCase && (
-          <Button variant="ghost" onClick={onBackToCase} className="flex items-center gap-1 md:gap-2 px-2 md:px-3">
-            <ArrowLeft className="w-4 h-4" />
-            <span className="hidden sm:inline">Back to Cases</span>
-          </Button>
-        )}
         <div className="p-1.5 md:p-2 bg-blue-100 rounded-lg dark:bg-blue-900/50 flex-shrink-0">
           <Stethoscope className="h-5 w-5 md:h-6 md:w-6 text-blue-600 dark:text-blue-400" />
         </div>
         <div className="min-w-0 flex-1">
           <h1 className="text-lg md:text-xl font-semibold text-gray-900 dark:text-gray-100 truncate">AI Mental Health Assistant</h1>
-          <p className="text-xs md:text-sm text-gray-600 dark:text-gray-300 hidden sm:block truncate">Fully local personal mental lealth assistant</p>
+          <p className="text-xs md:text-sm text-gray-600 dark:text-gray-300 hidden sm:block truncate">{_props.title}</p>
         </div>
       </div>
 

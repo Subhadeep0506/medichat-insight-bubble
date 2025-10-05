@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Trash2, Plus, Calendar, Eye, Search, Filter, Edit, User, ChevronDown, ChevronUp, X, Loader } from 'lucide-react';
+import { Trash2, Plus, Calendar, Eye, Search, Filter, Edit, User, RotateCcw, Loader, ChevronLeft, ChevronRight } from 'lucide-react';
 import FloatingNavbar from '@/components/FloatingNavbar';
 import { EditPatientDialog } from '@/components/EditPatientDialog';
 import EditCaseDialog from '@/components/EditCaseDialog';
@@ -66,9 +66,11 @@ const Cases = () => {
   const [caseToDelete, setCaseToDelete] = useState<string | null>(null);
   const [showDeleteCaseDialog, setShowDeleteCaseDialog] = useState(false);
 
-  // Pagination and table state
-  const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 8;
+  // Pagination state (patients and cases)
+  const [patientPage, setPatientPage] = useState(1);
+  const [patientPageSize, setPatientPageSize] = useState(8);
+  const [casesPage, setCasesPage] = useState(1);
+  const [casesPageSize, setCasesPageSize] = useState(8);
 
   const form = useForm<z.infer<typeof editCaseSchema>>({
     resolver: zodResolver(editCaseSchema),
@@ -91,10 +93,9 @@ const Cases = () => {
     if (selectedPatient?.id) listByPatient(selectedPatient.id).catch(() => { });
   }, [selectedPatient?.id, listByPatient]);
 
-  useEffect(() => {
-    // reset pagination whenever filters or search change
-    setCurrentPage(1);
-  }, [patientSearchQuery, caseSearchQuery, selectedCategory, selectedPatient, sortBy]);
+  // Reset pages when filters/search change
+  useEffect(() => { setPatientPage(1); }, [patientSearchQuery]);
+  useEffect(() => { setCasesPage(1); }, [caseSearchQuery, selectedCategory, selectedPatient, sortBy]);
 
   const patientsList: Patient[] = useMemo(() => patientOrder.map((id) => patients[id]).filter(Boolean) as Patient[], [patients, patientOrder]);
 
@@ -104,6 +105,19 @@ const Cases = () => {
       (p.name || '').toLowerCase().includes(q) || (p.id || '').toLowerCase().includes(q)
     );
   }, [patientsList, patientSearchQuery]);
+
+  // Clamp patient page when list size changes
+  useEffect(() => {
+    const total = Math.max(1, Math.ceil(filteredPatients.length / patientPageSize));
+    if (patientPage > total) setPatientPage(total);
+  }, [filteredPatients.length, patientPage, patientPageSize]);
+
+  const paginatedPatients = useMemo(() => {
+    const total = Math.max(1, Math.ceil(filteredPatients.length / patientPageSize));
+    const page = Math.min(patientPage, total);
+    const start = (page - 1) * patientPageSize;
+    return filteredPatients.slice(start, start + patientPageSize);
+  }, [filteredPatients, patientPage, patientPageSize]);
 
   type UICase = {
     id: ID;
@@ -154,8 +168,20 @@ const Cases = () => {
     return filtered;
   }, [casesForSelected, caseSearchQuery, selectedCategory, sortBy]);
 
+  // Clamp cases page when list size changes
+  useEffect(() => {
+    const total = Math.max(1, Math.ceil(filteredAndSortedCases.length / casesPageSize));
+    if (casesPage > total) setCasesPage(total);
+  }, [filteredAndSortedCases.length, casesPage, casesPageSize]);
+
+  const paginatedCases = useMemo(() => {
+    const total = Math.max(1, Math.ceil(filteredAndSortedCases.length / casesPageSize));
+    const page = Math.min(casesPage, total);
+    const start = (page - 1) * casesPageSize;
+    return filteredAndSortedCases.slice(start, start + casesPageSize);
+  }, [filteredAndSortedCases, casesPage, casesPageSize]);
+
   const handleDeleteCase = (caseId: string) => {
-    // open confirmation dialog first
     setCaseToDelete(caseId);
     setShowDeleteCaseDialog(true);
   };
@@ -208,7 +234,6 @@ const Cases = () => {
   };
 
   const handleDeletePatient = (patientId: string) => {
-    // open confirmation dialog first
     setPatientToDelete(patientId);
     setShowDeletePatientDialog(true);
   };
@@ -256,11 +281,14 @@ const Cases = () => {
     return colors[category] || 'bg-muted';
   };
 
+  const patientTotalPages = Math.max(1, Math.ceil(filteredPatients.length / patientPageSize));
+  const casesTotalPages = Math.max(1, Math.ceil(filteredAndSortedCases.length / casesPageSize));
+
   return (
     <div className="min-h-screen bg-background">
       <FloatingNavbar />
       <div className="container mx-auto p-6 pt-20">
-        <div className="flex flex-col gap-6 mb-8">
+        <div className="flex flex-col gap-6 mb-4">
           <div>
             <h1 className="text-3xl font-bold text-foreground">Medical Cases & Patients</h1>
             <p className="text-muted-foreground mt-2">Manage patients and review their medical case analyses</p>
@@ -283,15 +311,15 @@ const Cases = () => {
               </div>
 
               <div className="flex-1 overflow-y-auto">
-                <div className="space-y-2">
+                <div className="space-y-2 my-2">
                   {patientsLoading ? (
                     <div className="flex flex-col items-center justify-center py-12">
                       <Loader className="w-8 h-8 animate-spin text-muted-foreground" />
                       <div className="text-sm text-muted-foreground mt-3">Loading patients...</div>
                     </div>
                   ) : (
-                    filteredPatients.map((patient) => (
-                      <div key={patient.id} className={cn('m-1 p-3 rounded-md cursor-pointer border border-border', selectedPatient?.id === patient.id ? 'bg-accent/10 ring-2 ring-primary' : 'hover:bg-accent')}
+                    paginatedPatients.map((patient) => (
+                      <div key={patient.id} className={cn('m-1 px-2 py-1 rounded-md cursor-pointer border border-border', selectedPatient?.id === patient.id ? 'bg-accent/10 ring-2 ring-primary' : 'hover:bg-accent')}
                         onClick={() => { setSelectedPatient(patient); setExpandedPatient(patient.id); }}>
                         <div>
                           <div className="text-sm font-medium text-card-foreground">{patient.name}</div>
@@ -310,10 +338,39 @@ const Cases = () => {
                   )}
                 </div>
               </div>
+
+              {/* Patients pagination */}
+              <div className="mt-3 flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" size="sm" onClick={() => setPatientPage((p) => Math.max(1, p - 1))} disabled={patientPage <= 1}>
+                    <ChevronLeft className="w-4 h-4" />
+                  </Button>
+                  <div className="text-xs text-muted-foreground">
+                    Page {Math.min(patientPage, patientTotalPages)} of {patientTotalPages}
+                  </div>
+                  <Button variant="outline" size="sm" onClick={() => setPatientPage((p) => Math.min(patientTotalPages, p + 1))} disabled={patientPage >= patientTotalPages}>
+                    <ChevronRight className="w-4 h-4" />
+                  </Button>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground">Rows</span>
+                  <Select value={String(patientPageSize)} onValueChange={(v) => { setPatientPageSize(parseInt(v)); setPatientPage(1); }}>
+                    <SelectTrigger className="h-8 w-[72px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="5">5</SelectItem>
+                      <SelectItem value="8">8</SelectItem>
+                      <SelectItem value="10">10</SelectItem>
+                      <SelectItem value="20">20</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
             </div>
 
             {/* Cases & Patient details area */}
-            <div className="lg:col-span-3 mb-4 bg-card rounded-xl border border-border p-4 flex flex-col">
+            <div className="lg:col-span-3 mb-4 bg-card rounded-xl border border-border p-2 flex flex-col">
               <div className="flex flex-col gap-4 h-full">
                 {/* Top: Patient details */}
                 <div className="bg-card-foreground/5 rounded-md border border-border p-4">
@@ -323,7 +380,7 @@ const Cases = () => {
                         <h2 className="text-xl font-semibold text-card-foreground">{selectedPatient.name}</h2>
                         <div className="mt-1 text-sm text-muted-foreground">ID: {selectedPatient.id || '—'}</div>
                         <div className="text-sm text-muted-foreground mt-1">{selectedPatient.gender ?? '—'} • DOB: {formatDateOfBirth(selectedPatient.dob)}</div>
-                        <div className="text-sm text-muted-foreground mt-2">Age: {selectedPatient.age ?? '���'} | Height: {selectedPatient.height ?? '—'} | Weight: {selectedPatient.weight ?? '—'}</div>
+                        <div className="text-sm text-muted-foreground mt-2">Age: {selectedPatient.age ?? '—'} | Height: {selectedPatient.height ?? '—'} | Weight: {selectedPatient.weight ?? '—'}</div>
                         <div className="mt-3 text-sm text-muted-foreground">Medical history: {selectedPatient.medicalHistory || '—'}</div>
                       </div>
 
@@ -381,8 +438,8 @@ const Cases = () => {
                       <Input placeholder="Search cases..." value={caseSearchQuery} onChange={(e) => setCaseSearchQuery(e.target.value)} className="pl-10" />
                     </div>
                     <div className="flex gap-2">
-                      <Button onClick={() => { setSelectedPatient(null); setCaseSearchQuery(''); setPatientSearchQuery(''); }}>Reset</Button>
-                      <Button onClick={() => navigate('/new-case', { state: { patientId: selectedPatient?.id } })} variant="outline">New Case</Button>
+                      <Button onClick={() => { setSelectedPatient(null); setCaseSearchQuery(''); setPatientSearchQuery(''); }}><RotateCcw className="w-4 h-4" />Reset</Button>
+                      <Button onClick={() => navigate('/new-case', { state: { patientId: selectedPatient?.id } })} variant="outline"><Plus className="w-4 h-4" />New Case</Button>
                     </div>
                   </div>
 
@@ -406,7 +463,7 @@ const Cases = () => {
                           </tr>
                         </thead>
                         <tbody>
-                          {filteredAndSortedCases.map((case_) => (
+                          {paginatedCases.map((case_) => (
                             <tr key={case_.id} className="border-t">
                               <td className="py-3 px-3 text-sm text-card-foreground truncate max-w-xs">{case_.title}</td>
                               <td className="py-3 px-3 text-sm text-card-foreground">{case_.id}</td>
@@ -450,6 +507,35 @@ const Cases = () => {
                         </tbody>
                       </table>
                     )}
+                  </div>
+
+                  {/* Cases pagination */}
+                  <div className="mt-3 flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <Button variant="outline" size="sm" onClick={() => setCasesPage((p) => Math.max(1, p - 1))} disabled={casesPage <= 1}>
+                        <ChevronLeft className="w-4 h-4" />
+                      </Button>
+                      <div className="text-xs text-muted-foreground">
+                        Page {Math.min(casesPage, casesTotalPages)} of {casesTotalPages}
+                      </div>
+                      <Button variant="outline" size="sm" onClick={() => setCasesPage((p) => Math.min(casesTotalPages, p + 1))} disabled={casesPage >= casesTotalPages}>
+                        <ChevronRight className="w-4 h-4" />
+                      </Button>
+                    </div>
+                    <div className="flex items-center gap-2 m-2">
+                      <span className="text-xs text-muted-foreground">Rows</span>
+                      <Select value={String(casesPageSize)} onValueChange={(v) => { setCasesPageSize(parseInt(v)); setCasesPage(1); }}>
+                        <SelectTrigger className="h-8 w-[72px]">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="5">5</SelectItem>
+                          <SelectItem value="8">8</SelectItem>
+                          <SelectItem value="10">10</SelectItem>
+                          <SelectItem value="20">20</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -530,7 +616,6 @@ const Cases = () => {
               if (!caseToDelete) return;
               setShowDeleteCaseDialog(false);
               try {
-                // find patient id owning this case
                 const pid = Object.keys(casesByPatient).find((p) => !!casesByPatient[p]?.[caseToDelete]);
                 if (!pid) throw new Error('Patient for case not found');
                 await deleteCase(pid, caseToDelete);
