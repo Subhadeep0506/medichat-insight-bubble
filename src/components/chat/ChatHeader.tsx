@@ -9,7 +9,7 @@ interface ChatHeaderProps {
 export const ChatHeader = (_props: ChatHeaderProps) => {
   return (
     <div className="flex-1 flex items-center justify-between min-w-0">
-      <div className="flex items-center gap-2 md:gap-3 min-w-0 flex-1">
+      <div className="flex items-center gap-2 md:gap-3 min-w-0 flex-1 p-2">
         <div className="p-1.5 md:p-2 bg-blue-100 rounded-lg dark:bg-blue-900/50 flex-shrink-0">
           <Stethoscope className="h-5 w-5 md:h-6 md:w-6 text-blue-600 dark:text-blue-400" />
         </div>
@@ -19,7 +19,7 @@ export const ChatHeader = (_props: ChatHeaderProps) => {
         </div>
       </div>
 
-      <div className="flex items-center gap-1 md:gap-2 flex-shrink-0">
+      <div className="flex items-center gap-1 mr-2 md:gap-2 flex-shrink-0">
         <div className="flex items-center gap-1 px-2 md:px-3 py-1 md:py-1.5 bg-green-100 rounded-full dark:bg-green-900/30">
           <Activity className="h-3 w-3 md:h-4 md:w-4 text-green-600 dark:text-green-400" />
           <span className="text-xs md:text-sm font-medium text-green-700 dark:text-green-300 hidden sm:inline">Active</span>

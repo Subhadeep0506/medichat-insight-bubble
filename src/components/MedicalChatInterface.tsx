@@ -222,8 +222,8 @@ export const MedicalChatInterface = ({ caseId, onBackToCase }: MedicalChatInterf
           caseRecord={caseData}
         />
 
-        <div className="flex-1 flex flex-col m-2 rounded-lg border relative">
-          <div className="flex items-center gap-2 md:p-4 shadow-md rounded-t-lg backdrop-blur-lg">
+        <div className="flex-1 flex flex-col rounded-lg border relative m-1.5">
+          <div className="flex items-center gap-2 md:p-1 shadow-md rounded-t-lg backdrop-blur-lg">
             <SidebarTrigger />
             <ChatHeader title='New Chat'/>
           </div>

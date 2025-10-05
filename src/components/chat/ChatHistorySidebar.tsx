@@ -156,7 +156,7 @@ export const ChatHistorySidebar = ({
   };
 
   return (
-    <Sidebar variant='floating' className="mt-0 mr-1 pr-0">
+    <Sidebar variant='floating' className="m-0 pr-0">
       <SidebarHeader className="p-4 rounded-t-lg dark:bg-slate-900">
         {(
           isCollapsed ? (
