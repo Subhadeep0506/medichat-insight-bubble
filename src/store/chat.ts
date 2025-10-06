@@ -43,9 +43,22 @@ export const useChatStore = create<ChatState>()(
         }),
       addLocalMessage: (sessionId, msg) =>
         set((s) => ({ messagesBySession: { ...s.messagesBySession, [sessionId]: [...(s.messagesBySession[sessionId] || []), msg] } })),
-      listSessions: async (_patientId, caseId) => {
-        const items = get().sessionsByCase[caseId] || [];
-        return items;
+      listSessions: async (patientId, caseId) => {
+        set({ loading: true, error: null });
+        try {
+          const res = await ChatApi.listSessions(patientId, caseId);
+          const items = res.items || [];
+          set((s) => ({
+            sessionsByCase: { ...s.sessionsByCase, [caseId]: items },
+          }));
+          return items;
+        } catch (e: any) {
+          const msg = e.data?.detail ?? String(e);
+          set({ error: msg });
+          throw e;
+        } finally {
+          set({ loading: false });
+        }
       },
       startSession: async (patientId, caseId, title) => {
         const session = await ChatApi.startSession(patientId, caseId, title);
