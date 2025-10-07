@@ -42,6 +42,7 @@ export const MedicalChatInterface = ({ caseId, onBackToCase }: MedicalChatInterf
     listMessages,
     sendMessage,
     addLocalMessage,
+    updateSession,
   } = useChatStore();
   const chatLoading = useChatStore((s) => s.loading);
   const findPatientIdByCaseId = useCasesStore((s) => s.findPatientIdByCaseId);
@@ -217,6 +218,14 @@ export const MedicalChatInterface = ({ caseId, onBackToCase }: MedicalChatInterf
           onSelectChat={handleSelectChat}
           onNewChat={handleNewChat}
           onDeleteChat={handleDeleteChat}
+          onEditChat={async (chatId: string, title: string) => {
+            if (!caseId) return;
+            try {
+              await updateSession(chatId, caseId, title);
+            } catch (e: any) {
+              toast({ title: "Failed to update session", description: e.data?.detail ?? String(e), variant: "destructive" });
+            }
+          }}
           onBackToCase={onBackToCase}
           patient={patientData}
           caseRecord={caseData}

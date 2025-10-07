@@ -40,6 +40,14 @@ export const ChatApi = {
     });
     return toCamelSession({ id: newId, patient_id: patientId, case_id: caseId, title: title || "New Session", time_created: new Date().toISOString(), time_updated: new Date().toISOString() });
   },
+  /**
+   * Update session title
+   * Calls backend PUT /sessions/{session_id}?title=...
+   */
+  updateSession: async (sessionId: ID, title: string) => {
+    // backend expects title as query param
+    return await http.put(`/history/sessions/${sessionId}`, undefined, { query: { title } });
+  },
   listMessages: async (sessionId: ID) => {
     const res = await http.get<any>(`/history/messages/${sessionId}`);
 

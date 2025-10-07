@@ -17,6 +17,7 @@ interface ChatState {
   listMessages: (sessionId: ID) => Promise<ChatMessage[]>;
   deleteSession: (sessionId: ID, caseId: ID) => Promise<void>;
   sendMessage: (sessionId: ID, caseId: ID, patientId: ID, content: string, attachments?: UploadAttachment[]) => Promise<ChatMessage>;
+  updateSession: (sessionId: ID, caseId: ID, title: string) => Promise<void>;
 }
 
 export const useChatStore = create<ChatState>()(
@@ -113,6 +114,17 @@ export const useChatStore = create<ChatState>()(
           };
         });
         return msg;
+      },
+      updateSession: async (sessionId, caseId, title) => {
+        // Call backend to update title
+        await ChatApi.updateSession(sessionId, title);
+        // Update local store
+        set((s) => {
+          const sessions = (s.sessionsByCase[caseId] || []).map((ses) =>
+            ses.id === sessionId ? { ...ses, title, updatedAt: new Date().toISOString() } : ses
+          );
+          return { sessionsByCase: { ...s.sessionsByCase, [caseId]: sessions } };
+        });
       },
     }),
     {

@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { MessageSquare, Plus, Trash2, Clock, Calendar, Tag, Stethoscope, ArrowLeft, Heart, Brain, Eye, Bone, Activity, User, Settings, Moon, Sun, Loader } from 'lucide-react';
+import { MessageSquare, Plus, Trash2, Clock, Calendar, Tag, Stethoscope, ArrowLeft, Heart, Brain, Eye, Bone, Activity, User, Settings, Moon, Sun, Loader, Edit3, Check, X } from 'lucide-react';
 import {
   Sidebar,
   SidebarContent,
@@ -42,6 +42,7 @@ interface ChatHistorySidebarProps {
   onSelectChat: (chatId: string) => void;
   onNewChat: () => void;
   onDeleteChat: (chatId: string) => void;
+  onEditChat?: (chatId: string, title: string) => Promise<void>;
   onBackToCase?: () => void;
   patient?: Patient | null;
   caseRecord?: CaseRecord | null;
@@ -71,6 +72,7 @@ export const ChatHistorySidebar = ({
   onSelectChat,
   onNewChat,
   onDeleteChat,
+  onEditChat,
   onBackToCase,
   patient,
   caseRecord,
@@ -83,6 +85,10 @@ export const ChatHistorySidebar = ({
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
   const [pendingDeleteId, setPendingDeleteId] = React.useState<string | null>(null);
   const [deletingId, setDeletingId] = React.useState<string | null>(null);
+
+  const [editingChatId, setEditingChatId] = React.useState<string | null>(null);
+  const [editingTitle, setEditingTitle] = React.useState<string>('');
+  const [savingEditId, setSavingEditId] = React.useState<string | null>(null);
 
   const settings = useChatSettingsStore((s) => s.settings);
   const updateSettings = useChatSettingsStore((s) => s.update);
@@ -155,6 +161,36 @@ export const ChatHistorySidebar = ({
     return idx;
   };
 
+  const startEditing = (chatId: string, title: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    setEditingChatId(chatId);
+    setEditingTitle(title || '');
+  };
+
+  const cancelEditing = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    setEditingChatId(null);
+    setEditingTitle('');
+  };
+
+  const saveEditing = async (chatId: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    if (!onEditChat) {
+      cancelEditing();
+      return;
+    }
+    setSavingEditId(chatId);
+    try {
+      await onEditChat(chatId, editingTitle.trim() || 'Untitled Session');
+    } catch (err) {
+      // ignore errors here; store will set error
+    } finally {
+      setSavingEditId(null);
+      setEditingChatId(null);
+      setEditingTitle('');
+    }
+  };
+
   return (
     <Sidebar variant='floating' className="m-0 pr-0">
       <SidebarHeader className="p-4 rounded-t-lg dark:bg-slate-900">
@@ -191,6 +227,9 @@ export const ChatHistorySidebar = ({
                 const categoryInfo = categoryConfig[chat.category];
                 const CategoryIcon = categoryInfo.icon;
 
+                const isEditingThis = editingChatId === chat.id;
+                const isSaving = savingEditId === chat.id;
+
                 return (
                   <SidebarMenuItem key={chat.id}>
                     <SidebarMenuButton
@@ -211,27 +250,51 @@ export const ChatHistorySidebar = ({
                                 {categoryInfo.label}
                               </Badge>
                             </div>
-                            <button
-                              className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded hover:bg-destructive/10 hover:text-destructive"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setPendingDeleteId(chat.id);
-                                setDeleteDialogOpen(true);
-                              }}
-                            >
-                              <Trash2 className="h-3 w-3" />
-                            </button>
-                            {deletingId === chat.id && (
-                              <div className="absolute right-3 top-3">
-                                <Loader className="h-4 w-4 animate-spin text-muted-foreground" />
+                            <div className="flex items-center gap-1">
+                              <button
+                                className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded hover:bg-destructive/10 hover:text-destructive"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setPendingDeleteId(chat.id);
+                                  setDeleteDialogOpen(true);
+                                }}
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </button>
+                              {deletingId === chat.id && (
+                                <div className="absolute right-3 top-3">
+                                  <Loader className="h-4 w-4 animate-spin text-muted-foreground" />
+                                </div>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Title with inline edit */}
+                          <div className="flex items-center gap-2 w-full">
+                            {!isEditingThis ? (
+                              <>
+                                <h4 className="text-sm font-medium text-left w-full">
+                                  {truncateText(chat.title, 30)}
+                                </h4>
+                                <button
+                                  className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded hover:bg-accent/10"
+                                  onClick={(e) => startEditing(chat.id, chat.title, e)}
+                                >
+                                  <Edit3 className="h-3 w-3" />
+                                </button>
+                              </>
+                            ) : (
+                              <div className="flex items-center w-full gap-2">
+                                <Input value={editingTitle} onChange={(e) => setEditingTitle(e.target.value)} className="flex-1" />
+                                <button className="h-7 w-7 flex items-center justify-center rounded bg-primary/10 text-primary" onClick={(e) => saveEditing(chat.id, e)}>
+                                  {isSaving ? <Loader className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+                                </button>
+                                <button className="h-7 w-7 flex items-center justify-center rounded bg-muted/10 text-muted-foreground" onClick={(e) => cancelEditing(e)}>
+                                  <X className="h-4 w-4" />
+                                </button>
                               </div>
                             )}
                           </div>
-
-                          {/* Title */}
-                          <h4 className="text-sm font-medium text-left w-full">
-                            {truncateText(chat.title, 30)}
-                          </h4>
 
                           {/* Last message preview */}
                           {/* <p className="text-xs text-muted-foreground text-left w-full leading-relaxed">
@@ -451,8 +514,6 @@ export const ChatHistorySidebar = ({
                   <div><span className="text-muted-foreground">Age:</span> {patient?.age ?? '-'}</div>
                   <div><span className="text-muted-foreground">Gender:</span> {patient?.gender || '-'}</div>
                   <div><span className="text-muted-foreground">DOB:</span> {formatDateofBirth(patient?.dob) || '-'}</div>
-                  <div><span className="text-muted-foreground">Height:</span> {patient?.height || '-'}</div>
-                  <div><span className="text-muted-foreground">Weight:</span> {patient?.weight || '-'}</div>
                   <div className="col-span-2"><span className="text-muted-foreground">Medical history:</span> {patient?.medicalHistory || '-'}</div>
                 </div>
               </div>
