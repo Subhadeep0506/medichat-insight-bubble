@@ -1,4 +1,3 @@
-
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import type { User } from "@/types/domain";
@@ -38,7 +37,11 @@ export const useAuthStore = create<AuthState>()(
       login: async (email, password) => {
         set({ loading: true, error: null });
         try {
-          const { access_token, refresh_token } = await AuthApi.login({ email, password });
+          // Coerce and validate inputs to avoid sending non-string types
+          const emailStr = typeof email === 'string' ? email : String(email || '');
+          const passwordStr = typeof password === 'string' ? password : String(password || '');
+          if (!emailStr || !passwordStr) throw new Error('Invalid credentials');
+          const { access_token, refresh_token } = await AuthApi.login({ email: emailStr, password: passwordStr });
           if (access_token) localStorage.setItem("access_token", access_token);
           if (refresh_token) localStorage.setItem("refresh_token", refresh_token);
           get().setToken(access_token, refresh_token);
@@ -122,3 +125,32 @@ export const useAuthStore = create<AuthState>()(
     }
   )
 );
+
+// Listen for token refresh events emitted by the HTTP client and update the auth store
+if (typeof window !== "undefined") {
+  window.addEventListener("auth:refreshed", (ev: any) => {
+    try {
+      const detail = ev?.detail || {};
+      const access = detail?.access_token || null;
+      const refresh = detail?.refresh_token || null;
+      if (access) {
+        // update persisted state
+        useAuthStore.getState().setToken(access, refresh ?? useAuthStore.getState().refresh_token);
+      }
+    } catch (e) {
+      // ignore
+    }
+  });
+
+  // On refresh failure, clear auth and user state to force re-login
+  window.addEventListener("auth:refresh_failed", () => {
+    try {
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("refresh_token");
+      useAuthStore.getState().setToken(null, null);
+      useAuthStore.getState().setUser(null as any);
+    } catch (e) {
+      // ignore
+    }
+  });
+}

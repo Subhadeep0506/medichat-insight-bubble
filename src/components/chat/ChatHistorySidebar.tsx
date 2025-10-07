@@ -451,6 +451,8 @@ export const ChatHistorySidebar = ({
                   <div><span className="text-muted-foreground">Age:</span> {patient?.age ?? '-'}</div>
                   <div><span className="text-muted-foreground">Gender:</span> {patient?.gender || '-'}</div>
                   <div><span className="text-muted-foreground">DOB:</span> {formatDateofBirth(patient?.dob) || '-'}</div>
+                  <div><span className="text-muted-foreground">Height:</span> {patient?.height || '-'}</div>
+                  <div><span className="text-muted-foreground">Weight:</span> {patient?.weight || '-'}</div>
                   <div className="col-span-2"><span className="text-muted-foreground">Medical history:</span> {patient?.medicalHistory || '-'}</div>
                 </div>
               </div>

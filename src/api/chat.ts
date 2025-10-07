@@ -14,31 +14,37 @@ function toCamelSession(s: any): ChatSession {
 }
 
 export const ChatApi = {
-  listSessions: async (_patientId: ID, caseId: ID) => {
-    // Backend expects a session_id query param (option A): /history?session_id=<sessionId>
-    // We treat the caseId param from callers as the session identifier to query.
-    const res = await http.get<any>(`/history`, {
+  listSessions: async (patientId: ID, caseId: ID) => {
+    const res = await http.get<any>(`/history/sessions`, {
       query: {
-        session_id: caseId,
+        case_id: caseId,
+        patient_id: patientId,
       },
     });
     const raw = Array.isArray(res)
       ? res
-      : (res.sessions || res.items || res.history || []);
+      : (res.sessions || res.items || res.data || []);
     const items: ChatSession[] = (raw as any[]).map(toCamelSession).filter((s) => !!s);
     items.sort((a, b) => new Date(b.updatedAt || 0).getTime() - new Date(a.updatedAt || 0).getTime());
     return { items } as ApiListResponse<ChatSession>;
   },
-  // Create a new session client-side (server will accept session_id on first message)
-  startSession: async (patientId: ID, caseId: ID, title?: string) =>
-    toCamelSession({ id: uuidv4(), patient_id: patientId, case_id: caseId, title, time_created: new Date().toISOString(), time_updated: new Date().toISOString() }),
+  startSession: async (patientId: ID, caseId: ID, title?: string) => {
+    const newId = uuidv4();
+    await http.post(`/history/sessions`, undefined, {
+      query: {
+        session_id: newId,
+        case_id: caseId,
+        patient_id: patientId,
+        title: title || "New Session",
+      },
+    });
+    return toCamelSession({ id: newId, patient_id: patientId, case_id: caseId, title: title || "New Session", time_created: new Date().toISOString(), time_updated: new Date().toISOString() });
+  },
   listMessages: async (sessionId: ID) => {
-    // Fetch messages for a session using query param: /history?session_id=<sessionId>
-    const res = await http.get<any>(`/history`, { query: { session_id: sessionId } });
+    const res = await http.get<any>(`/history/messages/${sessionId}`);
 
     const items: ChatMessage[] = [];
 
-    // Case 1: response contains conversations (each with content array)
     const conversations = res.conversations || res.conversation || [];
     if (Array.isArray(conversations) && conversations.length > 0) {
       conversations.forEach((conv: any, convIdx: number) => {
@@ -68,7 +74,6 @@ export const ChatApi = {
       });
     }
 
-    // Case 2: response contains flat messages array
     const flat = res.messages || res.items || res.history || [];
     if (Array.isArray(flat) && flat.length > 0) {
       flat.forEach((m: any, idx: number) => {
@@ -90,7 +95,6 @@ export const ChatApi = {
       });
     }
 
-    // Normalize createdAt and sort messages chronologically
     items.forEach((it) => {
       if (!it.createdAt) it.createdAt = new Date().toISOString();
     });
@@ -98,7 +102,7 @@ export const ChatApi = {
 
     return { items } as ApiListResponse<ChatMessage>;
   },
-  deleteHistory: (sessionId: ID) => http.delete<void>(`/history`, { query: { session_id: sessionId } }),
+  deleteHistory: (sessionId: ID) => http.delete<void>(`/history/session/${sessionId}`),
   sendMessage: async (params: { sessionId: ID; caseId: ID; patientId: ID; prompt: string; model?: string; model_provider?: string; temperature?: number; top_p?: number; max_tokens?: number; debug?: boolean; files?: File[] }) => {
     const hasFiles = params.files && params.files.length > 0;
     const body = hasFiles ? new FormData() : undefined;

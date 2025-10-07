@@ -1,6 +1,6 @@
 import axios, { AxiosError, AxiosRequestConfig, Method } from "axios";
 
-const DEFAULT_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8089";
+const DEFAULT_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8089/api/v1";
 
 export type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
@@ -43,36 +43,130 @@ export function createHttpClient(opts: HttpClientOptions = {}) {
   const baseURL = (opts.baseURL ?? DEFAULT_BASE).replace(/\/$/, "");
   const getToken = opts.getAuthToken ?? authTokenGetter;
 
+  let isRefreshing = false;
+  let refreshPromise: Promise<boolean> | null = null;
+
+  async function doRefresh(): Promise<boolean> {
+    const refreshToken = refreshTokenGetter ? refreshTokenGetter() : (typeof localStorage !== "undefined" ? localStorage.getItem("refresh_token") : null);
+    if (!refreshToken) return false;
+    if (isRefreshing && refreshPromise) return refreshPromise;
+    isRefreshing = true;
+    refreshPromise = (async () => {
+      try {
+        // First try relogin (exchange refresh_token for new access token only)
+        try {
+          const rel = await axios.post(`${baseURL}/auth/relogin`, { refresh_token: refreshToken });
+          const rdata = rel.data || {};
+          const newAccessR = rdata.access_token || rdata.token || null;
+          const newRefreshR = rdata.refresh_token || null;
+          if (newAccessR) {
+            if (typeof localStorage !== "undefined") {
+              localStorage.setItem("access_token", newAccessR);
+              if (newRefreshR) localStorage.setItem("refresh_token", newRefreshR);
+            }
+            if (typeof window !== "undefined") {
+              window.dispatchEvent(new CustomEvent("auth:refreshed", { detail: { access_token: newAccessR, refresh_token: newRefreshR } }));
+            }
+            return true;
+          }
+        } catch (e) {
+          // if relogin failed with 401/invalid refresh token, try refresh endpoint to rotate tokens
+          try {
+            const res = await axios.post(`${baseURL}/auth/refresh`, { refresh_token: refreshToken });
+            const data = res.data || {};
+            const newAccess = data.access_token || data.token || null;
+            const newRefresh = data.refresh_token || null;
+            if (newAccess) {
+              if (typeof localStorage !== "undefined") {
+                localStorage.setItem("access_token", newAccess);
+                if (newRefresh) localStorage.setItem("refresh_token", newRefresh);
+              }
+              if (typeof window !== "undefined") {
+                window.dispatchEvent(new CustomEvent("auth:refreshed", { detail: { access_token: newAccess, refresh_token: newRefresh } }));
+              }
+              return true;
+            }
+          } catch (e2) {
+            return false;
+          }
+        }
+        return false;
+      } finally {
+        isRefreshing = false;
+        refreshPromise = null;
+      }
+    })();
+    // Notify listeners if refresh fails
+    refreshPromise!.then((ok) => {
+      if (!ok && typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("auth:refresh_failed"));
+      }
+    }).catch(() => {
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("auth:refresh_failed"));
+      }
+    });
+    return refreshPromise;
+  }
+
   async function request<TResponse = any, TBody = unknown>(
     path: string,
-    { method = "GET", headers, query, body }: RequestOptions<TBody> = {}
+    { method = "GET", headers, query, body, }: RequestOptions<TBody> = {},
+    attempt = 0
   ): Promise<TResponse> {
     const token = getToken();
+    const headersFinal = {
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...headers,
+    };
+
+    // Auto JSON header for non-FormData bodies
+    if (body !== undefined && !(body instanceof FormData)) {
+      headersFinal["Content-Type"] = headersFinal["Content-Type"] || "application/json";
+    }
+
     const config: AxiosRequestConfig = {
       url: `${path}`,
       baseURL,
       method: method as Method,
-      headers: {
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        ...headers,
-      },
+      headers: headersFinal,
       params: query,
       data: body,
       withCredentials: true,
     };
 
-    // Auto JSON header for non-FormData bodies
-    if (body !== undefined && !(body instanceof FormData)) {
-      config.headers = { "Content-Type": "application/json", ...(config.headers || {}) } as any;
+    // Ensure JSON bodies are stringified to avoid accidental type transmission
+    if (body !== undefined && !(body instanceof FormData) && headersFinal["Content-Type"] === "application/json") {
+      try {
+        config.data = JSON.stringify(body);
+      } catch (e) {
+        config.data = body as any;
+      }
     }
 
+    // Debug: log outgoing request body for login failures
     try {
+      if (typeof window !== "undefined" && path.includes("/auth/login")) {
+        // eslint-disable-next-line no-console
+        console.debug("[http] POST /auth/login body:", config.data);
+      }
       const res = await axios.request<TResponse>(config);
       return res.data as TResponse;
     } catch (err) {
       const e = err as AxiosError;
       const status = e.response?.status ?? 0;
       const data = e.response?.data ?? e.message;
+
+      // Try refresh once on 401 or on 403 with invalid/expired token message
+      const isInvalidTokenMsg = typeof data === 'string' ? /invalid token|expired/i.test(data) : /invalid token|expired/i.test(JSON.stringify(data || {}));
+      if ((status === 401 || (status === 403 && isInvalidTokenMsg)) && attempt === 0) {
+        const refreshed = await doRefresh();
+        if (refreshed) {
+          // retry original request once
+          return request<TResponse, TBody>(path, { method, headers, query, body }, attempt + 1);
+        }
+      }
+
       throw new HttpError(`Request failed: ${status}`, status, data);
     }
   }
