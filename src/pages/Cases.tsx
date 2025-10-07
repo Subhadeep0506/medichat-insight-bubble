@@ -4,7 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Trash2, Plus, Calendar, Eye, Search, Filter, Edit, User, RotateCcw, Loader, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Trash2, Plus, Calendar, Eye, Search, Filter, Edit, User, RotateCcw, Loader, ChevronLeft, ChevronRight, MoreVertical } from 'lucide-react';
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import FloatingNavbar from '@/components/FloatingNavbar';
 import { EditPatientDialog } from '@/components/EditPatientDialog';
 import EditCaseDialog from '@/components/EditCaseDialog';
@@ -459,7 +460,7 @@ const Cases = () => {
                             <th className="py-2 px-3">Priority</th>
                             <th className="py-2 px-3">Tags</th>
                             <th className="py-2 px-3">Updated</th>
-                            <th className="py-2 px-3">Actions</th>
+                            <th className="py-2 px-3" aria-label="Actions column"></th>
                           </tr>
                         </thead>
                         <tbody>
@@ -488,19 +489,28 @@ const Cases = () => {
                                 )}
                               </td>
                               <td className="py-3 px-3 text-sm text-muted-foreground">{formatDate(case_.lastUpdated)}</td>
-                              <td className="py-3 px-3 text-sm">
-                                <div className="flex gap-2">
-                                  <Button size="icon" variant="ghost" onClick={() => handleEditCase(case_ as any)}><Edit className="w-4 h-4" /></Button>
-                                  <Button size="icon" variant="ghost" onClick={() => handleDeleteCase(case_.id)}><Trash2 className="w-4 h-4" /></Button>
-                                  <Button size="icon" variant="ghost" onClick={() => handleCaseClick(case_.id)}><Eye className="w-4 h-4" /></Button>
-                                </div>
+                              <td className="py-3 px-3 text-sm text-right">
+                                <Popover>
+                                  <PopoverTrigger asChild>
+                                    <Button size="icon" variant="ghost" aria-label="Open actions menu">
+                                      <MoreVertical className="w-4 h-4" />
+                                    </Button>
+                                  </PopoverTrigger>
+                                  <PopoverContent align="end" sideOffset={4} className="w-40">
+                                    <div className="flex flex-col">
+                                      <Button variant="ghost" onClick={() => handleCaseClick(case_.id)} className="justify-start"><Eye/>View</Button>
+                                      <Button variant="ghost" onClick={() => handleEditCase(case_ as any)} className="justify-start"><Edit/>Edit</Button>
+                                      <Button variant="ghost" onClick={() => handleDeleteCase(case_.id)} className="justify-start text-destructive hover:bg-destructive/10"><Trash2/>Delete</Button>
+                                    </div>
+                                  </PopoverContent>
+                                </Popover>
                               </td>
                             </tr>
                           ))}
 
                           {filteredAndSortedCases.length === 0 && (
                             <tr>
-                              <td colSpan={5} className="py-8 text-center text-muted-foreground">No cases for this patient</td>
+                              <td colSpan={6} className="py-8 text-center text-muted-foreground">No cases for this patient</td>
                             </tr>
                           )}
 
