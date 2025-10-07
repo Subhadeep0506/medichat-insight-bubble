@@ -25,11 +25,6 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 };
 
 const App = () => {
-  const fetchMe = useAuthStore((s) => s.fetchMe);
-
-  useEffect(() => {
-    fetchMe().catch(() => { });
-  }, [fetchMe]);
 
   return (
     <QueryClientProvider client={queryClient}>

@@ -55,8 +55,8 @@ export function createHttpClient(opts: HttpClientOptions = {}) {
       try {
         // First try relogin (exchange refresh_token for new access token only)
         try {
-          const rel = await axios.post(`${baseURL}/auth/relogin`, { refresh_token: refreshToken });
-          const rdata = rel.data || {};
+          const rel = await axios.post(`${baseURL}/auth/relogin`, { refresh_token: refreshToken }, { headers: { "Content-Type": "application/json" }, timeout: 8000 });
+          const rdata = rel?.data || {};
           const newAccessR = rdata.access_token || rdata.token || null;
           const newRefreshR = rdata.refresh_token || null;
           if (newAccessR) {
@@ -70,10 +70,10 @@ export function createHttpClient(opts: HttpClientOptions = {}) {
             return true;
           }
         } catch (e) {
-          // if relogin failed with 401/invalid refresh token, try refresh endpoint to rotate tokens
+          // Try refresh endpoint to rotate tokens if relogin fails
           try {
-            const res = await axios.post(`${baseURL}/auth/refresh`, { refresh_token: refreshToken });
-            const data = res.data || {};
+            const res = await axios.post(`${baseURL}/auth/refresh`, { refresh_token: refreshToken }, { headers: { "Content-Type": "application/json" }, timeout: 8000 });
+            const data = res?.data || {};
             const newAccess = data.access_token || data.token || null;
             const newRefresh = data.refresh_token || null;
             if (newAccess) {
@@ -147,7 +147,6 @@ export function createHttpClient(opts: HttpClientOptions = {}) {
     // Debug: log outgoing request body for login failures
     try {
       if (typeof window !== "undefined" && path.includes("/auth/login")) {
-        // eslint-disable-next-line no-console
         console.debug("[http] POST /auth/login body:", config.data);
       }
       const res = await axios.request<TResponse>(config);

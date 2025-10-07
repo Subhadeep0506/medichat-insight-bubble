@@ -299,7 +299,7 @@ const Cases = () => {
         <div className="h-[calc(100vh-200px)] w-full">
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 min-h-full">
             {/* Patients sidebar */}
-            <div className="lg:col-span-1 mb-4 bg-card rounded-xl border border-border p-2 flex flex-col">
+            <div className="lg:col-span-1 mb-4 bg-card rounded-xl border border-border p-2 flex flex-col relative overflow-visible">
               <div className="mb-4">
                 <div className="flex items-center gap-2 mb-2">
                   <User className="w-5 h-5 text-primary" />
@@ -341,7 +341,7 @@ const Cases = () => {
               </div>
 
               {/* Patients pagination */}
-              <div className="mt-3 flex items-center justify-between gap-2">
+              <div className="mt-3 flex items-end justify-between gap-2">
                 <div className="flex items-center gap-2">
                   <Button variant="outline" size="sm" onClick={() => setPatientPage((p) => Math.max(1, p - 1))} disabled={patientPage <= 1}>
                     <ChevronLeft className="w-4 h-4" />
@@ -353,10 +353,10 @@ const Cases = () => {
                     <ChevronRight className="w-4 h-4" />
                   </Button>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   <span className="text-xs text-muted-foreground">Rows</span>
                   <Select value={String(patientPageSize)} onValueChange={(v) => { setPatientPageSize(parseInt(v)); setPatientPage(1); }}>
-                    <SelectTrigger className="h-8 w-[72px]">
+                    <SelectTrigger className="h-8 min-w-[72px]">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -371,7 +371,7 @@ const Cases = () => {
             </div>
 
             {/* Cases & Patient details area */}
-            <div className="lg:col-span-3 mb-4 bg-card rounded-xl border border-border p-2 flex flex-col">
+            <div className="lg:col-span-3 mb-4 bg-card rounded-xl border border-border p-2 flex flex-col relative overflow-visible">
               <div className="flex flex-col gap-4 h-full">
                 {/* Top: Patient details */}
                 <div className="bg-card-foreground/5 rounded-md border border-border p-4">
@@ -496,7 +496,7 @@ const Cases = () => {
                                       <MoreVertical className="w-4 h-4" />
                                     </Button>
                                   </PopoverTrigger>
-                                  <PopoverContent align="end" sideOffset={4} className="w-40">
+                                  <PopoverContent align="end" sideOffset={4} className="w-40 p-1">
                                     <div className="flex flex-col">
                                       <Button variant="ghost" onClick={() => handleCaseClick(case_.id)} className="justify-start"><Eye/>View</Button>
                                       <Button variant="ghost" onClick={() => handleEditCase(case_ as any)} className="justify-start"><Edit/>Edit</Button>
@@ -520,7 +520,7 @@ const Cases = () => {
                   </div>
 
                   {/* Cases pagination */}
-                  <div className="mt-3 flex items-center justify-between gap-2">
+                  <div className="mt-3 flex items-end justify-between gap-2">
                     <div className="flex items-center gap-2">
                       <Button variant="outline" size="sm" onClick={() => setCasesPage((p) => Math.max(1, p - 1))} disabled={casesPage <= 1}>
                         <ChevronLeft className="w-4 h-4" />
@@ -532,10 +532,10 @@ const Cases = () => {
                         <ChevronRight className="w-4 h-4" />
                       </Button>
                     </div>
-                    <div className="flex items-center gap-2 m-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-xs text-muted-foreground">Rows</span>
                       <Select value={String(casesPageSize)} onValueChange={(v) => { setCasesPageSize(parseInt(v)); setCasesPage(1); }}>
-                        <SelectTrigger className="h-8 w-[72px]">
+                        <SelectTrigger className="h-8 min-w-[72px]">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
