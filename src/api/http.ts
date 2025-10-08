@@ -1,6 +1,6 @@
 import axios, { AxiosError, AxiosRequestConfig, Method } from "axios";
 
-const DEFAULT_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8089/api/v1";
+const DEFAULT_BASE = import.meta.env.VITE_API_BASE_URL || "";
 
 export type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
