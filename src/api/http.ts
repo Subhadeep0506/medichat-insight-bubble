@@ -132,7 +132,6 @@ export function createHttpClient(opts: HttpClientOptions = {}) {
       headers: headersFinal,
       params: query,
       data: body,
-      withCredentials: true,
     };
 
     // Ensure JSON bodies are stringified to avoid accidental type transmission
