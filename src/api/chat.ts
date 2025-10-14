@@ -149,31 +149,70 @@ export const ChatApi = {
         debug: params.debug,
       },
     });
-    const text = res?.response ?? "";
-    const safety = res?.safety_score || null;
+
+    const serverMessageId = res?.message_id ?? res?.messageId ?? res?.id ?? null;
+    const createdAt = res?.timestamp ?? new Date().toISOString();
+
+    // Extract assistant text from response content structure
+    let text = "";
+    const contentRaw = res?.content;
+    if (Array.isArray(contentRaw)) {
+      // Find last non-user role message and extract text
+      for (let i = contentRaw.length - 1; i >= 0; i--) {
+        const m = contentRaw[i];
+        const role = (m?.role || m?.sender || '').toLowerCase();
+        const isAssistant = role !== 'user';
+        if (isAssistant) {
+          if (Array.isArray(m?.content)) {
+            const t = m.content.find((c: any) => c?.type === 'text')?.text;
+            if (t) { text = t; break; }
+          }
+          text = m?.text ?? m?.content ?? '';
+          break;
+        }
+      }
+      // Fallback: scan all
+      if (!text) {
+        for (const m of contentRaw) {
+          const t = Array.isArray(m?.content) ? (m.content.find((c: any) => c?.type === 'text')?.text ?? '') : (m?.text ?? m?.content ?? '');
+          if (t) { text = t; break; }
+        }
+      }
+    } else if (typeof contentRaw === 'string') {
+      text = contentRaw;
+    } else if (contentRaw && typeof contentRaw === 'object') {
+      text = contentRaw?.text ?? contentRaw?.content ?? '';
+    }
+
+    const safety = res?.safety || res?.safety_score || null;
+
     const msg: ChatMessage = {
       id: uuidv4(),
       sessionId: params.sessionId,
-      role: "assistant",
-      content: text,
-      createdAt: new Date().toISOString(),
+      role: 'assistant',
+      content: text || '',
+      createdAt: typeof createdAt === 'string' ? createdAt : new Date(createdAt).toISOString(),
+      serverMessageId: serverMessageId,
+      like: res?.like ?? null,
+      feedback: res?.feedback ?? null,
+      stars: typeof res?.stars === 'number' ? res.stars : (res?.stars ? Number(res.stars) : null),
       ...(safety
         ? {
-          safetyScore: typeof safety.score === "number" ? safety.score : undefined,
-          safetyLevel: typeof safety.safety_level === "string" ? safety.safety_level : undefined,
-          safetyJustification: typeof safety.justification === "string" ? safety.justification : undefined,
+          safetyScore: typeof safety.score === 'number' ? safety.score : undefined,
+          safetyLevel: typeof safety.safety_level === 'string' ? safety.safety_level : undefined,
+          safetyJustification: typeof safety.justification === 'string' ? safety.justification : undefined,
         }
         : {}),
     };
     return msg;
   },
 
-  // Like or dislike a message. action can be 'like' | 'dislike' | null to clear
-  likeMessage: async (serverMessageId: string | null | undefined, action: string | null) => {
+  // Like or dislike a message. action can be 'like' | 'dislike'
+  likeMessage: async (serverMessageId: string | null | undefined, action: 'like' | 'dislike') => {
     if (!serverMessageId) throw new Error('Message id missing');
-    // backend expects a query param named `like` - pass the action string or null
-    const queryVal = action === null ? null : action;
-    return await http.post(`/chat/like-message/${encodeURIComponent(String(serverMessageId))}`, undefined, { query: { like: queryVal } });
+    // backend expects boolean: true for like, false for dislike
+    const likeBool = action === 'like';
+    return await http.post(`/chat/like-message/${encodeURIComponent(String(serverMessageId))}`, undefined, { query: { like: likeBool } });
   },
 
   // Edit feedback for a message (uses PUT /chat/edit-feedback/{message_id})

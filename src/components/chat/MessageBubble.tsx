@@ -64,13 +64,12 @@ export const MessageBubble = ({ message }: MessageBubbleProps) => {
     e?.stopPropagation();
     const serverId = message.serverMessageId;
     if (!serverId) return;
-    const currentlyLiked = isLiked();
-    const action = currentlyLiked ? null : 'like';
+    // Backend supports only boolean like/dislike; clicking Like always sets like=true
     setLikeLoading(true);
     setDislikeLoading(false);
     try {
-      await ChatApi.likeMessage(serverId, action);
-      updateMessageInStore({ like: action });
+      await ChatApi.likeMessage(serverId, 'like');
+      updateMessageInStore({ like: 'like' });
     } catch (err: any) {
       toast({ title: 'Failed to update like', description: err?.data?.detail ?? String(err), variant: 'destructive' });
     } finally {
@@ -82,13 +81,11 @@ export const MessageBubble = ({ message }: MessageBubbleProps) => {
     e?.stopPropagation();
     const serverId = message.serverMessageId;
     if (!serverId) return;
-    const currentlyDisliked = isDisliked();
-    const action = currentlyDisliked ? null : 'dislike';
     setDislikeLoading(true);
     setLikeLoading(false);
     try {
-      await ChatApi.likeMessage(serverId, action);
-      updateMessageInStore({ like: action });
+      await ChatApi.likeMessage(serverId, 'dislike');
+      updateMessageInStore({ like: 'dislike' });
     } catch (err: any) {
       toast({ title: 'Failed to update dislike', description: err?.data?.detail ?? String(err), variant: 'destructive' });
     } finally {
