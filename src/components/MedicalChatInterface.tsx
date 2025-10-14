@@ -19,6 +19,12 @@ export interface ChatMessage {
   timestamp: Date;
   responsibilityScore?: number;
   responsibilityReason?: string;
+  // New fields from backend
+  serverMessageId?: string | null;
+  feedback?: string | null;
+  like?: string | null;
+  stars?: number | null;
+  sessionId?: string;
 }
 
 interface MedicalChatInterfaceProps {
@@ -62,6 +68,11 @@ export const MedicalChatInterface = ({ caseId, onBackToCase }: MedicalChatInterf
       timestamp: m.createdAt ? new Date(m.createdAt) : new Date(),
       responsibilityScore: m.role !== 'user' ? m.safetyScore : undefined,
       responsibilityReason: m.role !== 'user' ? (m.safetyJustification || (m.safetyLevel ? `Safety level: ${m.safetyLevel}` : undefined)) : undefined,
+      serverMessageId: m.serverMessageId ?? null,
+      feedback: m.feedback ?? null,
+      like: m.like ?? null,
+      stars: m.stars ?? null,
+      sessionId: m.sessionId,
     }));
   }, [messagesBySession, currentSessionId]);
 

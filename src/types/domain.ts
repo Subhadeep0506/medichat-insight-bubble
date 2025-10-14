@@ -54,6 +54,12 @@ export interface ChatMessage {
   safetyScore?: number;
   safetyLevel?: string;
   safetyJustification?: string;
+
+  // Fields synced with backend session_messages table
+  serverMessageId?: string | null; // original database message_id
+  feedback?: string | null;
+  like?: string | null; // 'like' | 'dislike' | null
+  stars?: number | null;
 }
 
 export interface UploadAttachment {

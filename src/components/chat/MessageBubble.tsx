@@ -1,11 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import type { ChatMessage as UiMessage } from '../MedicalChatInterface';
-import { User, Bot, Info, Shield, Brain } from 'lucide-react';
+import { User, Bot, Info, Shield, Brain, ThumbsUp, ThumbsDown, Loader, MessageSquare, Star } from 'lucide-react';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
 import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { ChatApi } from '@/api/chat';
+import { useChatStore } from '@/store';
+import { toast } from '@/hooks/use-toast';
 
 interface MessageBubbleProps {
   message: UiMessage;
@@ -35,6 +39,77 @@ function parseAssistantContent(content: string) {
 export const MessageBubble = ({ message }: MessageBubbleProps) => {
   const isUser = message.type === 'user';
   const sections = !isUser ? parseAssistantContent(message.content) : { think: null as string | null, answer: message.content };
+
+  const [likeLoading, setLikeLoading] = useState(false);
+  const [dislikeLoading, setDislikeLoading] = useState(false);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
+  const [feedbackText, setFeedbackText] = useState<string | null>(message.feedback ?? null);
+  const [stars, setStars] = useState<number | null>(message.stars ?? null);
+
+  const sessionId = message.sessionId;
+
+  const updateMessageInStore = (patch: Partial<UiMessage>) => {
+    useChatStore.setState((s) => {
+      const msgs = { ...(s.messagesBySession || {}) };
+      const arr = msgs[sessionId || s.currentSessionId || ''] || [];
+      const next = arr.map((m: any) => (m.id === message.id ? { ...m, ...patch } : m));
+      return { messagesBySession: { ...msgs, [sessionId || s.currentSessionId || '']: next } } as any;
+    });
+  };
+
+  const isLiked = () => message.like === 'like' || message.like === 'true' || message.like === true;
+  const isDisliked = () => message.like === 'dislike' || message.like === 'false' || message.like === false;
+
+  const handleLike = async (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    const serverId = message.serverMessageId;
+    if (!serverId) return;
+    const currentlyLiked = isLiked();
+    const action = currentlyLiked ? null : 'like';
+    setLikeLoading(true);
+    setDislikeLoading(false);
+    try {
+      await ChatApi.likeMessage(serverId, action);
+      updateMessageInStore({ like: action });
+    } catch (err: any) {
+      toast({ title: 'Failed to update like', description: err?.data?.detail ?? String(err), variant: 'destructive' });
+    } finally {
+      setLikeLoading(false);
+    }
+  };
+
+  const handleDislike = async (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    const serverId = message.serverMessageId;
+    if (!serverId) return;
+    const currentlyDisliked = isDisliked();
+    const action = currentlyDisliked ? null : 'dislike';
+    setDislikeLoading(true);
+    setLikeLoading(false);
+    try {
+      await ChatApi.likeMessage(serverId, action);
+      updateMessageInStore({ like: action });
+    } catch (err: any) {
+      toast({ title: 'Failed to update dislike', description: err?.data?.detail ?? String(err), variant: 'destructive' });
+    } finally {
+      setDislikeLoading(false);
+    }
+  };
+
+  const handleSubmitFeedback = async (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    const serverId = message.serverMessageId;
+    if (!serverId) return;
+    try {
+      await ChatApi.editFeedback(serverId, feedbackText ?? null, stars ?? null);
+      updateMessageInStore({ feedback: feedbackText ?? null, stars: stars ?? null });
+      setFeedbackOpen(false);
+      toast({ title: 'Feedback submitted' });
+    } catch (err: any) {
+      toast({ title: 'Failed to submit feedback', description: err?.data?.detail ?? String(err), variant: 'destructive' });
+    }
+  };
+
   return (
     <div className={`flex items-start space-x-2 md:space-x-3 ${isUser ? 'flex-row-reverse space-x-reverse' : ''}`}>
       {/* Avatar */}
@@ -69,8 +144,7 @@ export const MessageBubble = ({ message }: MessageBubbleProps) => {
                 <HoverCardContent className="w-80 p-4">
                   <div className="space-y-2">
                     <h4 className="font-semibold text-green-800 dark:text-green-400 flex items-center">
-                      <Shield className="h-4 w-4 mr-2" />
-                      Responsible AI Score: {message.responsibilityScore}%
+                      <Shield className="h-4 w-4 mr-2" /> Responsible AI Score: {message.responsibilityScore}%
                     </h4>
                     <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
                       {message.responsibilityReason}
@@ -154,6 +228,83 @@ export const MessageBubble = ({ message }: MessageBubbleProps) => {
           <div className={`mt-2 text-xs opacity-70 ${isUser ? 'text-right' : ''}`}>
             {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
           </div>
+
+          {/* Actions for assistant messages */}
+          {!isUser && (
+            <div className="mt-3 flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+              {/* Like */}
+              <button
+                type="button"
+                data-message-id={message.serverMessageId}
+                onClick={(e) => handleLike(e)}
+                disabled={!message.serverMessageId || likeLoading || dislikeLoading}
+                className={`${isLiked() ? 'font-semibold' : 'border rounded px-2 py-1'} flex items-center gap-2 text-sm`}
+                aria-label="Like message"
+              >
+                {likeLoading ? <Loader className="h-4 w-4 animate-spin" /> : <ThumbsUp className="h-4 w-4" />}
+                <span>Like</span>
+              </button>
+
+              {/* Dislike */}
+              <button
+                type="button"
+                data-message-id={message.serverMessageId}
+                onClick={(e) => handleDislike(e)}
+                disabled={!message.serverMessageId || likeLoading || dislikeLoading}
+                className={`${isDisliked() ? 'font-semibold' : 'border rounded px-2 py-1'} flex items-center gap-2 text-sm`}
+                aria-label="Dislike message"
+              >
+                {dislikeLoading ? <Loader className="h-4 w-4 animate-spin" /> : <ThumbsDown className="h-4 w-4" />}
+                <span>Dislike</span>
+              </button>
+
+              {/* Feedback */}
+              <button
+                type="button"
+                data-message-id={message.serverMessageId}
+                onClick={(e) => { e.stopPropagation(); setFeedbackOpen(true); }}
+                className={`border rounded px-2 py-1 flex items-center gap-2 text-sm`}
+                aria-label="Feedback"
+              >
+                <MessageSquare className="h-4 w-4" />
+                <span>Feedback</span>
+              </button>
+
+              {/* Show current stars if any */}
+              {message.stars ? (
+                <div className="ml-2 text-sm text-foreground flex items-center gap-1">
+                  <Star className="h-4 w-4 text-yellow-500" />
+                  <span className="font-medium">{message.stars}</span>
+                </div>
+              ) : null}
+
+              {/* Feedback Dialog */}
+              <Dialog open={feedbackOpen} onOpenChange={setFeedbackOpen}>
+                <DialogContent className="sm:max-w-[560px]">
+                  <DialogHeader>
+                    <DialogTitle>Provide feedback</DialogTitle>
+                  </DialogHeader>
+
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2">
+                      {[1,2,3,4,5].map((n) => (
+                        <button key={n} type="button" onClick={(ev) => { ev.stopPropagation(); setStars(n); }} className={`p-2 rounded ${stars === n ? 'bg-yellow-100' : 'hover:bg-gray-100'}`}>
+                          <Star className={`h-5 w-5 ${stars === n ? 'text-yellow-500' : 'text-muted-foreground'}`} />
+                        </button>
+                      ))}
+                    </div>
+
+                    <textarea value={feedbackText ?? ''} onChange={(e) => setFeedbackText(e.target.value)} className="w-full border p-2 rounded" rows={4} placeholder="Describe your feedback" />
+
+                    <div className="flex justify-end gap-2">
+                      <button type="button" onClick={(ev) => { ev.stopPropagation(); setFeedbackOpen(false); }} className="px-3 py-2 rounded border">Cancel</button>
+                      <button type="button" onClick={(ev) => handleSubmitFeedback(ev)} className="px-3 py-2 rounded bg-primary text-primary-foreground">Submit</button>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
+          )}
         </div>
       </div>
     </div>
