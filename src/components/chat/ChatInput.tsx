@@ -48,6 +48,7 @@ export const ChatInput = ({
   showSuggestions,
 }: ChatInputProps) => {
   const [message, setMessage] = useState("");
+  const [isFocused, setIsFocused] = useState(false);
   const { state, isMobile } = useSidebar();
 
   const handleSend = () => {
@@ -85,13 +86,16 @@ export const ChatInput = ({
   const suggestions = hasImage ? imageSuggestions : generalSuggestions;
 
   return (
-    // Floating wrapper positioned at the bottom of the chat area. It is centered and responsive.
     <div
       className={`chat-input-wrapper pointer-events-none z-40 absolute left-0 right-0 bottom-4 md:bottom-6 flex justify-center px-4`}
       aria-hidden={false}
     >
       <div
-        className={`chat-input-container relative z-30 pointer-events-auto w-full md:w-[min(60rem,calc(100%_-_4rem))] bg-white/40 dark:bg-slate-800/40 border border-slate-900/20 dark:border-white/20 backdrop-blur-md rounded-[16px] px-4 py-3 shadow-lg flex items-center gap-3`}
+        className={`chat-input-container relative z-30 pointer-events-auto w-full md:w-[min(60rem,calc(100%_-_4rem))] bg-white/40 dark:bg-slate-800/40 border backdrop-blur-md rounded-[16px] px-4 py-3 shadow-lg flex items-center gap-3 ${
+          isFocused
+            ? "border-green-400 dark:border-green-400/80"
+            : "border border-slate-900/20 dark:border-white/20"
+        }`}
         data-sidebar-state={state}
       >
         <div className="flex-1 relative">
@@ -121,8 +125,11 @@ export const ChatInput = ({
             value={message}
             onChange={handleInputChange}
             onKeyPress={handleKeyPress}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
             placeholder="Ask about the medical image or request analysis..."
-            className="min-h-[44px] md:min-h-[54px] pr-12 resize-none bg-transparent ring-0 border-0 text-sm md:text-base placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-0 focus-visible:border-none"
+            className="min-h-[24px] md:min-h-[24px] pr-12 resize-none bg-transparent ring-0 border-0 text-sm md:text-base placeholder:text-muted-foreground focus:outline-none focus:ring-0"
+            style={{ outline: "none", boxShadow: "none" }}
             disabled={disabled}
           />
         </div>

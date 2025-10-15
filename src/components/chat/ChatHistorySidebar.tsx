@@ -437,7 +437,7 @@ export const ChatHistorySidebar = ({
                                     {categoryInfo.label}
                                   </Badge>
                                 </div>
-                                <div className="flex items-center gap-1">
+                                <div className="flex items-center gap-2">
                                   <button
                                     className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded hover:bg-destructive/10 hover:text-destructive"
                                     onClick={(e) => {
@@ -464,7 +464,7 @@ export const ChatHistorySidebar = ({
                                       {truncateText(chat.title, 30)}
                                     </h4>
                                     <button
-                                      className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded hover:bg-accent/10"
+                                      className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded hover:bg-primary/10 hover:text-primary"
                                       onClick={(e) =>
                                         startEditing(chat.id, chat.title, e)
                                       }
@@ -479,7 +479,7 @@ export const ChatHistorySidebar = ({
                                       onChange={(e) =>
                                         setEditingTitle(e.target.value)
                                       }
-                                      className="flex-1"
+                                      className="flex-1 px-2 py-1 h-8"
                                       onClick={(
                                         e: React.MouseEvent<HTMLInputElement>
                                       ) => e.stopPropagation()}

@@ -10,6 +10,8 @@ import {
   Brain,
   ThumbsUp,
   ThumbsDown,
+  LucideThumbsDown,
+  LucideThumbsUp,
   Loader,
   MessageSquare,
   Star,
@@ -19,6 +21,12 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from "@/components/ui/popover";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { Badge } from "@/components/ui/badge";
 import {
   Accordion,
@@ -67,7 +75,11 @@ function parseAssistantContent(content: string) {
 }
 
 export const MessageBubble = ({ message }: MessageBubbleProps) => {
+  const isMobile = useIsMobile();
   const isUser = message.type === "user";
+  const isTouchDevice =
+    typeof window !== "undefined" && "ontouchstart" in window;
+  const preferPopover = isTouchDevice || isMobile;
   const sections = !isUser
     ? parseAssistantContent(message.content)
     : { think: null as string | null, answer: message.content };
@@ -116,7 +128,6 @@ export const MessageBubble = ({ message }: MessageBubbleProps) => {
     e?.stopPropagation();
     const serverId = message.serverMessageId;
     if (!serverId) return;
-    // Backend supports only boolean like/dislike; clicking Like always sets like=true
     setLikeLoading(true);
     setDislikeLoading(false);
     const previousLike = message.like ?? null;
@@ -211,46 +222,10 @@ export const MessageBubble = ({ message }: MessageBubbleProps) => {
           className={`relative inline-block p-3 md:p-4 rounded-2xl shadow-lg ${
             isUser
               ? "bg-secondary text-secondary-foreground rounded-br-sm border border-gray-600/20"
-              : "bg-card text-card-foreground rounded-bl-sm border border-gray-200/20"
+              : "bg-card text-card-foreground rounded-bl-sm border border-gray-200/20 pb-12"
           }`}
         >
-          {/* Responsibility AI Indicator for Assistant Messages */}
-          {!isUser && message.responsibilityScore && (
-            <div className="absolute -top-2 -right-2">
-              <HoverCard>
-                <HoverCardTrigger asChild>
-                  <div className="cursor-help">
-                    <Badge
-                      variant="secondary"
-                      className="bg-green-100 text-green-800 hover:bg-green-200 transition-colors flex items-center space-x-1"
-                    >
-                      <Info className="h-3 w-3" />
-                      <span className="text-xs font-medium">
-                        {message.responsibilityScore}%
-                      </span>
-                    </Badge>
-                  </div>
-                </HoverCardTrigger>
-                <HoverCardContent className="w-80 p-4">
-                  <div className="space-y-2">
-                    <h4 className="font-semibold text-green-800 dark:text-green-400 flex items-center">
-                      <Shield className="h-4 w-4 mr-2" /> Responsible AI Score:{" "}
-                      {message.responsibilityScore}%
-                    </h4>
-                    <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
-                      {message.responsibilityReason}
-                    </p>
-                    <div className="mt-3 text-xs text-gray-500 bg-gray-50 dark:text-gray-200 dark:bg-gray-800 p-2 rounded">
-                      <strong>Note:</strong> This score reflects adherence to
-                      ethical AI practices in medical contexts, including
-                      appropriate disclaimers and professional consultation
-                      recommendations.
-                    </div>
-                  </div>
-                </HoverCardContent>
-              </HoverCard>
-            </div>
-          )}
+          {/* responsibility badge moved to action bar below */}
 
           {/* Message Image */}
           {message.image && (
@@ -372,98 +347,192 @@ export const MessageBubble = ({ message }: MessageBubbleProps) => {
             })}
           </div>
 
-          {/* Actions for assistant messages */}
+          {/* Floating action bar for assistant messages */}
           {!isUser && (
-            <div
-              className="mt-3 flex items-center gap-2"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Like */}
-              <button
-                type="button"
-                data-message-id={message.serverMessageId}
-                onClick={(e) => handleLike(e)}
-                disabled={
-                  !message.serverMessageId || likeLoading || dislikeLoading
-                }
-                className={cn(
-                  "flex items-center gap-2 text-sm transition-colors",
-                  liked
-                    ? "text-foreground"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-                aria-label="Like message"
+            <div>
+              <div
+                className="absolute left-0 top-full mt-2 w-full px-3 py-2 flex items-center justify-between gap-2"
+                onClick={(e) => e.stopPropagation()}
               >
-                {likeLoading ? (
-                  <Loader className="h-4 w-4 animate-spin" />
-                ) : (
-                  <ThumbsUp
-                    className="h-4 w-4"
-                    fill={liked ? "currentColor" : "none"}
-                    strokeWidth={liked ? 0 : 1.5}
-                  />
-                )}
-              </button>
+                <div className="flex items-center gap-4">
+                  {preferPopover ? (
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <div className="cursor-help">
+                          <Badge
+                            variant="secondary"
+                            className="bg-green-100 text-green-800 hover:bg-green-200 transition-colors flex items-center space-x-1"
+                          >
+                            <Info className="h-3 w-3" />
+                            <span className="text-xs font-medium">
+                              {message.responsibilityScore}%
+                            </span>
+                          </Badge>
+                        </div>
+                      </PopoverTrigger>
+                      <PopoverContent
+                        side="right"
+                        align="end"
+                        className="w-60 p-2 rounded-xl"
+                      >
+                        <div className="space-y-2">
+                          <h5 className="font-semibold text-green-800 dark:text-green-400 flex items-center">
+                            <Shield className="h-4 w-4 mr-2" /> Responsible AI
+                            Score: {message.responsibilityScore}%
+                          </h5>
+                          <p className="text-[12px] text-gray-600 dark:text-gray-300 leading-relaxed">
+                            {message.responsibilityReason}
+                          </p>
+                          <div className="mt-3 text-[10px] text-gray-500 bg-gray-50 dark:text-gray-200 dark:bg-gray-800 p-2 rounded-lg">
+                            <strong>Note:</strong> This score reflects adherence
+                            to ethical AI practices in medical contexts,
+                            including appropriate disclaimers and professional
+                            consultation recommendations.
+                          </div>
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+                  ) : (
+                    <HoverCard>
+                      <HoverCardTrigger asChild>
+                        <div className="cursor-help">
+                          <Badge
+                            variant="secondary"
+                            className="bg-green-100 text-green-800 hover:bg-green-200 transition-colors flex items-center space-x-1"
+                          >
+                            <Info className="h-3 w-3" />
+                            <span className="text-xs font-medium">
+                              {message.responsibilityScore}%
+                            </span>
+                          </Badge>
+                        </div>
+                      </HoverCardTrigger>
+                      <HoverCardContent
+                        side="right"
+                        align="end"
+                        className="w-80 p-2 rounded-xl"
+                      >
+                        <div className="space-y-2">
+                          <h5 className="font-semibold text-green-800 dark:text-green-400 flex items-center">
+                            <Shield className="h-4 w-4 mr-2" /> Responsible AI
+                            Score: {message.responsibilityScore}%
+                          </h5>
+                          <p className="text-[12px] text-gray-600 dark:text-gray-300 leading-relaxed">
+                            {message.responsibilityReason}
+                          </p>
+                          <div className="mt-3 text-[10px] text-gray-500 bg-gray-50 dark:text-gray-200 dark:bg-gray-800 p-2 rounded-lg">
+                            <strong>Note:</strong> This score reflects adherence
+                            to ethical AI practices in medical contexts,
+                            including appropriate disclaimers and professional
+                            consultation recommendations.
+                          </div>
+                        </div>
+                      </HoverCardContent>
+                    </HoverCard>
+                  )}
 
-              {/* Dislike */}
-              <button
-                type="button"
-                data-message-id={message.serverMessageId}
-                onClick={(e) => handleDislike(e)}
-                disabled={
-                  !message.serverMessageId || likeLoading || dislikeLoading
-                }
-                className={cn(
-                  "flex items-center gap-2 text-sm transition-colors",
-                  disliked
-                    ? "text-foreground"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-                aria-label="Dislike message"
-              >
-                {dislikeLoading ? (
-                  <Loader className="h-4 w-4 animate-spin" />
-                ) : (
-                  <ThumbsDown
-                    className="h-4 w-4"
-                    fill={disliked ? "currentColor" : "none"}
-                    strokeWidth={disliked ? 0 : 1.5}
-                  />
-                )}
-              </button>
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      data-message-id={message.serverMessageId}
+                      onClick={(e) => handleLike(e)}
+                      disabled={
+                        !message.serverMessageId ||
+                        likeLoading ||
+                        dislikeLoading
+                      }
+                      className={cn(
+                        "flex items-center gap-2 text-sm transition-colors",
+                        liked
+                          ? "text-foreground"
+                          : "text-muted-foreground hover:text-foreground"
+                      )}
+                      aria-label="Like message"
+                    >
+                      {likeLoading ? (
+                        <Loader className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <LucideThumbsUp
+                          className={cn(
+                            "h-4 w-4",
+                            liked ? "text-green-500" : "text-muted-foreground"
+                          )}
+                          fill={liked ? "currentColor" : "none"}
+                          strokeWidth={1.5}
+                        />
+                      )}
+                    </button>
 
-              {/* Feedback */}
-              <button
-                type="button"
-                data-message-id={message.serverMessageId}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setFeedbackOpen(true);
-                }}
-                className={cn(
-                  "flex items-center gap-4 text-sm transition-colors",
-                  hasSubmittedFeedback
-                    ? "text-foreground"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-                aria-label="Feedback"
-              >
-                <MessageSquare
-                  className="h-4 w-4"
-                  fill={hasSubmittedFeedback ? "currentColor" : "none"}
-                  strokeWidth={hasSubmittedFeedback ? 0 : 1.5}
-                />
-              </button>
+                    <button
+                      type="button"
+                      data-message-id={message.serverMessageId}
+                      onClick={(e) => handleDislike(e)}
+                      disabled={
+                        !message.serverMessageId ||
+                        likeLoading ||
+                        dislikeLoading
+                      }
+                      className={cn(
+                        "flex items-center gap-2 text-sm transition-colors",
+                        disliked
+                          ? "text-foreground"
+                          : "text-muted-foreground hover:text-foreground"
+                      )}
+                      aria-label="Dislike message"
+                    >
+                      {dislikeLoading ? (
+                        <Loader className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <LucideThumbsDown
+                          className={cn(
+                            "h-4 w-4",
+                            disliked ? "text-red-500" : "text-muted-foreground"
+                          )}
+                          fill={disliked ? "currentColor" : "none"}
+                          strokeWidth={1.5}
+                        />
+                      )}
+                    </button>
 
-              {/* Show current stars if any */}
-              {message.stars ? (
-                <div className="text-sm text-foreground flex items-center gap-1">
-                  <Star className="h-4 w-4 text-yellow-500" />
-                  <span className="font-medium">{message.stars}</span>
+                    <button
+                      type="button"
+                      data-message-id={message.serverMessageId}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setFeedbackOpen(true);
+                      }}
+                      className={cn(
+                        "flex items-center gap-4 text-sm transition-colors",
+                        hasSubmittedFeedback
+                          ? "text-foreground"
+                          : "text-muted-foreground hover:text-foreground"
+                      )}
+                      aria-label="Feedback"
+                    >
+                      <MessageSquare
+                        className={cn(
+                          "h-4 w-4",
+                          hasSubmittedFeedback
+                            ? "text-blue-500"
+                            : "text-muted-foreground"
+                        )}
+                        fill={hasSubmittedFeedback ? "currentColor" : "none"}
+                        strokeWidth={1.5}
+                      />
+                    </button>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {message.stars ? (
+                      <div className="text-sm text-foreground flex items-center gap-1">
+                        <Star className="h-4 w-4 text-yellow-500" />
+                        <span className="font-medium">{message.stars}</span>
+                      </div>
+                    ) : null}
+                  </div>
                 </div>
-              ) : null}
+              </div>
 
-              {/* Feedback Dialog */}
+              {/* Feedback Dialog remains unchanged, render outside */}
               <Dialog open={feedbackOpen} onOpenChange={setFeedbackOpen}>
                 <DialogContent className="sm:max-w-[560px]">
                   <DialogHeader>
@@ -492,7 +561,6 @@ export const MessageBubble = ({ message }: MessageBubbleProps) => {
                             <Star
                               className="h-5 w-5 transition-colors"
                               fill={isActive ? "currentColor" : "none"}
-                              strokeWidth={isActive ? 0 : 1.5}
                             />
                           </button>
                         );
@@ -521,6 +589,7 @@ export const MessageBubble = ({ message }: MessageBubbleProps) => {
                       <Button
                         type="button"
                         onClick={(ev) => handleSubmitFeedback(ev)}
+                        disabled={isSubmittingFeedback}
                       >
                         <span>
                           {isSubmittingFeedback ? (

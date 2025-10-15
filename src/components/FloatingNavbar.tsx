@@ -12,7 +12,7 @@ import {
   PopoverTrigger,
   PopoverContent,
 } from "@/components/ui/popover";
-import { LogOut, User, Sun, Moon, Plus, Menu } from "lucide-react";
+import { LogOut, User, Sun, Moon, Plus, Menu, Loader } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useTheme } from "next-themes";
@@ -161,8 +161,15 @@ export function FloatingNavbar() {
                 </div>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout} disabled={isLoading}>
-                  <LogOut className="mr-2 h-4 w-4" />
-                  <span>Log out</span>
+                  {isLoading ? (
+                    <div className="flex flex-row items-center gap-2">
+                      <Loader className="h-4 w-4 animate-spin" /> Logging out...
+                    </div>
+                  ) : (
+                    <div className="flex flex-row items-center gap-2">
+                      <LogOut className="h-4 w-4" /> Log out
+                    </div>
+                  )}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

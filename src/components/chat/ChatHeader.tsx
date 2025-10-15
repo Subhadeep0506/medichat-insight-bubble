@@ -15,10 +15,10 @@ export const ChatHeader = (_props: ChatHeaderProps) => {
         </div>
         <div className="min-w-0 flex-1">
           <h1 className="text-lg md:text-xl font-semibold text-gray-900 dark:text-gray-100 truncate">
-            AI Mental Health Assistant
+            {_props.title}
           </h1>
           <p className="text-xs md:text-sm text-gray-600 dark:text-gray-300 hidden sm:block truncate">
-            {_props.title}
+            {`Chat session: ${_props.title}`}
           </p>
         </div>
       </div>

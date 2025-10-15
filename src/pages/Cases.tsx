@@ -1,11 +1,4 @@
 import React, { useEffect, useMemo, useState, useRef } from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -30,6 +23,7 @@ import {
   ChevronLeft,
   ChevronRight,
   MoreVertical,
+  ArrowRightIcon,
 } from "lucide-react";
 import {
   Popover,
@@ -430,7 +424,7 @@ const Cases = () => {
               </div>
 
               <div className="flex-1 overflow-y-auto">
-                <div className="space-y-2 my-2">
+                <div className="my-2">
                   {patientsLoading ? (
                     <div className="flex flex-col items-center justify-center py-12">
                       <Loader className="w-8 h-8 animate-spin text-muted-foreground" />
@@ -439,29 +433,38 @@ const Cases = () => {
                       </div>
                     </div>
                   ) : (
-                    paginatedPatients.map((patient) => (
-                      <div
-                        key={patient.id}
-                        className={cn(
-                          "m-1 px-2 py-1 rounded-md cursor-pointer border border-border",
-                          selectedPatient?.id === patient.id
-                            ? "bg-accent/10 ring-2 ring-primary"
-                            : "hover:bg-accent"
-                        )}
-                        onClick={() => {
-                          setSelectedPatient(patient);
-                          setExpandedPatient(patient.id);
-                        }}
-                      >
-                        <div>
-                          <div className="text-sm font-medium text-card-foreground">
-                            {patient.name}
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            {patient.gender ?? "—"}
+                    paginatedPatients.map((patient, idx) => (
+                      <React.Fragment key={patient.id}>
+                        <div
+                          className={cn(
+                            "px-3 py-2 cursor-pointer rounded-md",
+                            selectedPatient?.id === patient.id
+                              ? "bg-accent/100"
+                              : "hover:bg-accent"
+                          )}
+                          onClick={() => {
+                            setSelectedPatient(patient);
+                            setExpandedPatient(patient.id);
+                          }}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <div className="text-sm font-medium text-card-foreground">
+                                {patient.name}
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                {patient.gender ?? "—"}
+                              </div>
+                            </div>
+                            {selectedPatient?.id === patient.id ? (
+                              <ArrowRightIcon className="w-3 h-3 text-muted-foreground" />
+                            ) : null}
                           </div>
                         </div>
-                      </div>
+                        {idx < paginatedPatients.length - 1 && (
+                          <Separator className="my-0.5" />
+                        )}
+                      </React.Fragment>
                     ))
                   )}
 
@@ -546,18 +549,26 @@ const Cases = () => {
                           {selectedPatient.gender ?? "—"} • DOB:{" "}
                           {formatDateOfBirth(selectedPatient.dob)}
                         </div>
-                        <div className="text-sm text-muted-foreground mt-2">
+                        <div className="text-sm text-muted-foreground mt-1">
                           Age: {selectedPatient.age ?? "—"} | Height:{" "}
                           {selectedPatient.height ?? "—"} | Weight:{" "}
                           {selectedPatient.weight ?? "—"}
                         </div>
-                        <div className="mt-3 text-sm text-muted-foreground">
+                        <div className="mt-1 text-sm text-muted-foreground">
                           Medical history:{" "}
                           {selectedPatient.medicalHistory || "—"}
                         </div>
                       </div>
 
                       <div className="flex-shrink-0 flex items-center gap-2">
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => handleNewCase(selectedPatient.id)}
+                          aria-label="New case"
+                        >
+                          <Plus className="w-4 h-4" />
+                        </Button>
                         <Button
                           size="icon"
                           variant="ghost"
@@ -575,14 +586,6 @@ const Cases = () => {
                           aria-label="Delete patient"
                         >
                           <Trash2 className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          onClick={() => handleNewCase(selectedPatient.id)}
-                          aria-label="New case"
-                        >
-                          <Plus className="w-4 h-4" />
                         </Button>
                       </div>
                     </div>

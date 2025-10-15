@@ -81,7 +81,7 @@ const NewPatient = () => {
       const newPatient = await addPatient({
         name: data.name,
         age: parseInt(data.age, 10),
-        gender: data.gender ?? "male",
+        gender: data.gender ?? "Male",
         dob: data.dob?.toISOString?.() ?? null,
         height: data.height,
         weight: data.weight,
@@ -211,8 +211,8 @@ const NewPatient = () => {
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="male">Male</SelectItem>
-                              <SelectItem value="female">Female</SelectItem>
+                              <SelectItem value="Male">Male</SelectItem>
+                              <SelectItem value="Female">Female</SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />

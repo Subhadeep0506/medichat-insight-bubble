@@ -259,6 +259,12 @@ export const MedicalChatInterface = ({
       });
   }, [sessions, messagesBySession]);
 
+  const currentSessionTitle = useMemo(() => {
+    if (!currentSessionId) return "New Chat";
+    const s = sessions.find((ss) => ss.id === currentSessionId);
+    return s?.title || "Initial Session";
+  }, [currentSessionId, sessions]);
+
   const showPageSpinner = React.useMemo(() => {
     if (!caseId) return false;
     // if we don't yet know the patient for the case, show spinner
@@ -306,7 +312,7 @@ export const MedicalChatInterface = ({
         <div className="flex-1 flex flex-col rounded-lg border relative m-1.5">
           <div className="flex items-center gap-2 md:p-1 shadow-md rounded-t-lg backdrop-blur-lg">
             <SidebarTrigger />
-            <ChatHeader title="New Chat" />
+            <ChatHeader title={currentSessionTitle} />
           </div>
 
           <div className="flex-1 flex overflow-hidden">

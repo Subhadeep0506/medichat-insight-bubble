@@ -13,7 +13,7 @@ export interface Patient {
   id: ID;
   name: string;
   age?: number | null;
-  gender?: "male" | "female" | "other" | "unknown";
+  gender?: "Male" | "Female" | "Other" | "Unknown";
   dob?: string | null; // ISO date string
   height?: string | null;
   weight?: string | null;
