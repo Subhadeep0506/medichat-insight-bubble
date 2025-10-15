@@ -219,14 +219,12 @@ export const MessageBubble = ({ message }: MessageBubbleProps) => {
         }`}
       >
         <div
-          className={`relative inline-block p-3 md:p-4 rounded-2xl shadow-lg ${
+          className={`relative inline-block p-3 md:p-2 rounded-2xl shadow-lg ${
             isUser
               ? "bg-secondary text-secondary-foreground rounded-br-sm border border-gray-600/20"
-              : "bg-card text-card-foreground rounded-bl-sm border border-gray-200/20 pb-12"
+              : "bg-card text-card-foreground rounded-bl-sm border border-gray-200/20 pb-2 mb-6"
           }`}
         >
-          {/* responsibility badge moved to action bar below */}
-
           {/* Message Image */}
           {message.image && (
             <div className="mb-3">
@@ -351,7 +349,7 @@ export const MessageBubble = ({ message }: MessageBubbleProps) => {
           {!isUser && (
             <div>
               <div
-                className="absolute left-0 top-full mt-2 w-full px-3 py-2 flex items-center justify-between gap-2"
+                className="absolute left-0 top-full w-full px-3 py-2 flex items-center justify-between gap-2"
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="flex items-center gap-4">
