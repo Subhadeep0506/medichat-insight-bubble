@@ -41,6 +41,24 @@ export const MedicalChatInterface = ({
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // Use the visual viewport height to avoid mobile browser chrome (address bar)
+  // shrinking/expanding the viewport and causing mismatched 100vh behavior.
+  React.useEffect(() => {
+    const setAppHeight = () => {
+      try {
+        document.documentElement.style.setProperty(
+          "--app-height",
+          `${window.innerHeight}px`
+        );
+      } catch (e) {
+        // ignore in non-browser environments
+      }
+    };
+    setAppHeight();
+    window.addEventListener("resize", setAppHeight);
+    return () => window.removeEventListener("resize", setAppHeight);
+  }, []);
+
   const {
     sessionsByCase,
     messagesBySession,
@@ -285,7 +303,10 @@ export const MedicalChatInterface = ({
   return (
     <SidebarProvider defaultOpen={true}>
       {/* Root padded so children can have a floating/margin look while staying within viewport height */}
-      <div className="flex h-screen w-full bg-background relative p-2 box-border">
+      <div
+        className="flex w-full bg-background relative p-2 box-border"
+        style={{ height: "var(--app-height)" }}
+      >
         {/* Sidebar wrapper: make sidebar full height inside the padded root so it appears floating */}
         <div className="h-full rounded-lg shadow-lg overflow-hidden">
           <ChatHistorySidebar
@@ -317,7 +338,7 @@ export const MedicalChatInterface = ({
         <div className="h-full flex-1 border rounded-lg shadow-lg overflow-hidden">
           <div className="flex-1 flex flex-col relative min-h-0 h-full box-border">
             <div className="flex items-center gap-2 md:p-1 rounded-t-l shadow-md backdrop-blur-lg">
-              <SidebarTrigger className="ml-2"/>
+              <SidebarTrigger className="ml-2" />
               <ChatHeader title={currentSessionTitle} />
             </div>
 
