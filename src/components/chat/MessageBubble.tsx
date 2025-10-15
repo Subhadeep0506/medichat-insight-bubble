@@ -193,7 +193,7 @@ export const MessageBubble = ({ message }: MessageBubbleProps) => {
 
   return (
     <div
-      className={`flex items-start space-x-2 md:space-x-3 ${
+      className={`flex items-start space-x-2 md:space-x-2 ${
         isUser ? "flex-row-reverse space-x-reverse" : ""
       }`}
     >
@@ -201,7 +201,7 @@ export const MessageBubble = ({ message }: MessageBubbleProps) => {
       <div
         className={`flex-shrink-0 w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center ${
           isUser
-            ? "bg-primary text-primary-foreground ml-4"
+            ? "bg-primary text-primary-foreground md:ml-2"
             : "bg-secondary text-secondary-foreground"
         }`}
       >
@@ -214,7 +214,7 @@ export const MessageBubble = ({ message }: MessageBubbleProps) => {
 
       {/* Message Content */}
       <div
-        className={`flex-1 max-w-[85%] md:max-w-[70%] ${
+        className={`flex-1 max-w-[85%] md:max-w-[85%] ${
           isUser ? "text-right" : ""
         }`}
       >
@@ -222,7 +222,7 @@ export const MessageBubble = ({ message }: MessageBubbleProps) => {
           className={`relative inline-block p-3 md:p-2 rounded-2xl shadow-lg ${
             isUser
               ? "bg-secondary text-secondary-foreground rounded-br-sm border border-gray-600/20"
-              : "bg-card text-card-foreground rounded-bl-sm border border-gray-200/20 pb-2 mb-6"
+              : "bg-card text-card-foreground rounded-bl-sm border border-gray-200/20 pb-2"
           }`}
         >
           {/* Message Image */}
@@ -335,7 +335,6 @@ export const MessageBubble = ({ message }: MessageBubbleProps) => {
             </ReactMarkdown>
           </div>
 
-          {/* Timestamp */}
           <div
             className={`mt-2 text-xs opacity-70 ${isUser ? "text-right" : ""}`}
           >
@@ -345,11 +344,12 @@ export const MessageBubble = ({ message }: MessageBubbleProps) => {
             })}
           </div>
 
+        </div>
           {/* Floating action bar for assistant messages */}
           {!isUser && (
             <div>
               <div
-                className="absolute left-0 top-full w-full px-3 py-2 flex items-center justify-between gap-2"
+                className="w-full px-3 py-2 flex items-center justify-between gap-2"
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="flex items-center gap-4">
@@ -606,7 +606,6 @@ export const MessageBubble = ({ message }: MessageBubbleProps) => {
               </Dialog>
             </div>
           )}
-        </div>
       </div>
     </div>
   );
