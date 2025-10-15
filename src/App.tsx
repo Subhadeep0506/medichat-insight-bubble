@@ -1,9 +1,11 @@
 import { Toaster } from "@/components/ui/toaster";
+import React, { useEffect } from "react";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
+import { useAuthStore } from "@/store";
 import Index from "./pages/Index";
 import Cases from "./pages/Cases";
 import NewCase from "./pages/NewCase";
@@ -17,32 +19,36 @@ const queryClient = new QueryClient();
 
 // Protected Route component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const isAuthenticated = localStorage.getItem("isAuthenticated") === "true";
-  return isAuthenticated ? <>{children}</> : <Navigate to="/login" />;
+  const user = useAuthStore((s) => s.user);
+  const token = useAuthStore((s) => s.access_token) || (typeof localStorage !== "undefined" ? localStorage.getItem("access_token") : null);
+  return (user || token) ? <>{children}</> : <Navigate to="/login" />;
 };
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/cases" element={<ProtectedRoute><Cases /></ProtectedRoute>} />
-            <Route path="/new-case" element={<ProtectedRoute><NewCase /></ProtectedRoute>} />
-            <Route path="/new-patient" element={<ProtectedRoute><NewPatient /></ProtectedRoute>} />
-            <Route path="/case/:caseId" element={<ProtectedRoute><CaseChat /></ProtectedRoute>} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </ThemeProvider>
-  </QueryClientProvider>
-);
+const App = () => {
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/cases" element={<ProtectedRoute><Cases /></ProtectedRoute>} />
+              <Route path="/new-case" element={<ProtectedRoute><NewCase /></ProtectedRoute>} />
+              <Route path="/new-patient" element={<ProtectedRoute><NewPatient /></ProtectedRoute>} />
+              <Route path="/case/:caseId" element={<ProtectedRoute><CaseChat /></ProtectedRoute>} />
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </ThemeProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;

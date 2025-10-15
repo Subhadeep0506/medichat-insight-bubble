@@ -1,93 +1,53 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { BackgroundGradientAnimation } from "@/components/ui/background-gradient-animation";
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
-import { Sparkles, ShieldCheck, MessageSquare, Users, Star, LogIn, UserPlus as UserPlusIcon, FolderOpen, Bot, History, ImageUp, FileUp } from "lucide-react";
-
-const supportCategories = [
-  {
-    title: "Young People",
-    description: "Resources and guidance for young people to manage their wellbeing.",
-    placeholder: "image-placeholder-1",
-    image: "assets/Teenager-amico.png",
-    color: "#fef3c7",
-  },
-  {
-    title: "Faith & Belief Communities",
-    description: "Support options reflecting a variety of backgrounds.",
-    placeholder: "image-placeholder-2",
-    image: "assets/Community-amico.png",
-    color: "#ede9fe",
-  },
-  {
-    title: "Parents & Carers",
-    description: "Dedicated help for those caring for loved ones.",
-    placeholder: "image-placeholder-3",
-    image: "assets/Medical care-pana.png",
-    color: "#dbeafe",
-  },
-  {
-    title: "Employers & Employees",
-    description: "Wellbeing resources tailored for workplace situations.",
-    placeholder: "image-placeholder-4",
-    image: "assets/New employee-amico.png",
-    color: "#d1fae5",
-  },
-];
-
-const selfAssessments = [
-  {
-    title: "Anxiety",
-    description: "Feeling anxious, can't switch off?",
-    placeholder: "assessment-image-1",
-    image: "assets/Anxiety-rafiki.png",
-    color: "#f9e2d2",
-  },
-  {
-    title: "Sleep",
-    description: "Trouble sleeping or insomnia?",
-    placeholder: "assessment-image-2",
-    image: "assets/Sleep analysis-amico.png",
-    color: "#dbeafe",
-  },
-  {
-    title: "Depression",
-    description: "Feeling low and without motivation?",
-    placeholder: "assessment-image-3",
-    image: "assets/Feeling Blue-amico.png",
-    color: "#ede9fe",
-  },
-  {
-    title: "Stress",
-    description: "Feeling stressed or pressured?",
-    placeholder: "assessment-image-4",
-    image: "assets/Stress-amico.png",
-    color: "#d1fae5",
-  },
-];
-
-const testimonials = [
-  {
-    quote:
-      "This platform makes it easy to support our team’s wellbeing with real, practical tools.",
-    author: "Amelia, HR Lead",
-  },
-  {
-    quote: "The chat and case tracking helped me structure my care journey.",
-    author: "Ross, Patient",
-  },
-  {
-    quote: "Clean, fast, and empowering. Exactly what mental health tooling should be.",
-    author: "Priya, Therapist",
-  },
-];
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from "@/components/ui/popover";
+import {
+  Sparkles,
+  ShieldCheck,
+  MessageSquare,
+  Users,
+  Star,
+  LogIn,
+  UserPlus as UserPlusIcon,
+  FolderOpen,
+  Bot,
+  History,
+  ImageUp,
+  FileUp,
+  Menu,
+} from "lucide-react";
+import {
+  supportCategories,
+  selfAssessments,
+  testimonials,
+} from "@/types/constants";
 
 const Navbar = () => {
   const navigate = useNavigate();
   const [scrolled, setScrolled] = useState(false);
+
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -96,45 +56,171 @@ const Navbar = () => {
   }, []);
 
   return (
-    <nav
-      className={`fixed top-0 left-0 w-full z-30 transition-all duration-300 ${scrolled
-          ? "backdrop-blur-md supports-[backdrop-filter]:bg-transparent dark:supports-[backdrop-filter]:bg-slate-900/60 bg-white/80 dark:bg-slate-900/70 shadow-md"
-          : "bg-transparent"
+    <>
+      <nav
+        className={`fixed top-0 left-0 w-full z-30 transition-all duration-300 ${
+          scrolled
+            ? "backdrop-blur-md supports-[backdrop-filter]:bg-white/60 dark:supports-[backdrop-filter]:bg-slate-900/60 bg-white/80 dark:bg-slate-900/70 shadow-sm"
+            : "bg-transparent"
         }`}
-    >
-      <div className="max-w-7xl mx-auto flex items-center justify-between py-4 px-6">
-        <span className={`text-2xl font-bold text-[#0f172a] dark:text-white tracking-tight ${scrolled ? "text-slate-900" : "text-slate-100"}`}>
-          MindfulCare
-        </span>
-        <div className="hidden md:flex gap-6 items-center text-sm text-slate-700 dark:text-slate-200">
-          <button className={`hover:text-white-600 dark:hover:text-white ${scrolled ? "text-slate-900 dark:text-slate-100" : "text-slate-100"}`} onClick={() => window.scrollTo({ top: window.innerHeight, behavior: "smooth" })}>Features</button>
-          <button className={`hover:text-white-600 dark:hover:text-white ${scrolled ? "text-slate-900 dark:text-slate-100" : "text-slate-100"}`} onClick={() => window.scrollTo({ top: window.innerHeight * 1.6, behavior: "smooth" })}>Assessments</button>
-          <button className={`hover:text-white-600 dark:hover:text-white ${scrolled ? "text-slate-900 dark:text-slate-100" : "text-slate-100"}`} onClick={() => window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" })}>Contact</button>
-        </div>
-        <div className="flex gap-3 items-center">
-          <Button
-            size="sm"
-            className="bg-[#37a36c] text-white dark:bg-[#2a7d52] rounded-full px-6 font-semibold transition hover:bg-[#319c63] dark:hover:bg-[#319c63]"
-            onClick={() => navigate("/register")}
+      >
+        <div className="max-w-7xl mx-auto flex items-center justify-between py-4 px-6">
+          <span
+            className={`text-2xl font-bold text-[#0f172a] dark:text-white tracking-tight ${
+              scrolled ? "text-slate-900" : "text-slate-100"
+            }`}
           >
-            Get Started
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="border-[#37a36c] text-[#37a36c] rounded-full px-6 font-semibold bg-white transition hover:bg-[#cbeed5] dark:hover:text-[#37a36c]"
-            onClick={() => navigate("/login")}
-          >
-            Login
-          </Button>
+            MentalCare
+          </span>
+          <div className="hidden md:flex gap-6 items-center text-sm text-slate-700 dark:text-slate-200">
+            <button
+              className={`hover:text-white-200 dark:hover:text-white ${
+                scrolled
+                  ? "text-slate-900 dark:text-slate-200"
+                  : "text-slate-100"
+              }`}
+              onClick={() =>
+                window.scrollTo({ top: window.innerHeight, behavior: "smooth" })
+              }
+            >
+              Features
+            </button>
+            <button
+              className={`hover:text-white-200 dark:hover:text-white ${
+                scrolled
+                  ? "text-slate-900 dark:text-slate-200"
+                  : "text-slate-100"
+              }`}
+              onClick={() =>
+                window.scrollTo({
+                  top: window.innerHeight * 1.6,
+                  behavior: "smooth",
+                })
+              }
+            >
+              Assessments
+            </button>
+            <button
+              className={`hover:text-white-200 dark:hover:text-white ${
+                scrolled
+                  ? "text-slate-900 dark:text-slate-200"
+                  : "text-slate-100"
+              }`}
+              onClick={() =>
+                window.scrollTo({
+                  top: document.body.scrollHeight,
+                  behavior: "smooth",
+                })
+              }
+            >
+              Contact
+            </button>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="hidden lg:flex gap-3 items-center">
+              <Button
+                size="sm"
+                className="bg-[#37a36c] text-white dark:bg-[#2a7d52] rounded-full px-6 font-semibold transition hover:bg-[#319c63]"
+                onClick={() => navigate("/register")}
+              >
+                Get Started
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="border-[#37a36c] text-[#37a36c] rounded-full px-6 font-semibold bg-white transition hover:bg-[#cbeed5]"
+                onClick={() => navigate("/login")}
+              >
+                Login
+              </Button>
+            </div>
+
+            <Popover open={menuOpen} onOpenChange={setMenuOpen}>
+              <PopoverTrigger asChild>
+                <Button className="flex lg:hidden h-9 px-3 rounded-full bg-[#37a36c] text-white">
+                  <Menu className="h-4 w-4" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent
+                side="bottom"
+                align="end"
+                className="w-64 rounded-xl p-4"
+              >
+                <div className="flex flex-col gap-2">
+                  <Button
+                    variant="ghost"
+                    className="justify-start"
+                    onClick={() => {
+                      window.scrollTo({
+                        top: window.innerHeight,
+                        behavior: "smooth",
+                      });
+                      setMenuOpen(false);
+                    }}
+                  >
+                    Features
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    className="justify-start"
+                    onClick={() => {
+                      window.scrollTo({
+                        top: window.innerHeight * 1.6,
+                        behavior: "smooth",
+                      });
+                      setMenuOpen(false);
+                    }}
+                  >
+                    Assessments
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    className="justify-start"
+                    onClick={() => {
+                      window.scrollTo({
+                        top: document.body.scrollHeight,
+                        behavior: "smooth",
+                      });
+                      setMenuOpen(false);
+                    }}
+                  >
+                    Contact
+                  </Button>
+                  <div className="border-t my-2" />
+                  <Button
+                    size="sm"
+                    className="bg-[#37a36c] text-white dark:bg-[#2a7d52] rounded-full px-6 font-semibold transition hover:bg-[#319c63]"
+                    onClick={() => navigate("/register")}
+                  >
+                    Get Started
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="border-[#37a36c] text-[#37a36c] rounded-full px-6 font-semibold bg-white transition hover:bg-[#cbeed5]"
+                    onClick={() => navigate("/login")}
+                  >
+                    Login
+                  </Button>
+                </div>
+              </PopoverContent>
+            </Popover>
+          </div>
         </div>
-      </div>
-    </nav>
+      </nav>
+    </>
   );
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const Feature = ({ icon: Icon, title, desc }: { icon: any; title: string; desc: string }) => (
+const Feature = ({
+  icon: Icon,
+  title,
+  desc,
+}: {
+  icon: any;
+  title: string;
+  desc: string;
+}) => (
   <Card className="bg-white/60 dark:bg-slate-900/60 backdrop-blur border-border">
     <CardHeader className="space-y-1">
       <div className="flex items-center gap-3">
@@ -143,19 +229,31 @@ const Feature = ({ icon: Icon, title, desc }: { icon: any; title: string; desc: 
         </div>
         <CardTitle className="text-lg">{title}</CardTitle>
       </div>
-      <CardDescription className="pt-1 text-slate-600 dark:text-slate-400">{desc}</CardDescription>
+      <CardDescription className="pt-1 text-slate-600 dark:text-slate-400">
+        {desc}
+      </CardDescription>
     </CardHeader>
   </Card>
 );
 
 const Stat = ({ value, label }: { value: string; label: string }) => (
   <div className="text-center">
-    <div className="text-3xl font-bold text-slate-300 dark:text-white">{value}</div>
+    <div className="text-3xl font-bold text-slate-300 dark:text-white">
+      {value}
+    </div>
     <div className="text-sm text-slate-400 dark:text-slate-400">{label}</div>
   </div>
 );
 
-function Reveal({ children, className = "", delay = 0 }: { children: React.ReactNode; className?: string; delay?: number }) {
+function Reveal({
+  children,
+  className = "",
+  delay = 0,
+}: {
+  children: React.ReactNode;
+  className?: string;
+  delay?: number;
+}) {
   const ref = useRef<HTMLDivElement | null>(null);
   const [visible, setVisible] = useState(false);
 
@@ -181,7 +279,9 @@ function Reveal({ children, className = "", delay = 0 }: { children: React.React
     <div
       ref={ref}
       style={{ transitionDelay: `${delay}ms` }}
-      className={`transform transition-all duration-700 ease-out ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"} ${className}`}
+      className={`transform transition-all duration-700 ease-out ${
+        visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
+      } ${className}`}
     >
       {children}
     </div>
@@ -199,7 +299,7 @@ const Index = () => {
       <section className="relative">
         <BackgroundGradientAnimation
           interactive
-          containerClassName="h-[88vh] w-full"
+          containerClassName="w-full h-auto"
           className="relative"
         >
           <div className="absolute inset-0 bg-black/0" />
@@ -213,12 +313,13 @@ const Index = () => {
                 </Reveal>
                 <Reveal delay={100}>
                   <h1 className="text-slate-200 text-4xl md:text-6xl font-extrabold leading-tight tracking-tight">
-                    Compassionate mental health tools for modern care
+                    Mental health tools for modern care
                   </h1>
                 </Reveal>
                 <Reveal delay={200}>
                   <p className="mt-4 text-lg md:text-xl text-slate-400 dark:text-slate-300 max-w-xl">
-                    Chat, manage cases, and access evidence-based resources — all in one place designed for people and teams.
+                    Chat, manage cases, and access evidence-based resources —
+                    all in one place designed for people and teams.
                   </p>
                 </Reveal>
                 <Reveal delay={300}>
@@ -251,7 +352,11 @@ const Index = () => {
               </div>
               <Reveal delay={150}>
                 <div className="w-full flex justify-center">
-                  <img src="assets/Person with medical mask-pana.png" alt="Healthcare professional with mask" className="w-4/5 max-w-[520px] object-contain drop-shadow-2xl transition-transform duration-700 ease-out md:hover:scale-[1.03]" />
+                  <img
+                    src="assets/Person with medical mask-pana.png"
+                    alt="Healthcare professional with mask"
+                    className="w-4/5 max-w-[520px] object-contain drop-shadow-2xl transition-transform duration-700 ease-out md:hover:scale-[1.03]"
+                  />
                 </div>
               </Reveal>
             </div>
@@ -263,9 +368,21 @@ const Index = () => {
       <section className="max-w-7xl mx-auto px-6 mt-6 md:-mt-8 relative z-10">
         <Reveal>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Feature icon={Sparkles} title="AI-assisted chat" desc="Natural conversations to triage, reflect, and discover resources with guidance." />
-            <Feature icon={ShieldCheck} title="Privacy by design" desc="End-to-end secure flows with minimal data exposure and strong controls." />
-            <Feature icon={MessageSquare} title="Case tracking" desc="Create, update, and review patient cases with structured notes and history." />
+            <Feature
+              icon={Sparkles}
+              title="AI-assisted chat"
+              desc="Natural conversations to triage, reflect, and discover resources with guidance."
+            />
+            <Feature
+              icon={ShieldCheck}
+              title="Privacy by design"
+              desc="End-to-end secure flows with minimal data exposure and strong controls."
+            />
+            <Feature
+              icon={MessageSquare}
+              title="Case tracking"
+              desc="Create, update, and review patient cases with structured notes and history."
+            />
           </div>
         </Reveal>
       </section>
@@ -274,7 +391,9 @@ const Index = () => {
       <section className="max-w-7xl mx-auto px-6 mt-16">
         <Reveal>
           <h2 className="text-2xl font-bold mb-2">Everything you can do</h2>
-          <p className="text-slate-600 dark:text-slate-400 mb-6">A complete toolkit for clinicians, patients, and teams.</p>
+          <p className="text-slate-600 dark:text-slate-400 mb-6">
+            A complete toolkit for clinicians, patients, and teams.
+          </p>
         </Reveal>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <Reveal>
@@ -286,7 +405,9 @@ const Index = () => {
                   </div>
                   <CardTitle>Login & Registration</CardTitle>
                 </div>
-                <CardDescription>Secure sign-up and sign-in to access your workspace.</CardDescription>
+                <CardDescription>
+                  Secure sign-up and sign-in to access your workspace.
+                </CardDescription>
               </CardHeader>
               <CardContent className="pt-0 text-sm text-slate-600 dark:text-slate-400">
                 <ul className="list-disc pl-5 space-y-1">
@@ -306,7 +427,9 @@ const Index = () => {
                   </div>
                   <CardTitle>Patients</CardTitle>
                 </div>
-                <CardDescription>Add, view, and manage patient profiles.</CardDescription>
+                <CardDescription>
+                  Add, view, and manage patient profiles.
+                </CardDescription>
               </CardHeader>
               <CardContent className="pt-0 text-sm text-slate-600 dark:text-slate-400">
                 <ul className="list-disc pl-5 space-y-1">
@@ -326,7 +449,9 @@ const Index = () => {
                   </div>
                   <CardTitle>Cases per patient</CardTitle>
                 </div>
-                <CardDescription>Track conditions, notes, and updates per case.</CardDescription>
+                <CardDescription>
+                  Track conditions, notes, and updates per case.
+                </CardDescription>
               </CardHeader>
               <CardContent className="pt-0 text-sm text-slate-600 dark:text-slate-400">
                 <ul className="list-disc pl-5 space-y-1">
@@ -346,7 +471,9 @@ const Index = () => {
                   </div>
                   <CardTitle>Case chat</CardTitle>
                 </div>
-                <CardDescription>Start AI-powered conversations for each case.</CardDescription>
+                <CardDescription>
+                  Start AI-powered conversations for each case.
+                </CardDescription>
               </CardHeader>
               <CardContent className="pt-0 text-sm text-slate-600 dark:text-slate-400">
                 <ul className="list-disc pl-5 space-y-1">
@@ -366,7 +493,9 @@ const Index = () => {
                   </div>
                   <CardTitle>Sessions</CardTitle>
                 </div>
-                <CardDescription>Start new chats or continue earlier sessions.</CardDescription>
+                <CardDescription>
+                  Start new chats or continue earlier sessions.
+                </CardDescription>
               </CardHeader>
               <CardContent className="pt-0 text-sm text-slate-600 dark:text-slate-400">
                 <ul className="list-disc pl-5 space-y-1">
@@ -386,7 +515,9 @@ const Index = () => {
                   </div>
                   <CardTitle>Uploads (images & PDFs)</CardTitle>
                 </div>
-                <CardDescription>Attach scans and medical reports for context.</CardDescription>
+                <CardDescription>
+                  Attach scans and medical reports for context.
+                </CardDescription>
               </CardHeader>
               <CardContent className="pt-0 text-sm text-slate-600 dark:text-slate-400">
                 <ul className="list-disc pl-5 space-y-1">
@@ -410,15 +541,19 @@ const Index = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {supportCategories.map((cat, idx) => (
             <Reveal key={idx} delay={idx * 60}>
-              <Card
-                className="bg-white/60 dark:bg-slate-900/60 backdrop-blur border-border hover:shadow-lg transition-all duration-300 group"
-              >
+              <Card className="bg-white/60 dark:bg-slate-900/60 backdrop-blur border-border hover:shadow-lg transition-all duration-300 group">
                 <CardContent className="p-4">
                   <div className="rounded-xl p-4 mb-4 flex items-center justify-center bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-900/10 group-hover:scale-[1.02] transition-transform">
-                    <img src={cat.image} className="h-28 object-contain" alt={cat.title} />
+                    <img
+                      src={cat.image}
+                      className="h-28 object-contain"
+                      alt={cat.title}
+                    />
                   </div>
                   <div className="font-semibold mb-1">{cat.title}</div>
-                  <div className="text-sm text-slate-600 dark:text-slate-400">{cat.description}</div>
+                  <div className="text-sm text-slate-600 dark:text-slate-400">
+                    {cat.description}
+                  </div>
                 </CardContent>
               </Card>
             </Reveal>
@@ -435,20 +570,40 @@ const Index = () => {
           {selfAssessments.map((sa, idx) => (
             <Reveal key={idx} delay={idx * 80}>
               <Card
-                className={`bg-white/60 dark:bg-slate-900/60 backdrop-blur border-border hover:shadow-lg transition-all duration-300 ${idx === 0 ? "md:col-span-2 md:row-span-2" : ""
-                  }`}
+                className={`bg-white/60 dark:bg-slate-900/60 backdrop-blur border-border hover:shadow-lg transition-all duration-300 ${
+                  idx === 0 ? "md:col-span-2 md:row-span-2" : ""
+                }`}
               >
                 <CardContent className="p-4 h-full flex flex-col">
-                  <div className={`rounded-xl flex items-center justify-center mb-3 ${idx === 0 ? "p-4 bg-blue-50 dark:bg-blue-900/20" : "p-4 bg-blue-50 dark:bg-blue-900/20"
-                    }`}>
+                  <div
+                    className={`rounded-xl flex items-center justify-center mb-3 ${
+                      idx === 0
+                        ? "p-4 bg-blue-50 dark:bg-blue-900/20"
+                        : "p-4 bg-blue-50 dark:bg-blue-900/20"
+                    }`}
+                  >
                     <img
                       src={sa.image}
-                      className={`${idx === 0 ? "h-24" : "h-24"} object-contain`}
+                      className={`${
+                        idx === 0 ? "h-24" : "h-24"
+                      } object-contain`}
                       alt={sa.title}
                     />
                   </div>
-                  <div className={`${idx === 0 ? "text-base" : "text-base"} font-semibold`}>{sa.title}</div>
-                  <div className={`${idx === 0 ? "text-sm" : "text-sm"} text-slate-600 dark:text-slate-400`}>{sa.description}</div>
+                  <div
+                    className={`${
+                      idx === 0 ? "text-base" : "text-base"
+                    } font-semibold`}
+                  >
+                    {sa.title}
+                  </div>
+                  <div
+                    className={`${
+                      idx === 0 ? "text-sm" : "text-sm"
+                    } text-slate-600 dark:text-slate-400`}
+                  >
+                    {sa.description}
+                  </div>
                 </CardContent>
               </Card>
             </Reveal>
@@ -472,14 +627,18 @@ const Index = () => {
                   <Card className="bg-white/60 dark:bg-slate-900/60 backdrop-blur border-border">
                     <CardContent className="p-6">
                       <p className="text-lg leading-relaxed">“{t.quote}”</p>
-                      <div className="mt-3 text-sm text-slate-600 dark:text-slate-400">— {t.author}</div>
+                      <div className="mt-3 text-sm text-slate-600 dark:text-slate-400">
+                        — {t.author}
+                      </div>
                     </CardContent>
                   </Card>
                 </CarouselItem>
               ))}
             </CarouselContent>
-            <CarouselPrevious />
-            <CarouselNext />
+            <div className="flex justify-center gap-2 mt-4">
+              <CarouselPrevious position="bottom" />
+              <CarouselNext position="bottom" />
+            </div>
           </Carousel>
         </div>
       </section>
@@ -490,14 +649,30 @@ const Index = () => {
           <Card className="bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-900/10 border-emerald-200 dark:border-emerald-900">
             <CardContent className="p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-6">
               <div>
-                <h3 className="text-2xl md:text-3xl font-bold">Start supporting mental wellbeing today</h3>
+                <h3 className="text-2xl md:text-3xl font-bold">
+                  Start supporting mental wellbeing today
+                </h3>
                 <p className="text-slate-700 dark:text-slate-300 mt-2 max-w-2xl">
-                  Create cases, chat securely, and access resources that make a difference. No credit card required.
+                  Create cases, chat securely, and access resources that make a
+                  difference. No credit card required.
                 </p>
               </div>
               <div className="flex gap-3">
-                <Button size="lg" className="rounded-full" onClick={() => navigate("/register")}>Get Started</Button>
-                <Button size="lg" variant="outline" className="rounded-full" onClick={() => navigate("/cases")}>View Cases</Button>
+                <Button
+                  size="lg"
+                  className="rounded-full"
+                  onClick={() => navigate("/register")}
+                >
+                  Get Started
+                </Button>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="rounded-full"
+                  onClick={() => navigate("/cases")}
+                >
+                  View Cases
+                </Button>
               </div>
             </CardContent>
           </Card>

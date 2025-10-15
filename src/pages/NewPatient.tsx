@@ -1,12 +1,18 @@
-import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { ArrowLeft, UserPlus, CalendarIcon } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { useToast } from '@/hooks/use-toast';
+import React, { useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { ArrowLeft, UserPlus, CalendarIcon, Loader } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 import {
   Form,
   FormControl,
@@ -14,35 +20,37 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
+} from "@/components/ui/form";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { Calendar } from '@/components/ui/calendar';
+} from "@/components/ui/select";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@/components/ui/popover';
-import { format } from 'date-fns';
-import { cn } from '@/lib/utils';
+} from "@/components/ui/popover";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
+import { usePatientsStore } from "@/store";
+import { v4 as uuidv4 } from "uuid";
 
 const formSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters'),
-  age: z.string().min(1, 'Age is required'),
-  gender: z.string().min(1, 'Gender is required'),
+  name: z.string().min(2, "Name must be at least 2 characters"),
+  age: z.string().min(1, "Age is required"),
+  gender: z.string().min(1, "Gender is required"),
   dob: z.date({
-    required_error: 'Date of birth is required',
+    required_error: "Date of birth is required",
   }),
-  height: z.string().min(1, 'Height is required'),
-  weight: z.string().min(1, 'Weight is required'),
+  height: z.string().min(1, "Height is required"),
+  weight: z.string().min(1, "Weight is required"),
   medicalHistory: z.string().optional(),
 });
 
@@ -56,12 +64,12 @@ const NewPatient = () => {
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: '',
-      age: '',
-      gender: '',
-      height: '',
-      weight: '',
-      medicalHistory: '',
+      name: "",
+      age: "",
+      gender: "",
+      height: "",
+      weight: "",
+      medicalHistory: "",
     },
   });
 
@@ -69,22 +77,27 @@ const NewPatient = () => {
     setIsSubmitting(true);
 
     try {
-      // Simulate patient creation - in a real app this would save to database
-      const newPatientId = `patient-${Date.now()}`;
-
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const { addPatient } = usePatientsStore.getState();
+      const newPatient = await addPatient({
+        name: data.name,
+        age: parseInt(data.age, 10),
+        gender: data.gender ?? "Male",
+        dob: data.dob?.toISOString?.() ?? null,
+        height: data.height,
+        weight: data.weight,
+        medicalHistory: data.medicalHistory,
+      });
 
       toast({
-        title: 'Patient Created Successfully',
-        description: `New patient ${data.name} has been added to the system.`,
+        title: "Patient Created Successfully",
+        description: `New patient ${newPatient.name} has been added to the system.`,
       });
-      navigate('/cases');
+      navigate("/cases");
     } catch (error) {
       toast({
-        title: 'Error',
-        description: 'Failed to create patient. Please try again.',
-        variant: 'destructive',
+        title: "Error",
+        description: "Failed to create patient. Please try again.",
+        variant: "destructive",
       });
     } finally {
       setIsSubmitting(false);
@@ -92,43 +105,59 @@ const NewPatient = () => {
   };
 
   const handleBack = () => {
-    navigate('/cases');
+    navigate("/cases");
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
       <div className="container mx-auto p-6">
         {/* Header */}
-        <div className="flex items-center gap-4 mb-8">
-          <Button variant="ghost" onClick={handleBack} className="flex items-center gap-2">
+        <div className="flex flex-col lg:flex-row items-start lg:items-center gap-4 mb-8">
+          <Button
+            variant="ghost"
+            onClick={handleBack}
+            className="flex items-center gap-2"
+          >
             <ArrowLeft className="w-4 h-4" />
             Back to Cases
           </Button>
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">Create New Patient</h1>
-            <p className="text-muted-foreground mt-2">Add a new patient to the system</p>
-          </div>
         </div>
 
         {/* Form Card */}
         <div className="max-w-2xl mx-auto">
+          <div className="my-4 mx-2">
+            <h1 className="text-3xl font-bold text-foreground">
+              Create New Patient
+            </h1>
+            <p className="text-muted-foreground mt-2">
+              Add a new patient to the system
+            </p>
+          </div>
           <Card className="border-border bg-card">
             <CardHeader>
-              <CardTitle className="text-xl text-card-foreground">Patient Information</CardTitle>
+              <CardTitle className="text-xl text-card-foreground">
+                Patient Information
+              </CardTitle>
               <CardDescription>
-                Please provide all required patient details to create a new patient record.
+                Please provide all required patient details to create a new
+                patient record.
               </CardDescription>
             </CardHeader>
             <CardContent>
               <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <form
+                  onSubmit={form.handleSubmit(onSubmit)}
+                  className="space-y-6"
+                >
                   {/* Name */}
                   <FormField
                     control={form.control}
                     name="name"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-card-foreground">Full Name *</FormLabel>
+                        <FormLabel className="text-card-foreground">
+                          Full Name *
+                        </FormLabel>
                         <FormControl>
                           <Input
                             placeholder="Enter patient's full name"
@@ -148,7 +177,9 @@ const NewPatient = () => {
                       name="age"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-card-foreground">Age *</FormLabel>
+                          <FormLabel className="text-card-foreground">
+                            Age *
+                          </FormLabel>
                           <FormControl>
                             <Input
                               type="number"
@@ -167,16 +198,21 @@ const NewPatient = () => {
                       name="gender"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-card-foreground">Gender *</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormLabel className="text-card-foreground">
+                            Gender *
+                          </FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                          >
                             <FormControl>
                               <SelectTrigger className="bg-background border-input">
                                 <SelectValue placeholder="Select gender" />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="male">Male</SelectItem>
-                              <SelectItem value="female">Female</SelectItem>
+                              <SelectItem value="Male">Male</SelectItem>
+                              <SelectItem value="Female">Female</SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />
@@ -190,8 +226,10 @@ const NewPatient = () => {
                     control={form.control}
                     name="dob"
                     render={({ field }) => (
-                      <FormItem className="flex flex-col min-w-96">
-                        <FormLabel className="text-card-foreground">Date of Birth *</FormLabel>
+                      <FormItem className="flex flex-col">
+                        <FormLabel className="text-card-foreground">
+                          Date of Birth *
+                        </FormLabel>
                         <Popover>
                           <PopoverTrigger asChild>
                             <FormControl>
@@ -217,7 +255,8 @@ const NewPatient = () => {
                               selected={field.value}
                               onSelect={field.onChange}
                               disabled={(date) =>
-                                date > new Date() || date < new Date("1900-01-01")
+                                date > new Date() ||
+                                date < new Date("1900-01-01")
                               }
                               initialFocus
                               className={cn("p-3 pointer-events-auto")}
@@ -239,7 +278,9 @@ const NewPatient = () => {
                       name="height"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-card-foreground">Height *</FormLabel>
+                          <FormLabel className="text-card-foreground">
+                            Height *
+                          </FormLabel>
                           <FormControl>
                             <Input
                               placeholder="e.g., 5'8&quot; or 173cm"
@@ -257,7 +298,9 @@ const NewPatient = () => {
                       name="weight"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-card-foreground">Weight *</FormLabel>
+                          <FormLabel className="text-card-foreground">
+                            Weight *
+                          </FormLabel>
                           <FormControl>
                             <Input
                               placeholder="e.g., 150lbs or 68kg"
@@ -277,7 +320,9 @@ const NewPatient = () => {
                     name="medicalHistory"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-card-foreground">Medical History</FormLabel>
+                        <FormLabel className="text-card-foreground">
+                          Medical History
+                        </FormLabel>
                         <FormControl>
                           <Textarea
                             placeholder="Enter any relevant medical history, allergies, medications, or chronic conditions..."
@@ -307,7 +352,7 @@ const NewPatient = () => {
                     >
                       {isSubmitting ? (
                         <>
-                          <UserPlus className="w-4 h-4 mr-2 animate-spin" />
+                          <Loader className="w-4 h-4 mr-2 animate-spin" />
                           Creating Patient...
                         </>
                       ) : (

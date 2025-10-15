@@ -532,8 +532,8 @@ const sidebarMenuButtonVariants = cva(
 )
 
 const SidebarMenuButton = React.forwardRef<
-  HTMLButtonElement,
-  React.ComponentProps<"button"> & {
+  HTMLDivElement,
+  React.ComponentProps<"div"> & {
     asChild?: boolean
     isActive?: boolean
     tooltip?: string | React.ComponentProps<typeof TooltipContent>
@@ -551,7 +551,7 @@ const SidebarMenuButton = React.forwardRef<
     },
     ref
   ) => {
-    const Comp = asChild ? Slot : "button"
+    const Comp = asChild ? Slot : "div"
     const { isMobile, state } = useSidebar()
 
     const button = (
@@ -562,6 +562,16 @@ const SidebarMenuButton = React.forwardRef<
         data-active={isActive}
         className={cn(sidebarMenuButtonVariants({ variant, size }), className)}
         {...props}
+        role={Comp === "div" ? "button" : undefined}
+        tabIndex={Comp === "div" ? 0 : undefined}
+        onKeyDown={(e: React.KeyboardEvent) => {
+          if (Comp === "div" && (e.key === "Enter" || e.key === " ")) {
+            e.preventDefault()
+            // Call the provided onClick if present
+            const maybeOnClick = (props as any).onClick
+            if (typeof maybeOnClick === "function") maybeOnClick(e as any)
+          }
+        }}
       />
     )
 

@@ -2,17 +2,19 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import type { User } from "@/types/domain";
 import { AuthApi } from "@/api/auth";
+import { setAccessTokenGetter, setRefreshTokenGetter } from "@/api/http";
 
 interface AuthState {
   user: User | null;
-  token: string | null;
+  access_token: string | null;
+  refresh_token: string | null;
   loading: boolean;
   error: string | null;
   login: (email: string, password: string) => Promise<void>;
-  register: (name: string, email: string, password: string) => Promise<void>;
+  register: (name: string, email: string, password: string, phone?: string) => Promise<string>;
   fetchMe: () => Promise<void>;
   logout: () => Promise<void>;
-  setToken: (token: string | null) => void;
+  setToken: (access_token: string | null, refresh_token: string | null) => void;
   setUser: (user: User | null) => void;
 }
 
@@ -20,36 +22,63 @@ export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
       user: null,
-      token: null,
+      access_token: null,
+      refresh_token: null,
       loading: false,
       error: null,
-      setToken: (token) => {
-        if (token) localStorage.setItem("auth_token", token);
-        else localStorage.removeItem("auth_token");
-        set({ token });
+      setToken: (access_token, refresh_token) => {
+        if (access_token && refresh_token) { localStorage.setItem("access_token", access_token); localStorage.setItem("refresh_token", refresh_token); }
+        else { localStorage.removeItem("access_token"); localStorage.removeItem("refresh_token"); }
+        set({ access_token, refresh_token });
+        setAccessTokenGetter(() => get().access_token || (typeof localStorage !== "undefined" ? localStorage.getItem("access_token") : null));
+        setRefreshTokenGetter(() => get().refresh_token || (typeof localStorage !== "undefined" ? localStorage.getItem("refresh_token") : null));
       },
       setUser: (user) => set({ user }),
       login: async (email, password) => {
         set({ loading: true, error: null });
         try {
-          const { user, token } = await AuthApi.login({ email, password });
-          get().setToken(token);
-          set({ user });
+          // Coerce and validate inputs to avoid sending non-string types
+          const emailStr = typeof email === 'string' ? email : String(email || '');
+          const passwordStr = typeof password === 'string' ? password : String(password || '');
+          if (!emailStr || !passwordStr) throw new Error('Invalid credentials');
+          const { access_token, refresh_token } = await AuthApi.login({ email: emailStr, password: passwordStr });
+          if (access_token) localStorage.setItem("access_token", access_token);
+          if (refresh_token) localStorage.setItem("refresh_token", refresh_token);
+          get().setToken(access_token, refresh_token);
+          try {
+            const me = await AuthApi.me();
+            set({
+              user: {
+                id: (me as any)?.user?.user_id || (me as any)?.id || "",
+                name: (me as any)?.user?.name || (me as any)?.name || "",
+                email: (me as any)?.user?.email || (me as any)?.email || "",
+                phone: (me as any)?.user?.phone || (me as any)?.phone || null,
+                role: (me as any)?.user?.role || (me as any)?.role || null,
+                avatarUrl: (me as any)?.user?.avatarUrl || (me as any)?.avatarUrl || null,
+              }
+            });
+          } catch (e: any) {
+            const msg = e.data.detail;
+            set({ error: msg });
+            throw e;
+          }
         } catch (e: any) {
-          set({ error: e?.data?.message || e?.message || "Login failed" });
+          console.log(e.data)
+          const msg = e.data.detail;
+          set({ error: msg });
           throw e;
         } finally {
           set({ loading: false });
         }
       },
-      register: async (name, email, password) => {
+      register: async (name, email, password, phone) => {
         set({ loading: true, error: null });
         try {
-          const { user, token } = await AuthApi.register({ name, email, password });
-          get().setToken(token);
-          set({ user });
+          const { message } = await AuthApi.register({ name, email, password, phone });
+          return message;
         } catch (e: any) {
-          set({ error: e?.data?.message || e?.message || "Registration failed" });
+          const msg = e.data.detail
+          set({ error: msg });
           throw e;
         } finally {
           set({ loading: false });
@@ -59,7 +88,16 @@ export const useAuthStore = create<AuthState>()(
         set({ loading: true, error: null });
         try {
           const me = await AuthApi.me();
-          set({ user: me });
+          set({
+            user: {
+              id: (me as any)?.user?.user_id || (me as any)?.id || "",
+              name: (me as any)?.user?.name || (me as any)?.name || "",
+              email: (me as any)?.user?.email || (me as any)?.email || "",
+              phone: (me as any)?.user?.phone || (me as any)?.phone || null,
+              role: (me as any)?.user?.role || (me as any)?.role || null,
+              avatarUrl: (me as any)?.user?.avatarUrl || (me as any)?.avatarUrl || null,
+            }
+          });
         } catch (e: any) {
           // silently ignore if not logged in
         } finally {
@@ -69,15 +107,50 @@ export const useAuthStore = create<AuthState>()(
       logout: async () => {
         try {
           await AuthApi.logout();
-        } catch (_) {}
-        get().setToken(null);
+        } catch (e: any) {
+          const msg = e.data.detail;
+          set({ error: msg });
+          throw e;
+        }
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("refresh_token");
+        get().setToken(null, null);
         set({ user: null });
       },
     }),
     {
       name: "auth-store",
       storage: createJSONStorage(() => localStorage),
-      partialize: (s) => ({ token: s.token, user: s.user }),
+      partialize: (s) => ({ token: s.access_token, user: s.user }),
     }
   )
 );
+
+// Listen for token refresh events emitted by the HTTP client and update the auth store
+if (typeof window !== "undefined") {
+  window.addEventListener("auth:refreshed", (ev: any) => {
+    try {
+      const detail = ev?.detail || {};
+      const access = detail?.access_token || null;
+      const refresh = detail?.refresh_token || null;
+      if (access) {
+        // update persisted state
+        useAuthStore.getState().setToken(access, refresh ?? useAuthStore.getState().refresh_token);
+      }
+    } catch (e) {
+      // ignore
+    }
+  });
+
+  // On refresh failure, clear auth and user state to force re-login
+  window.addEventListener("auth:refresh_failed", () => {
+    try {
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("refresh_token");
+      useAuthStore.getState().setToken(null, null);
+      useAuthStore.getState().setUser(null as any);
+    } catch (e) {
+      // ignore
+    }
+  });
+}

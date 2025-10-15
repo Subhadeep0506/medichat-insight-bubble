@@ -5,13 +5,15 @@ export interface User {
   name: string;
   email: string;
   avatarUrl?: string | null;
+  phone?: string | null;
+  role?: string | null;
 }
 
 export interface Patient {
   id: ID;
   name: string;
   age?: number | null;
-  gender?: "male" | "female" | "other" | "unknown";
+  gender?: "Male" | "Female" | "Other" | "Unknown";
   dob?: string | null; // ISO date string
   height?: string | null;
   weight?: string | null;
@@ -25,9 +27,10 @@ export interface CaseRecord {
   patientId: ID;
   title: string;
   description?: string | null;
-  status: "open" | "closed" | "on_hold";
   createdAt?: string;
   updatedAt?: string;
+  tags?: string[];
+  priority?: "low" | "medium" | "high";
 }
 
 export type Role = "user" | "admin" | "clinician";
@@ -48,6 +51,15 @@ export interface ChatMessage {
   content: string;
   createdAt?: string;
   attachments?: UploadAttachment[];
+  safetyScore?: number;
+  safetyLevel?: string;
+  safetyJustification?: string;
+
+  // Fields synced with backend session_messages table
+  serverMessageId?: string | null; // original database message_id
+  feedback?: string | null;
+  like?: string | null; // 'like' | 'dislike' | null
+  stars?: number | null;
 }
 
 export interface UploadAttachment {
@@ -60,7 +72,4 @@ export interface UploadAttachment {
 
 export interface ApiListResponse<T> {
   items: T[];
-  total?: number;
-  page?: number;
-  pageSize?: number;
 }

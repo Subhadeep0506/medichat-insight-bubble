@@ -8,7 +8,7 @@ interface PatientsState {
   selectedPatientId: ID | null;
   loading: boolean;
   error: string | null;
-  fetchPatients: (query?: { page?: number; pageSize?: number; search?: string }) => Promise<void>;
+  fetchPatients: () => Promise<void>;
   fetchPatient: (id: ID) => Promise<Patient>;
   addPatient: (data: Partial<Patient>) => Promise<Patient>;
   updatePatient: (id: ID, data: Partial<Patient>) => Promise<Patient>;
@@ -23,15 +23,16 @@ export const usePatientsStore = create<PatientsState>((set, get) => ({
   loading: false,
   error: null,
   selectPatient: (id) => set({ selectedPatientId: id }),
-  fetchPatients: async (query) => {
+  fetchPatients: async () => {
     set({ loading: true, error: null });
     try {
-      const res = await PatientsApi.list(query);
+      const res = await PatientsApi.list();
       const map: Record<ID, Patient> = {};
       res.items.forEach((p) => (map[p.id] = p));
       set({ patients: map, order: res.items.map((p) => p.id) });
     } catch (e: any) {
-      set({ error: e?.data?.message || e?.message || "Failed to load patients" });
+      const msg = e.data.detail;
+      set({ error: msg });
       throw e;
     } finally {
       set({ loading: false });
