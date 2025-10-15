@@ -284,62 +284,71 @@ export const MedicalChatInterface = ({
 
   return (
     <SidebarProvider defaultOpen={true}>
-      <div className="flex h-screen w-full bg-background relative">
-        <ChatHistorySidebar
-          chatHistories={chatHistories}
-          currentChatId={currentSessionId || null}
-          onSelectChat={handleSelectChat}
-          onNewChat={handleNewChat}
-          onDeleteChat={handleDeleteChat}
-          isLoadingSessions={chatLoading}
-          onEditChat={async (chatId: string, title: string) => {
-            if (!caseId) return;
-            try {
-              await updateSession(chatId, caseId, title);
-            } catch (e: any) {
-              toast({
-                title: "Failed to update session",
-                description: e.data?.detail ?? String(e),
-                variant: "destructive",
-              });
-            }
-          }}
-          onBackToCase={onBackToCase}
-          patient={patientData}
-          caseRecord={caseData}
-        />
+      {/* Root padded so children can have a floating/margin look while staying within viewport height */}
+      <div className="flex h-screen w-full bg-background relative p-2 box-border">
+        {/* Sidebar wrapper: make sidebar full height inside the padded root so it appears floating */}
+        <div className="h-full rounded-lg shadow-lg overflow-hidden">
+          <ChatHistorySidebar
+            chatHistories={chatHistories}
+            currentChatId={currentSessionId || null}
+            onSelectChat={handleSelectChat}
+            onNewChat={handleNewChat}
+            onDeleteChat={handleDeleteChat}
+            isLoadingSessions={chatLoading}
+            onEditChat={async (chatId: string, title: string) => {
+              if (!caseId) return;
+              try {
+                await updateSession(chatId, caseId, title);
+              } catch (e: any) {
+                toast({
+                  title: "Failed to update session",
+                  description: e.data?.detail ?? String(e),
+                  variant: "destructive",
+                });
+              }
+            }}
+            onBackToCase={onBackToCase}
+            patient={patientData}
+            caseRecord={caseData}
+          />
+        </div>
 
-        <div className="flex-1 flex flex-col rounded-lg border relative m-1.5">
-          <div className="flex items-center gap-2 md:p-1 shadow-md rounded-t-lg backdrop-blur-lg">
-            <SidebarTrigger />
-            <ChatHeader title={currentSessionTitle} />
-          </div>
-
-          <div className="flex-1 flex overflow-hidden">
-            <div className="flex-1 flex flex-col">
-              <ChatMessages
-                messages={uiMessages}
-                isLoading={isLoading}
-                messagesEndRef={messagesEndRef}
-              />
-
-              {/* Floating ChatInput is rendered inside the chat column so it overlays messages */}
-              <ChatInput
-                onSendMessage={handleSendMessage}
-                disabled={isLoading}
-                onTypingChange={setIsTyping}
-                onSuggestionSelect={(s) => handleSendMessage(s)}
-                hasImage={currentImages.length > 0}
-                showSuggestions={isTyping}
-              />
+        {/* Chat wrapper: full height so it floats inside the padded root and matches sidebar height */}
+        <div className="h-full flex-1 border rounded-lg shadow-lg overflow-hidden">
+          <div className="flex-1 flex flex-col relative min-h-0 h-full box-border">
+            <div className="flex items-center gap-2 md:p-1 rounded-t-l shadow-md backdrop-blur-lg">
+              <SidebarTrigger className="ml-2"/>
+              <ChatHeader title={currentSessionTitle} />
             </div>
-          </div>
-          {showPageSpinner && (
-            <div className="absolute inset-0 flex items-center justify-center bg-background/60 backdrop-blur-sm z-50">
-              <Loader className="h-6 w-6 animate-spin text-muted-foreground" />{" "}
-              Loading conversations. Please wait...
+
+            {/*<div className="flex-1 flex overflow-hidden"> */}
+            <div className="flex-1 min-h-0 flex overflow-hidden h-full">
+              {/*<div className="flex-1 flex flex-col"> */}
+              <div className="flex-1 min-h-0 flex flex-col h-full">
+                <ChatMessages
+                  messages={uiMessages}
+                  isLoading={isLoading}
+                  messagesEndRef={messagesEndRef}
+                />
+
+                {/* Floating ChatInput is rendered inside the chat column so it overlays messages */}
+                <ChatInput
+                  onSendMessage={handleSendMessage}
+                  disabled={isLoading}
+                  onTypingChange={setIsTyping}
+                  onSuggestionSelect={(s) => handleSendMessage(s)}
+                  hasImage={currentImages.length > 0}
+                  showSuggestions={isTyping}
+                />
+              </div>
             </div>
-          )}
+            {showPageSpinner && (
+              <div className="absolute inset-0 flex items-center justify-center bg-background/60 backdrop-blur-sm z-50">
+                <Loader className="h-6 w-6 animate-spin text-muted-foreground" />{" "}
+                Loading conversations. Please wait...
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </SidebarProvider>

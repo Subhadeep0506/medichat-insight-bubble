@@ -294,8 +294,8 @@ export const ChatHistorySidebar = ({
   }, [chatHistories]);
 
   return (
-    <Sidebar variant="floating" className="m-0 pr-0">
-      <SidebarHeader className="p-4 rounded-t-lg dark:bg-slate-900">
+    <Sidebar variant="floating" className="pr-0">
+      <SidebarHeader className=" rounded-t-lg dark:bg-slate-900">
         {isCollapsed ? (
           <Button
             variant="ghost"
@@ -574,7 +574,7 @@ export const ChatHistorySidebar = ({
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="p-4 border-t dark:bg-slate-900">
+      <SidebarFooter className="p-4 border-t rounded-b-lg dark:bg-slate-900">
         {!isCollapsed ? (
           <div className="space-y-3">
             {/* Profile Section */}
