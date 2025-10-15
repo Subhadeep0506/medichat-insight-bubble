@@ -211,8 +211,8 @@ export const ChatApi = {
   likeMessage: async (serverMessageId: string | null | undefined, action: 'like' | 'dislike') => {
     if (!serverMessageId) throw new Error('Message id missing');
     // backend expects boolean: true for like, false for dislike
-    const likeBool = action === 'like';
-    return await http.post(`/chat/like-message/${encodeURIComponent(String(serverMessageId))}`, undefined, { query: { like: likeBool } });
+    const likeAction = action;
+    return await http.post(`/chat/like-message/${encodeURIComponent(String(serverMessageId))}`, undefined, { query: { like: likeAction } });
   },
 
   // Edit feedback for a message (uses PUT /chat/edit-feedback/{message_id})

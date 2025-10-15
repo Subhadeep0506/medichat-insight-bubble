@@ -7,8 +7,10 @@ import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/h
 import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 import { ChatApi } from '@/api/chat';
 import { useChatStore } from '@/store';
+import { cn } from '@/lib/utils';
 import { toast } from '@/hooks/use-toast';
 
 interface MessageBubbleProps {
@@ -43,6 +45,7 @@ export const MessageBubble = ({ message }: MessageBubbleProps) => {
   const [likeLoading, setLikeLoading] = useState(false);
   const [dislikeLoading, setDislikeLoading] = useState(false);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
+  const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false);
   const [feedbackText, setFeedbackText] = useState<string | null>(message.feedback ?? null);
   const [stars, setStars] = useState<number | null>(message.stars ?? null);
 
@@ -57,8 +60,14 @@ export const MessageBubble = ({ message }: MessageBubbleProps) => {
     });
   };
 
-  const isLiked = () => message.like === 'like' || message.like === 'true' || message.like === true;
-  const isDisliked = () => message.like === 'dislike' || message.like === 'false' || message.like === false;
+  const isLiked = () => message.like === 'like' || message.like === 'true';
+  const isDisliked = () => message.like === 'dislike' || message.like === 'false';
+
+  const liked = isLiked();
+  const disliked = isDisliked();
+  const normalizedFeedback = typeof message.feedback === 'string' ? message.feedback.trim() : message.feedback;
+  const hasSubmittedFeedback = Boolean(normalizedFeedback || message.stars);
+  const selectedStars = stars ?? 0;
 
   const handleLike = async (e?: React.MouseEvent) => {
     e?.stopPropagation();
@@ -67,10 +76,12 @@ export const MessageBubble = ({ message }: MessageBubbleProps) => {
     // Backend supports only boolean like/dislike; clicking Like always sets like=true
     setLikeLoading(true);
     setDislikeLoading(false);
+    const previousLike = message.like ?? null;
+    updateMessageInStore({ like: 'like' });
     try {
       await ChatApi.likeMessage(serverId, 'like');
-      updateMessageInStore({ like: 'like' });
     } catch (err: any) {
+      updateMessageInStore({ like: previousLike ?? null });
       toast({ title: 'Failed to update like', description: err?.data?.detail ?? String(err), variant: 'destructive' });
     } finally {
       setLikeLoading(false);
@@ -83,10 +94,12 @@ export const MessageBubble = ({ message }: MessageBubbleProps) => {
     if (!serverId) return;
     setDislikeLoading(true);
     setLikeLoading(false);
+    const previousLike = message.like ?? null;
+    updateMessageInStore({ like: 'dislike' });
     try {
       await ChatApi.likeMessage(serverId, 'dislike');
-      updateMessageInStore({ like: 'dislike' });
     } catch (err: any) {
+      updateMessageInStore({ like: previousLike ?? null });
       toast({ title: 'Failed to update dislike', description: err?.data?.detail ?? String(err), variant: 'destructive' });
     } finally {
       setDislikeLoading(false);
@@ -94,6 +107,7 @@ export const MessageBubble = ({ message }: MessageBubbleProps) => {
   };
 
   const handleSubmitFeedback = async (e?: React.MouseEvent) => {
+    setIsSubmittingFeedback(true)
     e?.stopPropagation();
     const serverId = message.serverMessageId;
     if (!serverId) return;
@@ -105,24 +119,23 @@ export const MessageBubble = ({ message }: MessageBubbleProps) => {
     } catch (err: any) {
       toast({ title: 'Failed to submit feedback', description: err?.data?.detail ?? String(err), variant: 'destructive' });
     }
+    setIsSubmittingFeedback(false)
   };
 
   return (
     <div className={`flex items-start space-x-2 md:space-x-3 ${isUser ? 'flex-row-reverse space-x-reverse' : ''}`}>
       {/* Avatar */}
-      <div className={`flex-shrink-0 w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center ${
-        isUser ? 'bg-primary text-primary-foreground ml-4' : 'bg-secondary text-secondary-foreground'
-      }`}>
+      <div className={`flex-shrink-0 w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center ${isUser ? 'bg-primary text-primary-foreground ml-4' : 'bg-secondary text-secondary-foreground'
+        }`}>
         {isUser ? <User className="h-4 w-4 md:h-5 md:w-5" /> : <Bot className="h-4 w-4 md:h-5 md:w-5" />}
       </div>
 
       {/* Message Content */}
       <div className={`flex-1 max-w-[85%] md:max-w-[70%] ${isUser ? 'text-right' : ''}`}>
-        <div className={`relative inline-block p-3 md:p-4 rounded-2xl shadow-lg ${
-          isUser
-            ? 'bg-secondary text-secondary-foreground rounded-br-sm border border-gray-600/20'
-            : 'bg-card text-card-foreground rounded-bl-sm border border-gray-200/20'
-        }`}>
+        <div className={`relative inline-block p-3 md:p-4 rounded-2xl shadow-lg ${isUser
+          ? 'bg-secondary text-secondary-foreground rounded-br-sm border border-gray-600/20'
+          : 'bg-card text-card-foreground rounded-bl-sm border border-gray-200/20'
+          }`}>
           {/* Responsibility AI Indicator for Assistant Messages */}
           {!isUser && message.responsibilityScore && (
             <div className="absolute -top-2 -right-2">
@@ -204,17 +217,17 @@ export const MessageBubble = ({ message }: MessageBubbleProps) => {
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}
               components={{
-                h1: ({children}) => <h1 className="text-lg font-bold mb-2 text-foreground">{children}</h1>,
-                h2: ({children}) => <h2 className="text-base font-semibold mb-2 text-foreground">{children}</h2>,
-                h3: ({children}) => <h3 className="text-sm font-semibold mb-1 text-foreground">{children}</h3>,
-                p: ({children}) => <p className="mb-2 last:mb-0 text-foreground">{children}</p>,
-                ul: ({children}) => <ul className="list-disc list-outside pl-5 mb-2 space-y-1 text-foreground">{children}</ul>,
-                ol: ({children}) => <ol className="list-decimal list-outside pl-5 mb-2 space-y-1 text-foreground">{children}</ol>,
-                li: ({children}) => <li className="text-foreground">{children}</li>,
-                strong: ({children}) => <strong className="font-semibold text-foreground">{children}</strong>,
-                em: ({children}) => <em className="italic text-foreground">{children}</em>,
-                code: ({children}) => <code className="bg-muted px-1 py-0.5 rounded text-xs font-mono text-foreground">{children}</code>,
-                blockquote: ({children}) => <blockquote className="border-l-4 border-primary pl-4 italic text-muted-foreground">{children}</blockquote>,
+                h1: ({ children }) => <h1 className="text-lg font-bold mb-2 text-foreground">{children}</h1>,
+                h2: ({ children }) => <h2 className="text-base font-semibold mb-2 text-foreground">{children}</h2>,
+                h3: ({ children }) => <h3 className="text-sm font-semibold mb-1 text-foreground">{children}</h3>,
+                p: ({ children }) => <p className="mb-2 last:mb-0 text-foreground">{children}</p>,
+                ul: ({ children }) => <ul className="list-disc list-outside pl-5 mb-2 space-y-1 text-foreground">{children}</ul>,
+                ol: ({ children }) => <ol className="list-decimal list-outside pl-5 mb-2 space-y-1 text-foreground">{children}</ol>,
+                li: ({ children }) => <li className="text-foreground">{children}</li>,
+                strong: ({ children }) => <strong className="font-semibold text-foreground">{children}</strong>,
+                em: ({ children }) => <em className="italic text-foreground">{children}</em>,
+                code: ({ children }) => <code className="bg-muted px-1 py-0.5 rounded text-xs font-mono text-foreground">{children}</code>,
+                blockquote: ({ children }) => <blockquote className="border-l-4 border-primary pl-4 italic text-muted-foreground">{children}</blockquote>,
               }}
             >
               {sections.answer}
@@ -235,11 +248,21 @@ export const MessageBubble = ({ message }: MessageBubbleProps) => {
                 data-message-id={message.serverMessageId}
                 onClick={(e) => handleLike(e)}
                 disabled={!message.serverMessageId || likeLoading || dislikeLoading}
-                className={`${isLiked() ? 'font-semibold' : 'border rounded px-2 py-1'} flex items-center gap-2 text-sm`}
+                className={cn(
+                  'flex items-center gap-2 text-sm transition-colors',
+                  liked ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
+                )}
                 aria-label="Like message"
               >
-                {likeLoading ? <Loader className="h-4 w-4 animate-spin" /> : <ThumbsUp className="h-4 w-4" />}
-                <span>Like</span>
+                {likeLoading ? (
+                  <Loader className="h-4 w-4 animate-spin" />
+                ) : (
+                  <ThumbsUp
+                    className="h-4 w-4"
+                    fill={liked ? 'currentColor' : 'none'}
+                    strokeWidth={liked ? 0 : 1.5}
+                  />
+                )}
               </button>
 
               {/* Dislike */}
@@ -248,28 +271,47 @@ export const MessageBubble = ({ message }: MessageBubbleProps) => {
                 data-message-id={message.serverMessageId}
                 onClick={(e) => handleDislike(e)}
                 disabled={!message.serverMessageId || likeLoading || dislikeLoading}
-                className={`${isDisliked() ? 'font-semibold' : 'border rounded px-2 py-1'} flex items-center gap-2 text-sm`}
+                className={cn(
+                  'flex items-center gap-2 text-sm transition-colors',
+                  disliked ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
+                )}
                 aria-label="Dislike message"
               >
-                {dislikeLoading ? <Loader className="h-4 w-4 animate-spin" /> : <ThumbsDown className="h-4 w-4" />}
-                <span>Dislike</span>
+                {dislikeLoading ? (
+                  <Loader className="h-4 w-4 animate-spin" />
+                ) : (
+                  <ThumbsDown
+                    className="h-4 w-4"
+                    fill={disliked ? 'currentColor' : 'none'}
+                    strokeWidth={disliked ? 0 : 1.5}
+                  />
+                )}
               </button>
 
               {/* Feedback */}
               <button
                 type="button"
                 data-message-id={message.serverMessageId}
-                onClick={(e) => { e.stopPropagation(); setFeedbackOpen(true); }}
-                className={`border rounded px-2 py-1 flex items-center gap-2 text-sm`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setFeedbackOpen(true);
+                }}
+                className={cn(
+                  'flex items-center gap-4 text-sm transition-colors',
+                  hasSubmittedFeedback ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
+                )}
                 aria-label="Feedback"
               >
-                <MessageSquare className="h-4 w-4" />
-                <span>Feedback</span>
+                <MessageSquare
+                  className="h-4 w-4"
+                  fill={hasSubmittedFeedback ? 'currentColor' : 'none'}
+                  strokeWidth={hasSubmittedFeedback ? 0 : 1.5}
+                />
               </button>
 
               {/* Show current stars if any */}
               {message.stars ? (
-                <div className="ml-2 text-sm text-foreground flex items-center gap-1">
+                <div className="text-sm text-foreground flex items-center gap-1">
                   <Star className="h-4 w-4 text-yellow-500" />
                   <span className="font-medium">{message.stars}</span>
                 </div>
@@ -284,18 +326,55 @@ export const MessageBubble = ({ message }: MessageBubbleProps) => {
 
                   <div className="space-y-4">
                     <div className="flex items-center gap-2">
-                      {[1,2,3,4,5].map((n) => (
-                        <button key={n} type="button" onClick={(ev) => { ev.stopPropagation(); setStars(n); }} className={`p-2 rounded ${stars === n ? 'bg-yellow-100' : 'hover:bg-gray-100'}`}>
-                          <Star className={`h-5 w-5 ${stars === n ? 'text-yellow-500' : 'text-muted-foreground'}`} />
-                        </button>
-                      ))}
+                      {[1, 2, 3, 4, 5].map((n) => {
+                        const isActive = selectedStars >= n;
+                        return (
+                          <button
+                            key={n}
+                            type="button"
+                            onClick={(ev) => {
+                              ev.stopPropagation();
+                              setStars(n);
+                            }}
+                            className={cn(
+                              'inline-flex h-5 w-5 items-center justify-center bg-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-ring',
+                              isActive
+                                ? 'text-yellow-500 border-yellow-500'
+                                : 'text-muted-foreground hover:text-foreground hover:border-foreground/40'
+                            )}
+                          >
+                            <Star
+                              className="h-5 w-5 transition-colors"
+                              fill={isActive ? 'currentColor' : 'none'}
+                              strokeWidth={isActive ? 0 : 1.5}
+                            />
+                          </button>
+                        );
+                      })}
                     </div>
 
-                    <textarea value={feedbackText ?? ''} onChange={(e) => setFeedbackText(e.target.value)} className="w-full border p-2 rounded" rows={4} placeholder="Describe your feedback" />
+                    <textarea
+                      value={feedbackText ?? ''}
+                      onChange={(e) => setFeedbackText(e.target.value)}
+                      className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-ring placeholder:text-muted-foreground"
+                      rows={4}
+                      placeholder="Describe your feedback"
+                    />
 
                     <div className="flex justify-end gap-2">
-                      <button type="button" onClick={(ev) => { ev.stopPropagation(); setFeedbackOpen(false); }} className="px-3 py-2 rounded border">Cancel</button>
-                      <button type="button" onClick={(ev) => handleSubmitFeedback(ev)} className="px-3 py-2 rounded bg-primary text-primary-foreground">Submit</button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={(ev) => {
+                          ev.stopPropagation();
+                          setFeedbackOpen(false);
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                      <Button type="button" onClick={(ev) => handleSubmitFeedback(ev)}>
+                        <span>{isSubmittingFeedback ? <div className='flex items-center gap-1'><Loader className="h-4 w-4 animate-spin" /> Submitting...</div> : 'Submit'}</span>
+                      </Button>
                     </div>
                   </div>
                 </DialogContent>
