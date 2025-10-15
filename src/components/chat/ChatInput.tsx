@@ -1,8 +1,16 @@
-import React, { useState, KeyboardEvent, useEffect } from 'react';
-import { Send, Lightbulb, Stethoscope, Eye, Heart, Brain, Bone } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { useSidebar } from '@/components/ui/sidebar';
+import React, { useState, KeyboardEvent, useEffect } from "react";
+import {
+  Send,
+  Lightbulb,
+  Stethoscope,
+  Eye,
+  Heart,
+  Brain,
+  Bone,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { useSidebar } from "@/components/ui/sidebar";
 
 interface ChatInputProps {
   onSendMessage: (message: string) => void;
@@ -16,7 +24,7 @@ interface ChatInputProps {
 const generalSuggestions = [
   { icon: Stethoscope, text: "What type of medical scan should I upload?" },
   { icon: Eye, text: "How does this AI system analyze medical images?" },
-  { icon: Heart, text: "What are the limitations of AI in medical diagnosis?" }
+  { icon: Heart, text: "What are the limitations of AI in medical diagnosis?" },
 ];
 
 const imageSuggestions = [
@@ -25,7 +33,10 @@ const imageSuggestions = [
   { icon: Bone, text: "What anatomical structures are visible here?" },
   { icon: Heart, text: "Are there any areas of concern in this image?" },
   { icon: Stethoscope, text: "What follow-up tests might be recommended?" },
-  { icon: Lightbulb, text: "Can you explain the technical aspects of this scan?" }
+  {
+    icon: Lightbulb,
+    text: "Can you explain the technical aspects of this scan?",
+  },
 ];
 
 export const ChatInput = ({
@@ -34,15 +45,16 @@ export const ChatInput = ({
   onTypingChange,
   onSuggestionSelect,
   hasImage,
-  showSuggestions
+  showSuggestions,
 }: ChatInputProps) => {
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState("");
+  const [isFocused, setIsFocused] = useState(false);
   const { state, isMobile } = useSidebar();
 
   const handleSend = () => {
     if (message.trim() && !disabled) {
       onSendMessage(message.trim());
-      setMessage('');
+      setMessage("");
       onTypingChange?.(false);
     }
   };
@@ -65,7 +77,7 @@ export const ChatInput = ({
   }, [onTypingChange]);
 
   const handleKeyPress = (e: KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSend();
     }
@@ -74,13 +86,16 @@ export const ChatInput = ({
   const suggestions = hasImage ? imageSuggestions : generalSuggestions;
 
   return (
-    // Floating wrapper positioned at the bottom of the chat area. It is centered and responsive.
     <div
       className={`chat-input-wrapper pointer-events-none z-40 absolute left-0 right-0 bottom-4 md:bottom-6 flex justify-center px-4`}
       aria-hidden={false}
     >
       <div
-        className={`chat-input-container relative z-30 pointer-events-auto w-full md:w-[min(60rem,calc(100%_-_4rem))] bg-white/40 dark:bg-slate-800/40 border border-slate-900/20 dark:border-white/20 backdrop-blur-md rounded-[16px] px-4 py-3 shadow-lg flex items-center gap-3`}
+        className={`chat-input-container relative z-30 pointer-events-auto w-full md:w-[min(60rem,calc(100%_-_4rem))] bg-white/40 dark:bg-slate-800/40 border backdrop-blur-md rounded-[16px] px-4 py-3 shadow-lg flex items-center gap-3 ${
+          isFocused
+            ? "border-green-400 dark:border-green-400/80"
+            : "border border-slate-900/20 dark:border-white/20"
+        }`}
         data-sidebar-state={state}
       >
         <div className="flex-1 relative">
@@ -110,8 +125,11 @@ export const ChatInput = ({
             value={message}
             onChange={handleInputChange}
             onKeyPress={handleKeyPress}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
             placeholder="Ask about the medical image or request analysis..."
-            className="min-h-[44px] md:min-h-[54px] pr-12 resize-none bg-transparent ring-0 border-0 text-sm md:text-base placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-0 focus-visible:border-none"
+            className="min-h-[24px] md:min-h-[24px] pr-12 resize-none bg-transparent ring-0 border-0 text-sm md:text-base placeholder:text-muted-foreground focus:outline-none focus:ring-0"
+            style={{ outline: "none", boxShadow: "none" }}
             disabled={disabled}
           />
         </div>
@@ -125,7 +143,6 @@ export const ChatInput = ({
           <span className="hidden sm:inline">Send</span>
         </Button>
       </div>
-
     </div>
   );
 };

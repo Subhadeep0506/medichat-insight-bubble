@@ -2,7 +2,13 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { LogIn } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -27,16 +33,20 @@ const Login = () => {
       navigate("/cases");
     } catch (err: any) {
       const desc = err.data.detail;
-      toast({ title: "Login Failed", description: desc, variant: "destructive" });
+      toast({
+        title: "Login Failed",
+        description: desc,
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     }));
   };
 
@@ -57,15 +67,24 @@ const Login = () => {
                   <LogIn className="h-10 w-10 text-blue-600 dark:text-blue-400" />
                 </div>
               </div>
-              <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-1">Welcome Back</h1>
-              <p className="text-slate-800 dark:text-slate-300">Sign in to your MediCase account</p>
+              <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-1">
+                Welcome Back
+              </h1>
+              <p className="text-slate-800 dark:text-slate-300">
+                Sign in to your MediCase account
+              </p>
             </div>
 
             {/* Form */}
             <div className="p-8">
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="space-y-2">
-                  <Label htmlFor="username" className="text-slate-800 dark:text-slate-300 font-semibold">Email</Label>
+                  <Label
+                    htmlFor="username"
+                    className="text-slate-800 dark:text-slate-300 font-semibold"
+                  >
+                    Email
+                  </Label>
                   <Input
                     id="email"
                     name="email"
@@ -79,7 +98,12 @@ const Login = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="password" className="text-slate-800 dark:text-slate-300 font-semibold">Password</Label>
+                  <Label
+                    htmlFor="password"
+                    className="text-slate-800 dark:text-slate-300 font-semibold"
+                  >
+                    Password
+                  </Label>
                   <Input
                     id="password"
                     name="password"
@@ -102,7 +126,9 @@ const Login = () => {
               </form>
 
               <div className="mt-8 text-center">
-                <span className="text-slate-800 dark:text-slate-400">Don't have an account? </span>
+                <span className="text-slate-800 dark:text-slate-400">
+                  Don't have an account?{" "}
+                </span>
                 <button
                   onClick={() => navigate("/register")}
                   className="text-blue-600 hover:text-blue-700 font-semibold underline underline-offset-4 decoration-2 hover:decoration-blue-700 transition-colors"

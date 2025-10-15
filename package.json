@@ -8,7 +8,7 @@
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
-    "start:frontend": "vite -- --port $PORT",
+    "start:frontend": "vite",
     "start:backend": "nodemon --watch server --exec \"source ../backend/.venv/bin/activate && cd ../backend && uvicorn main:app --host 0.0.0.0 --port 8089\"",
     "dev": "concurrently bun:start:frontend bun:start:backend"
   },
@@ -32,7 +32,7 @@
     "@radix-ui/react-radio-group": "^1.2.0",
     "@radix-ui/react-scroll-area": "^1.1.0",
     "@radix-ui/react-select": "^2.1.1",
-    "@radix-ui/react-separator": "^1.1.0",
+    "@radix-ui/react-separator": "^1.1.7",
     "@radix-ui/react-slider": "^1.2.0",
     "@radix-ui/react-slot": "^1.1.0",
     "@radix-ui/react-switch": "^1.1.0",
