@@ -168,7 +168,10 @@ export function EditPatientDialog({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Gender</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select gender" />
@@ -233,7 +236,11 @@ export function EditPatientDialog({
                   <FormItem>
                     <FormLabel>Height (cm)</FormLabel>
                     <FormControl>
-                      <Input type="number" placeholder="Enter height in cm" {...field} />
+                      <Input
+                        type="number"
+                        placeholder="Enter height in cm"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -247,7 +254,11 @@ export function EditPatientDialog({
                   <FormItem>
                     <FormLabel>Weight (kg)</FormLabel>
                     <FormControl>
-                      <Input type="number" placeholder="Enter weight in kg" {...field} />
+                      <Input
+                        type="number"
+                        placeholder="Enter weight in kg"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

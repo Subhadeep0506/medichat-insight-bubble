@@ -2,7 +2,13 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { UserPlus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -47,8 +53,16 @@ const Register = () => {
     }
 
     try {
-      const message = await registerUser(formData.fullName, formData.email, formData.password, formData.phone);
-      toast({ title: "Registration Successful", description: message || "Your account has been created successfully!" });
+      const message = await registerUser(
+        formData.fullName,
+        formData.email,
+        formData.password,
+        formData.phone
+      );
+      toast({
+        title: "Registration Successful",
+        description: message || "Your account has been created successfully!",
+      });
       navigate("/login");
     } catch (err: any) {
       const desc = err.data.detail;
@@ -59,9 +73,9 @@ const Register = () => {
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     }));
   };
 
@@ -82,8 +96,12 @@ const Register = () => {
                   <UserPlus className="h-10 w-10 text-green-600 dark:text-green-400" />
                 </div>
               </div>
-              <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-1">Create Account</h1>
-              <p className="text-slate-800 dark:text-slate-300">Join MediCase to start managing medical cases</p>
+              <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-1">
+                Create Account
+              </h1>
+              <p className="text-slate-800 dark:text-slate-300">
+                Join MediCase to start managing medical cases
+              </p>
             </div>
 
             {/* Form */}
@@ -91,7 +109,12 @@ const Register = () => {
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="fullName" className="text-slate-800 dark:text-slate-300 font-semibold">Full Name</Label>
+                    <Label
+                      htmlFor="fullName"
+                      className="text-slate-800 dark:text-slate-300 font-semibold"
+                    >
+                      Full Name
+                    </Label>
                     <Input
                       id="fullName"
                       name="fullName"
@@ -105,7 +128,12 @@ const Register = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="phone" className="text-slate-800 dark:text-slate-300 font-semibold">Phone</Label>
+                    <Label
+                      htmlFor="phone"
+                      className="text-slate-800 dark:text-slate-300 font-semibold"
+                    >
+                      Phone
+                    </Label>
                     <Input
                       id="phone"
                       name="phone"
@@ -120,7 +148,12 @@ const Register = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-slate-800 dark:text-slate-300 font-semibold">Email</Label>
+                  <Label
+                    htmlFor="email"
+                    className="text-slate-800 dark:text-slate-300 font-semibold"
+                  >
+                    Email
+                  </Label>
                   <Input
                     id="email"
                     name="email"
@@ -135,7 +168,12 @@ const Register = () => {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="password" className="text-slate-800 dark:text-slate-300 font-semibold">Password</Label>
+                    <Label
+                      htmlFor="password"
+                      className="text-slate-800 dark:text-slate-300 font-semibold"
+                    >
+                      Password
+                    </Label>
                     <Input
                       id="password"
                       name="password"
@@ -149,7 +187,12 @@ const Register = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="confirmPassword" className="text-slate-800 dark:text-slate-300 font-semibold">Confirm Password</Label>
+                    <Label
+                      htmlFor="confirmPassword"
+                      className="text-slate-800 dark:text-slate-300 font-semibold"
+                    >
+                      Confirm Password
+                    </Label>
                     <Input
                       id="confirmPassword"
                       name="confirmPassword"
@@ -173,7 +216,9 @@ const Register = () => {
               </form>
 
               <div className="mt-8 text-center">
-                <span className="text-slate-800 dark:text-slate-400">Already have an account? </span>
+                <span className="text-slate-800 dark:text-slate-400">
+                  Already have an account?{" "}
+                </span>
                 <button
                   onClick={() => navigate("/login")}
                   className="text-green-600 hover:text-green-700 font-semibold underline underline-offset-4 decoration-2 hover:decoration-green-700 transition-colors"
@@ -192,4 +237,3 @@ const Register = () => {
 };
 
 export default Register;
-

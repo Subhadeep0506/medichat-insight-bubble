@@ -7,7 +7,11 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from "@/components/ui/popover";
 import { LogOut, User, Sun, Moon, Plus, Menu } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -28,11 +32,18 @@ export function FloatingNavbar() {
     setIsLoading(true);
     try {
       await logout();
-      toast({ title: "Logout Successful", description: "Goodbye! Visit Again" });
+      toast({
+        title: "Logout Successful",
+        description: "Goodbye! Visit Again",
+      });
       navigate("/");
     } catch (err: any) {
       const desc = err.data.detail;
-      toast({ title: "Logout Failed", description: desc, variant: "destructive" });
+      toast({
+        title: "Logout Failed",
+        description: desc,
+        variant: "destructive",
+      });
       navigate("/");
     } finally {
       setIsLoading(false);
@@ -59,10 +70,14 @@ export function FloatingNavbar() {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
               className="hidden lg:inline-flex h-10 w-10 mr-4"
             >
-              {theme === 'dark' ? <Sun className="h-10 w-10" /> : <Moon className="h-10 w-10" />}
+              {theme === "dark" ? (
+                <Sun className="h-10 w-10" />
+              ) : (
+                <Moon className="h-10 w-10" />
+              )}
             </Button>
 
             {/* Mobile/Tablet snackbar popover with New Patient + Theme */}
@@ -74,11 +89,28 @@ export function FloatingNavbar() {
               </PopoverTrigger>
               <PopoverContent align="end" sideOffset={8} className="w-56">
                 <div className="flex flex-col gap-2">
-                  <Button size="sm" className="w-full justify-start" onClick={() => { navigate('/new-patient'); }}>
+                  <Button
+                    size="sm"
+                    className="w-full justify-start"
+                    onClick={() => {
+                      navigate("/new-patient");
+                    }}
+                  >
                     <Plus className="w-3 h-3 mr-2" /> New Patient
                   </Button>
-                  <Button variant="ghost" className="w-full justify-start" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
-                    {theme === 'dark' ? <Sun className="w-4 h-4 mr-2" /> : <Moon className="w-4 h-4 mr-2" />} Toggle Theme
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start"
+                    onClick={() =>
+                      setTheme(theme === "dark" ? "light" : "dark")
+                    }
+                  >
+                    {theme === "dark" ? (
+                      <Sun className="w-4 h-4 mr-2" />
+                    ) : (
+                      <Moon className="w-4 h-4 mr-2" />
+                    )}{" "}
+                    Toggle Theme
                   </Button>
                 </div>
               </PopoverContent>
@@ -86,7 +118,10 @@ export function FloatingNavbar() {
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                <Button
+                  variant="ghost"
+                  className="relative h-10 w-10 rounded-full"
+                >
                   <Avatar className="h-10 w-10">
                     <AvatarFallback>
                       <User className="h-4 w-4" />
@@ -103,16 +138,24 @@ export function FloatingNavbar() {
                       </AvatarFallback>
                     </Avatar>
                     <div className="min-w-0">
-                      <p className="text-sm font-medium text-foreground truncate">{user?.name || "User"}</p>
-                      <p className="text-xs text-muted-foreground truncate">{user?.email || ""}</p>
+                      <p className="text-sm font-medium text-foreground truncate">
+                        {user?.name || "User"}
+                      </p>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {user?.email || ""}
+                      </p>
                     </div>
                   </div>
                   <div className="mt-2 rounded-lg border border-border bg-background px-3 py-2">
                     <div className="grid grid-cols-3 gap-y-1 text-xs">
                       <span className="text-muted-foreground">Role</span>
-                      <span className="col-span-2 text-foreground truncate">{user?.role || "—"}</span>
+                      <span className="col-span-2 text-foreground truncate">
+                        {user?.role || "—"}
+                      </span>
                       <span className="text-muted-foreground">Phone</span>
-                      <span className="col-span-2 text-foreground truncate">{user?.phone || "—"}</span>
+                      <span className="col-span-2 text-foreground truncate">
+                        {user?.phone || "—"}
+                      </span>
                     </div>
                   </div>
                 </div>

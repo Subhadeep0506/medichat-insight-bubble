@@ -44,7 +44,12 @@ interface EditCaseDialogProps {
   onCaseUpdate: (updatedCase: CaseRecord) => void;
 }
 
-export default function EditCaseDialog({ caseRecord, open, onOpenChange, onCaseUpdate }: EditCaseDialogProps) {
+export default function EditCaseDialog({
+  caseRecord,
+  open,
+  onOpenChange,
+  onCaseUpdate,
+}: EditCaseDialogProps) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const updateCase = useCasesStore((s) => s.updateCase);
@@ -87,10 +92,17 @@ export default function EditCaseDialog({ caseRecord, open, onOpenChange, onCaseU
         ...updated,
       } as CaseRecord);
 
-      toast({ title: "Case updated", description: "Case information has been updated." });
+      toast({
+        title: "Case updated",
+        description: "Case information has been updated.",
+      });
       onOpenChange(false);
     } catch (e) {
-      toast({ title: "Error", description: "Failed to update case.", variant: "destructive" });
+      toast({
+        title: "Error",
+        description: "Failed to update case.",
+        variant: "destructive",
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -108,73 +120,109 @@ export default function EditCaseDialog({ caseRecord, open, onOpenChange, onCaseU
 
   const tagColorMapRef = useRef<Map<string, number>>(new Map());
   const getRandomColorIndexFor = (s: string) => {
-      const existing = tagColorMapRef.current.get(s);
-      if (existing) return existing;
-      const idx = Math.floor(Math.random() * 12) + 1;
-      tagColorMapRef.current.set(s, idx);
-      return idx;
-    };
+    const existing = tagColorMapRef.current.get(s);
+    if (existing) return existing;
+    const idx = Math.floor(Math.random() * 12) + 1;
+    tagColorMapRef.current.set(s, idx);
+    return idx;
+  };
 
-  const removeEditTag = (tag: string) => setEditTags((t) => t.filter((x) => x !== tag));
+  const removeEditTag = (tag: string) =>
+    setEditTags((t) => t.filter((x) => x !== tag));
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[720px] max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+      <DialogContent
+        className="sm:max-w-[720px] max-h-[90vh] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
         <DialogHeader>
           <DialogTitle>Edit Case</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <FormField control={form.control} name="caseName" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Case Name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter case name" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
-              <FormField control={form.control} name="priority" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Priority</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger className="w-48">
-                        <SelectValue placeholder="Select priority" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="low">Low</SelectItem>
-                      <SelectItem value="medium">Medium</SelectItem>
-                      <SelectItem value="high">High</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
-              <div className="sm:col-span-2">
-                <FormField control={form.control} name="description" render={({ field }) => (
+              <FormField
+                control={form.control}
+                name="caseName"
+                render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Description</FormLabel>
+                    <FormLabel>Case Name</FormLabel>
                     <FormControl>
-                      <Textarea placeholder="Enter case description" {...field} />
+                      <Input placeholder="Enter case name" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
-                )} />
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="priority"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Priority</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger className="w-48">
+                          <SelectValue placeholder="Select priority" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="low">Low</SelectItem>
+                        <SelectItem value="medium">Medium</SelectItem>
+                        <SelectItem value="high">High</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="sm:col-span-2">
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Description</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="Enter case description"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
                 <div>
                   <FormLabel>Tags</FormLabel>
-                  <Input placeholder="Type a tag and press Enter" onKeyDown={onEditTagKeyDown} className="tag-input-field mt-2 w-full" />
+                  <Input
+                    placeholder="Type a tag and press Enter"
+                    onKeyDown={onEditTagKeyDown}
+                    className="tag-input-field mt-2 w-full"
+                  />
                   {editTags.length > 0 && (
                     <div className="tag-input-container mt-2">
                       {editTags.map((tag) => (
-                        <span key={tag} className={`tag-badge tag-color-${getRandomColorIndexFor(tag)} mr-2`}>
+                        <span
+                          key={tag}
+                          className={`tag-badge tag-color-${getRandomColorIndexFor(
+                            tag
+                          )} mr-2`}
+                        >
                           {tag}
-                          <button type="button" aria-label={`Remove ${tag}`} className="tag-remove ml-2" onClick={() => removeEditTag(tag)}>
+                          <button
+                            type="button"
+                            aria-label={`Remove ${tag}`}
+                            className="tag-remove ml-2"
+                            onClick={() => removeEditTag(tag)}
+                          >
                             ×
                           </button>
                         </span>
@@ -185,8 +233,16 @@ export default function EditCaseDialog({ caseRecord, open, onOpenChange, onCaseU
               </div>
 
               <div className="flex justify-end space-x-2 pt-4 sm:col-span-2">
-                <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-                <Button type="submit" disabled={isSubmitting}>{isSubmitting ? "Saving..." : "Save Changes"}</Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => onOpenChange(false)}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? "Saving..." : "Save Changes"}
+                </Button>
               </div>
             </div>
           </form>

@@ -1,8 +1,16 @@
-import React, { useState, KeyboardEvent, useEffect } from 'react';
-import { Send, Lightbulb, Stethoscope, Eye, Heart, Brain, Bone } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { useSidebar } from '@/components/ui/sidebar';
+import React, { useState, KeyboardEvent, useEffect } from "react";
+import {
+  Send,
+  Lightbulb,
+  Stethoscope,
+  Eye,
+  Heart,
+  Brain,
+  Bone,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { useSidebar } from "@/components/ui/sidebar";
 
 interface ChatInputProps {
   onSendMessage: (message: string) => void;
@@ -16,7 +24,7 @@ interface ChatInputProps {
 const generalSuggestions = [
   { icon: Stethoscope, text: "What type of medical scan should I upload?" },
   { icon: Eye, text: "How does this AI system analyze medical images?" },
-  { icon: Heart, text: "What are the limitations of AI in medical diagnosis?" }
+  { icon: Heart, text: "What are the limitations of AI in medical diagnosis?" },
 ];
 
 const imageSuggestions = [
@@ -25,7 +33,10 @@ const imageSuggestions = [
   { icon: Bone, text: "What anatomical structures are visible here?" },
   { icon: Heart, text: "Are there any areas of concern in this image?" },
   { icon: Stethoscope, text: "What follow-up tests might be recommended?" },
-  { icon: Lightbulb, text: "Can you explain the technical aspects of this scan?" }
+  {
+    icon: Lightbulb,
+    text: "Can you explain the technical aspects of this scan?",
+  },
 ];
 
 export const ChatInput = ({
@@ -34,15 +45,15 @@ export const ChatInput = ({
   onTypingChange,
   onSuggestionSelect,
   hasImage,
-  showSuggestions
+  showSuggestions,
 }: ChatInputProps) => {
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState("");
   const { state, isMobile } = useSidebar();
 
   const handleSend = () => {
     if (message.trim() && !disabled) {
       onSendMessage(message.trim());
-      setMessage('');
+      setMessage("");
       onTypingChange?.(false);
     }
   };
@@ -65,7 +76,7 @@ export const ChatInput = ({
   }, [onTypingChange]);
 
   const handleKeyPress = (e: KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSend();
     }
@@ -125,7 +136,6 @@ export const ChatInput = ({
           <span className="hidden sm:inline">Send</span>
         </Button>
       </div>
-
     </div>
   );
 };
