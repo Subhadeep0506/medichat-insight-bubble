@@ -91,13 +91,15 @@ const NewPatient = () => {
       toast({
         title: "Patient Created Successfully",
         description: `New patient ${newPatient.name} has been added to the system.`,
+        type: "info",
       });
       navigate("/cases");
     } catch (error) {
       toast({
         title: "Error",
         description: "Failed to create patient. Please try again.",
-        variant: "destructive",
+        // variant: "destructive",
+        type: "error",
       });
     } finally {
       setIsSubmitting(false);

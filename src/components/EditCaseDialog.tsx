@@ -95,13 +95,14 @@ export default function EditCaseDialog({
       toast({
         title: "Case updated",
         description: "Case information has been updated.",
+        type: "info",
       });
       onOpenChange(false);
     } catch (e) {
       toast({
         title: "Error",
         description: "Failed to update case.",
-        variant: "destructive",
+        type: "error",
       });
     } finally {
       setIsSubmitting(false);

@@ -112,13 +112,14 @@ export function EditPatientDialog({
       toast({
         title: "Patient updated successfully",
         description: "Patient information has been updated.",
+        type: "info",
       });
       onOpenChange(false);
     } catch (error) {
       toast({
         title: "Error",
         description: "Failed to update patient information.",
-        variant: "destructive",
+        type: "error",
       });
     } finally {
       setIsSubmitting(false);

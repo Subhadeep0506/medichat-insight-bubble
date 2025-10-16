@@ -1,18 +1,30 @@
 import * as React from "react"
 
+import type { ButtonProps } from "@/components/ui/button"
 import type {
   ToastActionElement,
   ToastProps,
 } from "@/components/ui/toast"
 
+export type ToastType = "default" | "info" | "success" | "error"
+
+export interface ToastButtonAction {
+  label: React.ReactNode
+  onPress?: () => void
+  variant?: ButtonProps["variant"]
+  dismissOnPress?: boolean
+}
+
 const TOAST_LIMIT = 1
 const TOAST_REMOVE_DELAY = 1000000
 
-type ToasterToast = ToastProps & {
+type ToasterToast = Omit<ToastProps, "type"> & {
   id: string
   title?: React.ReactNode
   description?: React.ReactNode
   action?: ToastActionElement
+  type?: ToastType
+  actions?: ToastButtonAction[]
 }
 
 const actionTypes = {
@@ -21,6 +33,13 @@ const actionTypes = {
   DISMISS_TOAST: "DISMISS_TOAST",
   REMOVE_TOAST: "REMOVE_TOAST",
 } as const
+
+const TOAST_TYPE_TO_VARIANT: Record<ToastType, ToastProps["variant"]> = {
+  default: "default",
+  info: "info",
+  success: "success",
+  error: "destructive",
+}
 
 let count = 0
 
@@ -139,13 +158,14 @@ function dispatch(action: Action) {
 
 type Toast = Omit<ToasterToast, "id">
 
-function toast({ ...props }: Toast) {
+function toast({ type, actions, variant, ...props }: Toast) {
   const id = genId()
+  const resolvedVariant = variant ?? (type ? TOAST_TYPE_TO_VARIANT[type] : undefined)
 
-  const update = (props: ToasterToast) =>
+  const update = (next: ToasterToast) =>
     dispatch({
       type: "UPDATE_TOAST",
-      toast: { ...props, id },
+      toast: { ...next, id },
     })
   const dismiss = () => dispatch({ type: "DISMISS_TOAST", toastId: id })
 
@@ -153,6 +173,9 @@ function toast({ ...props }: Toast) {
     type: "ADD_TOAST",
     toast: {
       ...props,
+      ...(resolvedVariant ? { variant: resolvedVariant } : {}),
+      ...(typeof type !== "undefined" ? { type } : {}),
+      ...(actions ? { actions } : {}),
       id,
       open: true,
       onOpenChange: (open) => {
