@@ -1013,7 +1013,7 @@ const Cases = () => {
               ) : (
                 "Delete"
               )}
-            </AlertDialogAction>
+git             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
