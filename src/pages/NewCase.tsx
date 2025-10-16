@@ -101,7 +101,8 @@ const NewCase = () => {
         toast({
           title: "Missing patient",
           description: "No patient selected for this case.",
-          variant: "destructive",
+          // variant: "destructive",
+          type: "error",
         });
         return;
       }
@@ -113,8 +114,9 @@ const NewCase = () => {
       });
 
       toast({
-        title: "Case Created Successfully",
+        title: "Case Created.",
         description: `New case ${created.id} has been created and is ready for analysis.`,
+        type: "info",
       });
 
       navigate(`/case/${created.id}`);
@@ -122,7 +124,8 @@ const NewCase = () => {
       toast({
         title: "Error",
         description: "Failed to create case. Please try again.",
-        variant: "destructive",
+        // variant: "destructive",
+        type: "error",
       });
     } finally {
       setIsSubmitting(false);

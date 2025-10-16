@@ -29,14 +29,22 @@ const Login = () => {
     setIsLoading(true);
     try {
       await login(formData.email, formData.password);
-      toast({ title: "Login Successful", description: "Welcome back!" });
+      toast({
+        title: "Login Successful",
+        description: "Welcome back!",
+        type: "success",
+      });
+      // Info toasts now use a blue theme (alongside success/destructive variants); choose with toast({ type: "info" | "success" | "error" }).
+      // Pass buttons through actions: [{ label, onPress, variant?, dismissOnPress? }] to render clickable CTA(s) inside each toast.
+      // Tests not run (styling/API update only).
       navigate("/cases");
     } catch (err: any) {
       const desc = err.data.detail;
       toast({
         title: "Login Failed",
         description: desc,
-        variant: "destructive",
+        // variant: "destructive",
+        type: "error",
       });
     } finally {
       setIsLoading(false);

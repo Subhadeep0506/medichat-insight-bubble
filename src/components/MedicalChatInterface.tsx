@@ -150,7 +150,8 @@ export const MedicalChatInterface = ({
         toast({
           title: "Failed to load patient",
           description: e.data.detail,
-          variant: "destructive",
+          // variant: "destructive",
+          type: "error",
         });
       }
     };
@@ -173,7 +174,8 @@ export const MedicalChatInterface = ({
         toast({
           title: "Failed to load patient",
           description: e.data.detail,
-          variant: "destructive",
+          // variant: "destructive",
+          type: "error",
         });
       }
     };
@@ -198,7 +200,8 @@ export const MedicalChatInterface = ({
         toast({
           title: "Failed to load patient",
           description: e.data.detail,
-          variant: "destructive",
+          // variant: "destructive",
+          type: "error",
         });
       }
     };
@@ -324,7 +327,8 @@ export const MedicalChatInterface = ({
                 toast({
                   title: "Failed to update session",
                   description: e.data?.detail ?? String(e),
-                  variant: "destructive",
+                  // variant: "destructive",
+                  type: "error",
                 });
               }
             }}

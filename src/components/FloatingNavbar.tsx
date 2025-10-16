@@ -35,6 +35,7 @@ export function FloatingNavbar() {
       toast({
         title: "Logout Successful",
         description: "Goodbye! Visit Again",
+        type: "success",
       });
       navigate("/");
     } catch (err: any) {
@@ -42,7 +43,7 @@ export function FloatingNavbar() {
       toast({
         title: "Logout Failed",
         description: desc,
-        variant: "destructive",
+        type: "error",
       });
       navigate("/");
     } finally {

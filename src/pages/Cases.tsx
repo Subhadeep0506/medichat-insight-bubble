@@ -133,7 +133,8 @@ const Cases = () => {
       toast({
         title: "Failed to fetch patients.",
         description: error.data.detail,
-        variant: "destructive",
+        // variant: "destructive",
+        type: "error",
       });
     });
   }, [fetchPatients, deletingPatient, toast]);
@@ -931,7 +932,7 @@ const Cases = () => {
                 setDeletingPatient(true);
                 try {
                   await deletePatient(patientToDelete);
-                  toast({ title: "Patient deleted." });
+                  toast({ title: "Patient deleted.", type: "success" });
                   if (selectedPatient?.id === patientToDelete)
                     setSelectedPatient(null);
                   if (expandedPatient === patientToDelete)
@@ -940,7 +941,8 @@ const Cases = () => {
                   toast({
                     title: "Patient delete failed.",
                     description: err?.data?.details ?? String(err),
-                    variant: "destructive",
+                    // variant: "destructive",
+                    type: "error",
                   });
                 } finally {
                   setDeletingPatient(false);
@@ -981,12 +983,13 @@ const Cases = () => {
                   );
                   if (!pid) throw new Error("Patient for case not found");
                   await deleteCase(pid, caseToDelete);
-                  toast({ title: "Case deleted." });
+                  toast({ title: "Case deleted.", type: "success" });
                 } catch (err: any) {
                   toast({
                     title: "Case delete failed.",
                     description: err?.data?.details ?? String(err),
-                    variant: "destructive",
+                    // variant: "destructive",
+                    type: "error",
                   });
                 } finally {
                   setCaseToDelete(null);

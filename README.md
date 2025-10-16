@@ -1,5 +1,7 @@
 # Qwen 3 Mental Health SuperBot
 
+[![Netlify Status](https://api.netlify.com/api/v1/badges/3813ad95-a6be-41f6-abc2-dfbce8e21efc/deploy-status)](https://app.netlify.com/projects/medichat-react-app/deploys) 
+
 ## Video Preview
 
 https://github.com/user-attachments/assets/859ef909-16e3-48a9-aa63-35fd3888236b

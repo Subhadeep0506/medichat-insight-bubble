@@ -36,7 +36,8 @@ const Register = () => {
       toast({
         title: "Error",
         description: "Passwords do not match",
-        variant: "destructive",
+        // variant: "destructive",
+        type: "error",
       });
       setIsLoading(false);
       return;
@@ -46,7 +47,8 @@ const Register = () => {
       toast({
         title: "Error",
         description: "Password must be at least 6 characters",
-        variant: "destructive",
+        // variant: "destructive",
+        type: "error",
       });
       setIsLoading(false);
       return;
@@ -62,11 +64,12 @@ const Register = () => {
       toast({
         title: "Registration Successful",
         description: message || "Your account has been created successfully!",
+        type: "info",
       });
       navigate("/login");
     } catch (err: any) {
       const desc = err.data.detail;
-      toast({ title: "Error", description: desc, variant: "destructive" });
+      toast({ title: "Error", description: desc, type: "error" });
     } finally {
       setIsLoading(false);
     }

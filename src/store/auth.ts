@@ -14,7 +14,7 @@ interface AuthState {
   register: (name: string, email: string, password: string, phone?: string) => Promise<string>;
   fetchMe: () => Promise<void>;
   logout: () => Promise<void>;
-  setToken: (access_token: string | null, refresh_token: string | null) => void;
+  setToken: (access_token: string | null | undefined, refresh_token?: string | null | undefined) => void;
   setUser: (user: User | null) => void;
 }
 
@@ -27,9 +27,19 @@ export const useAuthStore = create<AuthState>()(
       loading: false,
       error: null,
       setToken: (access_token, refresh_token) => {
-        if (access_token && refresh_token) { localStorage.setItem("access_token", access_token); localStorage.setItem("refresh_token", refresh_token); }
-        else { localStorage.removeItem("access_token"); localStorage.removeItem("refresh_token"); }
-        set({ access_token, refresh_token });
+        const currentState = get();
+        const normalizedAccess = access_token ?? null;
+        const normalizedRefresh = refresh_token === undefined ? currentState.refresh_token : (refresh_token ?? null);
+
+        if (typeof localStorage !== "undefined") {
+          if (normalizedAccess) localStorage.setItem("access_token", normalizedAccess);
+          else localStorage.removeItem("access_token");
+
+          if (normalizedRefresh) localStorage.setItem("refresh_token", normalizedRefresh);
+          else localStorage.removeItem("refresh_token");
+        }
+
+        set({ access_token: normalizedAccess, refresh_token: normalizedRefresh });
         setAccessTokenGetter(() => get().access_token || (typeof localStorage !== "undefined" ? localStorage.getItem("access_token") : null));
         setRefreshTokenGetter(() => get().refresh_token || (typeof localStorage !== "undefined" ? localStorage.getItem("refresh_token") : null));
       },
@@ -121,7 +131,27 @@ export const useAuthStore = create<AuthState>()(
     {
       name: "auth-store",
       storage: createJSONStorage(() => localStorage),
-      partialize: (s) => ({ token: s.access_token, user: s.user }),
+      partialize: (state) => ({
+        access_token: state.access_token ?? null,
+        refresh_token: state.refresh_token ?? null,
+        user: state.user ?? null,
+      }),
+      version: 1,
+      migrate: (persistedState: any, version) => {
+        if (!persistedState) return persistedState;
+        if (!version || version < 1) {
+          return {
+            access_token: persistedState.access_token ?? persistedState.token ?? null,
+            refresh_token: persistedState.refresh_token ?? null,
+            user: persistedState.user ?? null,
+          };
+        }
+        return {
+          access_token: persistedState.access_token ?? null,
+          refresh_token: persistedState.refresh_token ?? null,
+          user: persistedState.user ?? null,
+        };
+      },
     }
   )
 );
@@ -134,8 +164,11 @@ if (typeof window !== "undefined") {
       const access = detail?.access_token || null;
       const refresh = detail?.refresh_token || null;
       if (access) {
-        // update persisted state
-        useAuthStore.getState().setToken(access, refresh ?? useAuthStore.getState().refresh_token);
+        const fallbackRefresh =
+          refresh ??
+          useAuthStore.getState().refresh_token ??
+          (typeof localStorage !== "undefined" ? localStorage.getItem("refresh_token") : null);
+        useAuthStore.getState().setToken(access, fallbackRefresh ?? undefined);
       }
     } catch (e) {
       // ignore
