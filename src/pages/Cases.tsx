@@ -24,6 +24,7 @@ import {
   ChevronRight,
   MoreVertical,
   ArrowRightIcon,
+  Loader2,
 } from "lucide-react";
 import {
   Popover,
@@ -89,6 +90,7 @@ const Cases = () => {
   const [expandedPatient, setExpandedPatient] = useState<string | null>(null);
   const [editingPatient, setEditingPatient] = useState<Patient | null>(null);
   const [deletingPatient, setDeletingPatient] = useState(false);
+  const [deletingCase, setDeletingCase] = useState(false);
   const [openingPatientId, setOpeningPatientId] = useState<string | null>(null);
   const [showDeletePatientDialog, setShowDeletePatientDialog] = useState(false);
   const [patientToDelete, setPatientToDelete] = useState<string | null>(null);
@@ -909,7 +911,7 @@ const Cases = () => {
       {/* Confirm delete patient */}
       <AlertDialog
         open={showDeletePatientDialog}
-        onOpenChange={setShowDeletePatientDialog}
+        // onOpenChange={setShowDeletePatientDialog}
       >
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -928,7 +930,6 @@ const Cases = () => {
             <AlertDialogAction
               onClick={async () => {
                 if (!patientToDelete) return;
-                setShowDeletePatientDialog(false);
                 setDeletingPatient(true);
                 try {
                   await deletePatient(patientToDelete);
@@ -947,10 +948,17 @@ const Cases = () => {
                 } finally {
                   setDeletingPatient(false);
                   setPatientToDelete(null);
+                  setShowDeletePatientDialog(false);
                 }
               }}
             >
-              Delete
+              {deletingPatient ? (
+                <div>
+                  <Loader2 className="w-4 h-4 animate-spin" /> Deleting...
+                </div>
+              ) : (
+                "Delete"
+              )}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -959,7 +967,7 @@ const Cases = () => {
       {/* Confirm delete case */}
       <AlertDialog
         open={showDeleteCaseDialog}
-        onOpenChange={setShowDeleteCaseDialog}
+        // onOpenChange={setShowDeleteCaseDialog}
       >
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -975,8 +983,8 @@ const Cases = () => {
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={async () => {
+                setDeletingCase(true);
                 if (!caseToDelete) return;
-                setShowDeleteCaseDialog(false);
                 try {
                   const pid = Object.keys(casesByPatient).find(
                     (p) => !!casesByPatient[p]?.[caseToDelete]
@@ -993,10 +1001,18 @@ const Cases = () => {
                   });
                 } finally {
                   setCaseToDelete(null);
+                  setShowDeleteCaseDialog(false);
+                  setDeletingCase(false);
                 }
               }}
             >
-              Delete
+              {deletingCase ? (
+                <div>
+                  <Loader2 className="w-4 h-4 animate-spin" /> Deleting...
+                </div>
+              ) : (
+                "Delete"
+              )}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
